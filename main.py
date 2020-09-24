@@ -6,8 +6,13 @@ import tasks.preinitialization
 discord_token = os.environ.get('DiscordToken_mbox')
 mbox = discord.Client()
 
+logging_level = logging.INFO
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'debug':
+        logging_level = logging.DEBUG
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging_level,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("debug.log"),
@@ -19,7 +24,7 @@ logging.basicConfig(
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
     for servers in mbox.guilds:
-        logging.debug('Checking guild {servers} is setup')
+        logging.debug('Checking guild [{}] is set up'.format(servers))
         tasks.preinitialization.is_setup(servers)
 
 @mbox.event

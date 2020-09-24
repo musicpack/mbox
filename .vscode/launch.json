@@ -5,10 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Run main.py in debug mode",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "main.py",
+            "args": ["debug"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run main.py in info mode",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
             "console": "integratedTerminal"
         }
     ]
