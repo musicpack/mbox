@@ -1,6 +1,7 @@
 import discord
 import os, sys
 import logging
+import tasks.preinitialization 
 
 discord_token = os.environ.get('DiscordToken_mbox')
 mbox = discord.Client()
@@ -17,6 +18,9 @@ logging.basicConfig(
 @mbox.event
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
+    for servers in mbox.guilds:
+        logging.debug('Checking guild {servers} is setup')
+        tasks.preinitialization.is_setup(servers)
 
 @mbox.event
 async def on_typing(channel, user, when):
@@ -37,7 +41,7 @@ async def on_message(message):
 
     logging.info('Message from {0.author}: {0.content}'.format(message))
     if message.content == 'stop':
-        logging.info('Received stop from {0.author}'.format(message.user))
+        logging.info('Received stop from {0.name}'.format(message.author))
         await mbox.logout()
 
 mbox.run(discord_token)
