@@ -20,12 +20,19 @@ logging.basicConfig(
     ]
 )
 
+watching_channels = []
+
 @mbox.event
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
-    for servers in mbox.guilds:
-        logging.debug('Checking guild [{}] is set up'.format(servers))
-        tasks.preinitialization.is_setup(servers)
+    for server in mbox.guilds:
+        logging.debug('Checking guild [{}] is set up'.format(server))
+        valid_channel = tasks.preinitialization.valid_channels(server)
+        if valid_channel: 
+            watching_channels.append(valid_channel)
+        else:
+            logging.debug('Guild [{}] is not set up. Sending request to set up.'.format(server))
+            pass
 
 @mbox.event
 async def on_typing(channel, user, when):
