@@ -1,7 +1,8 @@
 import discord
 import os, sys
 import logging
-import tasks.preinitialization 
+import tasks.preinitialization
+import asyncio
 
 discord_token = os.environ.get('DiscordToken_mbox')
 mbox = discord.Client()
@@ -15,7 +16,7 @@ logging.basicConfig(
     level=logging_level,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("debug.log"),
+        logging.FileHandler("debug.log", encoding='utf8'),
         logging.StreamHandler()
     ]
 )
@@ -32,7 +33,7 @@ async def on_ready():
             watching_channels.append(valid_channel)
         else:
             logging.debug('Guild [{}] is not set up. Sending request to set up.'.format(server))
-            pass
+            await tasks.preinitialization.notify_not_setup(server, mbox)
 
 @mbox.event
 async def on_typing(channel, user, when):
