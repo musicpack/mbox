@@ -7,7 +7,7 @@ def valid_channels(guild):
     verified_channels = 0
     hashed_channel = []
     for channel in guild.text_channels:
-        logging.debug("Checking text channel: {}".format(channel))
+        logging.debug("Checking text channel: {}: {}".format(channel,str(hash(channel))))
         if channel.topic:
             if channel.topic.split()[-1] == str(hash(channel)):
                 verified_channels += 1
@@ -43,7 +43,9 @@ async def validate_server(guild, client):
         act_msg = 'Creating the new text channel \'music-box\''
         
         async def action(guild, client):
-            logging.info('action exec 0')
+            music_box = await guild.create_text_channel(name='music-box')
+            topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+            await music_box.edit(topic=topic)
         
         await notify_action_required(guild, client, err_msg, action, act_msg)
         return False
@@ -56,8 +58,12 @@ async def validate_server(guild, client):
         act_msg = 'Removing topic of all valid channels and creating a new channel'
         
         async def action(guild, client):
-            logging.info('action exec 1')
-        
+            for channel in hashed_channels:
+                await channel.edit(topic='')
+            music_box = await guild.create_text_channel(name='music-box')
+            topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+            await music_box.edit(topic=topic)
+
         await notify_action_required(guild, client, err_msg, action, act_msg)
         return False
     return True
