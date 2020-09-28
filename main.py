@@ -42,6 +42,13 @@ async def on_typing(channel, user, when):
 @mbox.event
 async def on_guild_join(guild):
     logging.info('Joined Server: {0.name}'.format(guild))
+    await guild.text_channels[0].send('Thanks for adding Music Bot!')
+    valid_channel = tasks.preinitialization.valid_channels(guild)
+    if valid_channel: 
+        watching_channels.append(valid_channel)
+    else:
+        logging.debug('Guild [{}] is not set up. Sending request to set up.'.format(guild))
+        await tasks.preinitialization.notify_not_setup(guild, mbox)
 
 @mbox.event
 async def on_guild_remove(guild):
