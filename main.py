@@ -27,9 +27,7 @@ watching_channels = []
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
     for server in mbox.guilds:
-        valid_server = await tasks.preinitialization.validate_server(server, mbox)
-        if valid_server: 
-            watching_channels.append(server)
+        valid_server = await tasks.preinitialization.validate_server(server, mbox, watching_channels)
 
 @mbox.event
 async def on_typing(channel, user, when):
@@ -39,9 +37,7 @@ async def on_typing(channel, user, when):
 async def on_guild_join(guild):
     logging.info('Joined Server: {0.name}'.format(guild))
     await guild.text_channels[0].send('Thanks for adding Music Bot!')
-    valid_server = await tasks.preinitialization.validate_server(guild, mbox)
-    if valid_server: 
-        watching_channels.append(guild)
+    valid_server = await tasks.preinitialization.validate_server(guild, mbox, watching_channels)
 
 @mbox.event
 async def on_guild_remove(guild):
