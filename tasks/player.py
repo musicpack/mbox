@@ -1,21 +1,47 @@
 import youtube_dl
 import discord
+import logging
 
 class Player:
-    def __init__(self, voice_channels, playing = False) -> None:
+    def __init__(self, voice_channels, ffmpeg_path, playing = False, connected = False, connected_client = None) -> None:
         self.playing = playing
+        self.connected = connected
+        self.connected_client = None
         self.voice_channels = voice_channels
-        
-async def play_youtube(channel, link):
-    # with youtube_dl.YoutubeDL() as ydl:
-    #     song_info = ydl.extract_info("https://www.youtube.com/watch?v=MwxgUVrj5m4", download=False)
-    #     voice_client.play(discord.FFmpegPCMAudio(executable="C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe", source=song_info["formats"][0]["url"], before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'"))
-    #     voice_client.source = discord.PCMVolumeTransformer(voice_client.source)
-    #     voice_client.source.volume = 1'https://www.youtube.com/watch?v=68-5opzvdUc'
-    voice_client = await channel.connect()
-    ffmpeg_path = 'C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe'
-    ydl_opts = {'format': 'bestaudio'}
-    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        source = ydl.extract_info(link, download=False)['formats'][0]['url']
-        voice_client.play(discord.FFmpegPCMAudio(executable=ffmpeg_path, source=source, **FFMPEG_OPTIONS))
+
+        self.ffmpeg_path = ffmpeg_path
+        self.FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+        self.ydl_opts = {'format': 'bestaudio'}
+    
+    async def connect(self, channel):
+        if not self.connected:
+            self.connected_client = await channel.connect()
+            self.connected = True
+        else:
+            logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
+    
+    async def disconnect(self):
+        if self.connected:
+            await self.connected_client.disconnect()
+            self.connected = False
+        else:
+            logging.warn('Player can\'t disconnect when not connected')
+
+    async def play_youtube(self, link):
+        if self.connected:
+            if self.playing:
+                with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+                    source = ydl.extract_info(link, download=False)['formats'][0]['url']
+                    self.connected_client.source = discord.FFmpegPCMAudio(executable=self.ffmpeg_path, source=source, **self.FFMPEG_OPTIONS)
+                    self.playing = True
+            else:
+                def after(error):
+                    self.playing = False
+
+                with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+                    source = ydl.extract_info(link, download=False)['formats'][0]['url']
+                    self.connected_client.play(source = discord.FFmpegPCMAudio(executable=self.ffmpeg_path, source=source, **self.FFMPEG_OPTIONS), after=after)
+                    self.playing = True
+
+        else:
+            logging.error('Can\'t play_youtube() without connecting first')

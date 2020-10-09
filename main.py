@@ -27,8 +27,6 @@ profiles = []
 @mbox.event
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
-    # for server in mbox.guilds:
-    #     valid_server = await tasks.preinitialization.validate_server(server, mbox, watching_channels)
     await tasks.preinitialization.generate_profiles(mbox.guilds, mbox, profiles)
     for profile in profiles:
         if(not profile.ready):
@@ -68,8 +66,10 @@ async def on_message(message):
         logging.info('Received stop from {0.name}'.format(message.author))
         await mbox.logout()
     
-    if message.channel in watching_channels:
-        await message.delete()
-        await tasks.parser.message(message)
+    for profile in profiles:
+        if profile.command_channel == message.channel:
+            await message.delete()
+            await tasks.parser.message(message, profile)
+            break
 
 mbox.run(discord_token)
