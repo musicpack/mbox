@@ -2,7 +2,7 @@ import discord
 import os, sys
 import logging
 import tasks.preinitialization
-import asyncio
+import tasks.parser
 
 discord_token = os.environ.get('DiscordToken_mbox')
 mbox = discord.Client()
@@ -48,9 +48,13 @@ async def on_message(message):
     if message.author == mbox.user:
         return
 
-    logging.info('Message from {0.author}: {0.content}'.format(message))
+    logging.debug('Message from {0.author}: {0.content}'.format(message))
     if message.content == 'stop':
         logging.info('Received stop from {0.name}'.format(message.author))
         await mbox.logout()
+    
+    if message.channel in watching_channels:
+        await message.delete()
+        await tasks.parser.message(message)
 
 mbox.run(discord_token)
