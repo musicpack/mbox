@@ -2,8 +2,9 @@ import youtube_dl
 import discord
 
 class Player:
-    def __init__(self) -> None:
-        playing = False
+    def __init__(self, voice_channels, playing = False) -> None:
+        self.playing = playing
+        self.voice_channels = voice_channels
         
 async def play_youtube(channel, link):
     # with youtube_dl.YoutubeDL() as ydl:

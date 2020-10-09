@@ -22,12 +22,18 @@ logging.basicConfig(
 )
 
 watching_channels = []
+profiles = []
 
 @mbox.event
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
-    for server in mbox.guilds:
-        valid_server = await tasks.preinitialization.validate_server(server, mbox, watching_channels)
+    # for server in mbox.guilds:
+    #     valid_server = await tasks.preinitialization.validate_server(server, mbox, watching_channels)
+    await tasks.preinitialization.generate_profiles(mbox.guilds, mbox, profiles)
+    for profile in profiles:
+        if(not profile.ready):
+            await profile.setup()
+    print(len(profiles))
 
 @mbox.event
 async def on_typing(channel, user, when):
@@ -37,11 +43,20 @@ async def on_typing(channel, user, when):
 async def on_guild_join(guild):
     logging.info('Joined Server: {0.name}'.format(guild))
     await guild.text_channels[0].send('Thanks for adding Music Bot!')
-    valid_server = await tasks.preinitialization.validate_server(guild, mbox, watching_channels)
+    await tasks.preinitialization.generate_profile(guild, mbox, profiles)
+    for profile in profiles:
+        if(not profile.ready):
+            await profile.setup()
+    print(len(profiles))
 
 @mbox.event
 async def on_guild_remove(guild):
     logging.info('Removed from Server: {0.name}'.format(guild))
+    for profile in profiles:
+        if profile.guild == guild:
+            profiles.remove(profile)
+    print(len(profiles))
+
 
 @mbox.event
 async def on_message(message):
