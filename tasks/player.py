@@ -10,7 +10,10 @@ class Player:
         self.voice_channels = voice_channels
 
         self.ffmpeg_path = ffmpeg_path
-        self.FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+        self.FFMPEG_OPTIONS = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn -ss 40'
+        }
         self.ydl_opts = {'format': 'bestaudio'}
     
     async def connect(self, channel):
