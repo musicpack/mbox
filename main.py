@@ -1,3 +1,4 @@
+from typing import Union
 import discord
 import os, sys
 import logging
@@ -69,11 +70,18 @@ async def on_message(message):
     for profile in profiles:
         if message.content == 'test':
             logging.info('Received test from {0.name}'.format(message.author))
+            await message.delete()
             await profile.messenger.send_gui()
             break
         if profile.command_channel == message.channel:
             await message.delete()
             await tasks.parser.message(message, profile)
             break
+
+@mbox.event
+async def on_reaction_add(reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
+    if user != mbox.user:
+        if reaction.message.author == mbox.user:
+            await reaction.message.remove_reaction(reaction, user)
 
 mbox.run(discord_token)

@@ -1,7 +1,9 @@
+from __future__ import annotations
 import asyncio
+from types import FunctionType
 import discord
-from typing import Dict
-# from __future__ import annotations
+from typing import List, Dict
+import logging
 
 class Messenger:
     def __init__(self, default_channel, client, command_channel = None) -> None:
@@ -13,11 +15,13 @@ class Messenger:
         self.reset_gui()
     
     def reset_gui(self) -> None:
+        async def press():
+            print('pressed')
         self.gui: Dict[str, ChatEmbed] = {
             'lyrics' : ChatEmbed('lyrics', {
                 'title': 'Lyrics',
                 'description': 'Play a song to display lyrics'
-            }, self.command_channel)
+            }, self.command_channel, actions = [Button('🧰', self.client, action=press)])
 
         }
     
@@ -46,12 +50,13 @@ class Messenger:
                 await chat_embed.send()
 
 class ChatEmbed:
-    def __init__(self, name, embed_dict, text_channel) -> None:
+    def __init__(self, name, embed_dict, text_channel, actions: List[Button] = None) -> None:
         self.name = name
         self._dict = embed_dict
         self.embed = discord.Embed().from_dict(embed_dict)
         self.text_channel : discord.TextChannel = text_channel
         self.message = None
+        self.actions: List[Button] = actions
     
     def get_dict(self):
         print('got dict')
@@ -72,4 +77,46 @@ class ChatEmbed:
             'allowed_mentions':allowed_mentions
         }
         self.message = await self.text_channel.send(content, **options)
+        for button in self.actions:
+            await button.register(self.message)
         return self.message
+
+class Button:
+    def __init__(self, emoji, client: discord.Client, *, timeout = None, action: FunctionType = None, action_timeout: FunctionType = None):
+        self.emoji = emoji
+        self.client = client
+        self.timeout = timeout
+        self.action = action
+        self.action_timeout = action_timeout
+        self.coro = {}
+    
+    async def register(self, message: discord.Message):
+        if type(message) == discord.Message:
+            if message not in self.coro:
+                await message.add_reaction(self.emoji)
+
+                async def refresh():
+                    def check(reaction, user):
+                        return user != self.client.user and str(reaction.emoji) == self.emoji and reaction.message.id == message.id
+                    
+                    try:
+                        reaction, user = await self.client.wait_for('reaction_add', timeout=self.timeout, check=check)
+                    except asyncio.TimeoutError:
+                        await message.remove_reaction(self.emoji, self.client.user)
+                        logging.info(self.emoji + ' reaction button timed out')
+                        await self.action_timeout()
+                    else:
+                        logging.debug(self.emoji + ' pressed')
+                        asyncio.create_task(asyncio.coroutine(refresh)())
+                        await self.action()
+                
+                await refresh()
+            else:
+                logging.error('Registering button ' + self.emoji + 'failed. Message already exists.')
+        else:
+            logging.error('Registering button ' + self.emoji + 'failed. You must provide a discord Message object.')
+    
+    def remove_all(self):
+        for key in self.coro.keys():
+            self.coro[key].close()
+            del self.coro[key]
