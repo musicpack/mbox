@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+from asyncio.tasks import Task
 from types import FunctionType
 import discord
 from typing import List, Dict
@@ -88,8 +89,9 @@ class Button:
         self.timeout = timeout
         self.action = action
         self.action_timeout = action_timeout
-        self.coro = {}
+        self.coro: Dict[discord.Message, Task] = {}
     
+    # TODO Function needs testing to make sure it doesn't spawn unnessasary threads
     async def register(self, message: discord.Message):
         if type(message) == discord.Message:
             if message not in self.coro:
@@ -105,18 +107,26 @@ class Button:
                         await message.remove_reaction(self.emoji, self.client.user)
                         logging.info(self.emoji + ' reaction button timed out')
                         await self.action_timeout()
+                    except asyncio.CancelledError:
+                        logging.debug(self.emoji + ' canceled')
+                        raise
                     else:
                         logging.debug(self.emoji + ' pressed')
-                        asyncio.create_task(asyncio.coroutine(refresh)())
                         await self.action()
                 
-                await refresh()
+                self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
+                while self.coro[message]:
+                    await self.coro[message]
+                    self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
             else:
                 logging.error('Registering button ' + self.emoji + 'failed. Message already exists.')
         else:
             logging.error('Registering button ' + self.emoji + 'failed. You must provide a discord Message object.')
     
-    def remove_all(self):
-        for key in self.coro.keys():
-            self.coro[key].close()
+    async def remove_all(self):
+        for key in list(self.coro):
+            await key.remove_reaction(self.emoji, self.client.user)
+            await key.delete()
+            self.coro[key].cancel()
             del self.coro[key]
+            print(len(self.coro))

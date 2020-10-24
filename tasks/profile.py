@@ -9,7 +9,7 @@ class Profile:
         self.command_channel = command_channel
         self.ready = False
         self.player = tasks.player.Player(guild.voice_channels, ffmpeg_path='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe')
-        self.messenger = tasks.messenger.Messenger(guild.text_channels[0], client, self.command_channel)
+        self.messenger: tasks.messenger.Messenger = tasks.messenger.Messenger(guild.text_channels[0], client, self.command_channel)
 
         if type(self.command_channel) == discord.TextChannel:
             self.ready = True

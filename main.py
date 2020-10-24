@@ -1,9 +1,10 @@
-from typing import Union
+from typing import List, Union
 import discord
 import os, sys
 import logging
 import tasks.preinitialization
 import tasks.parser
+import tasks.profile
 
 discord_token = os.environ.get('DiscordToken_mbox')
 mbox = discord.Client()
@@ -23,7 +24,7 @@ logging.basicConfig(
 )
 
 watching_channels = []
-profiles = []
+profiles: List[tasks.profile.Profile] = []
 
 @mbox.event
 async def on_ready():
@@ -72,6 +73,11 @@ async def on_message(message):
             logging.info('Received test from {0.name}'.format(message.author))
             await message.delete()
             await profile.messenger.send_gui()
+            break
+        if message.content == 'rem':
+            logging.info('Received rem from {0.name}'.format(message.author))
+            await message.delete()
+            await profile.messenger.gui['lyrics'].actions[0].remove_all()
             break
         if profile.command_channel == message.channel:
             await message.delete()
