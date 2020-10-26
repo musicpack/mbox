@@ -72,14 +72,14 @@ async def on_message(message):
         if message.content == 'test':
             logging.info('Received test from {0.name}'.format(message.author))
             await message.delete()
-            await profile.messenger.send_gui()
+            await profile.messenger.setup()
             break
         if message.content == 'rem':
             logging.info('Received rem from {0.name}'.format(message.author))
             await message.delete()
             await profile.messenger.gui['lyrics'].actions[0].remove_all()
             break
-        if profile.command_channel == message.channel:
+        if profile.messenger.command_channel == message.channel:
             await message.delete()
             await tasks.parser.message(message, profile)
             break
