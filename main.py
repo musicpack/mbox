@@ -33,7 +33,6 @@ async def on_ready():
     for profile in profiles:
         if(not profile.ready):
             await profile.setup()
-    print(len(profiles))
 
 @mbox.event
 async def on_typing(channel, user, when):
@@ -54,6 +53,7 @@ async def on_guild_remove(guild):
     logging.info('Removed from Server: {0.name}'.format(guild))
     for profile in profiles:
         if profile.guild == guild:
+            await profile.messenger.unregister_all()
             profiles.remove(profile)
     print(len(profiles))
 
@@ -72,7 +72,7 @@ async def on_message(message):
         if message.content == 'test':
             logging.info('Received test from {0.name}'.format(message.author))
             await message.delete()
-            await profile.messenger.setup()
+            profile.player.connected_client.pause()
             break
         if message.content == 'rem':
             logging.info('Received rem from {0.name}'.format(message.author))

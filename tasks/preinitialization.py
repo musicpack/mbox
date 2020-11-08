@@ -1,5 +1,5 @@
 import logging
-import tasks.messenger
+import tasks.commander.messenger
 import tasks.profile
 
 def valid_channels(guild):

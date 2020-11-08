@@ -1,23 +1,24 @@
 import tasks.player
-import tasks.messenger
 import logging
 import discord
+from tasks.commander.messenger import Messenger
 
 class Profile:
     def __init__(self, guild, client, command_channel = None) -> None:
         self.guild = guild
         self.valid_channels = command_channel
         self.ready = False
-        self.player = tasks.player.Player(guild.voice_channels, ffmpeg_path='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe')
-        self.messenger: tasks.messenger.Messenger = tasks.messenger.Messenger(guild.text_channels[0], client, self.valid_channels)
-
-        if type(self.valid_channels) == discord.TextChannel:
-            self.ready = True
-            self.messenger.command_channel = self.valid_channels
+        self.messenger: Messenger = Messenger(guild.text_channels[0], client, self.valid_channels)
+        self.player = tasks.player.Player(guild.voice_channels, ffmpeg_path='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe', messenger=self.messenger)
     
     async def setup(self):
         if(not self.ready):
-            if self.valid_channels == None:
+            if type(self.valid_channels) == discord.TextChannel:
+                # Setup all nessasary runtime objects here
+                await self.messenger.setup()
+                self.ready = True
+            
+            elif self.valid_channels == None:
                 logging.debug('Guild [{}] is not set up. Sending request to set up.'.format(self.guild))
 
                 err_msg = '⚠️Need to create new text channel.'
@@ -33,6 +34,9 @@ class Profile:
                     await music_box.edit(topic=topic)
 
                     self.valid_channels = music_box
+                    self.messenger.command_channel = music_box
+                    await self.messenger.setup()
+                    self.ready = True
             
                 await self.messenger.notify_action_required(err_msg, action_failed, action_success, act_msg)
             
@@ -59,7 +63,10 @@ class Profile:
                     await music_box.edit(topic=topic)
 
                     self.valid_channels = music_box
+                    self.messenger.command_channel = music_box
+                    await self.messenger.setup()
+                    self.ready = True
 
                 await self.messenger.notify_action_required(err_msg, action_failed, action_success, act_msg)
         else:
-            logging.warn('Guild [{}] profile setup() call ignored (self.ready == true)')
+            logging.info('Guild [{}] profile setup() call ignored (self.ready == true)')
