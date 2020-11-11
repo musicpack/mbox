@@ -72,7 +72,7 @@ async def on_message(message):
         if message.content == 'test':
             logging.info('Received test from {0.name}'.format(message.author))
             await message.delete()
-            profile.player.connected_client.pause()
+            await profile.messenger.gui['player'].update()
             break
         if message.content == 'rem':
             logging.info('Received rem from {0.name}'.format(message.author))

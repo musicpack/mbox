@@ -16,6 +16,7 @@ class Profile:
             if type(self.valid_channels) == discord.TextChannel:
                 # Setup all nessasary runtime objects here
                 await self.messenger.setup()
+                await self.player.setup()
                 self.ready = True
             
             elif self.valid_channels == None:

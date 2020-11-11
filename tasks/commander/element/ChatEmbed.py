@@ -31,12 +31,15 @@ class ChatEmbed:
             'allowed_mentions':allowed_mentions
         }
         self.message = await self.text_channel.send(content, **options)
-        for button in self.actions:
-            await button.register(self.message)
+        if self.actions:
+            for button in self.actions:
+                await button.register(self.message)
         return self.message
 
     async def update(self):
         await self.message.edit(suppress= False, embed=self.embed)
+        # await self.remove_buttons()
+        # await self.register_buttons()
         for button in self.actions:
             if not button.is_registered(self.message):
                 await button.register(self.message)

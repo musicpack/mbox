@@ -19,27 +19,20 @@ class Messenger:
         await self.clean_chat()
         await self.send_gui()
     
-    async def lpress(self):
-        print('pressed lyrics')
-    async def qpress(self):
-        print('pressed queue')
-    async def ppress(self):
-        print('pressed player')
-    
     def set_gui(self) -> None:
         self.gui: Dict[str, ChatEmbed] = {
             'lyrics' : ChatEmbed('lyrics', {
                 'title': 'Lyrics',
                 'description': 'Play a song to display lyrics'
-            }, self.command_channel, actions = [Button('🧰', self.client, action=self.lpress)]),
+            }, self.command_channel),
             'queue' : ChatEmbed('queue', {
                 'title': 'Queue',
                 'description': 'Nothing is in your queue. Send a link to add a song.'
-            }, self.command_channel, actions = [Button('🧰', self.client, action=self.qpress)]),
+            }, self.command_channel),
             'player' : ChatEmbed('player', {
                 'title': 'Player',
                 'description': 'Nothing is playing. Send a link to add a song.'
-            }, self.command_channel, actions = [Button('🧰', self.client, action=self.ppress)])
+            }, self.command_channel)
         }
     
     def is_gui(self, message: discord.Message) -> bool:
@@ -54,8 +47,9 @@ class Messenger:
         chat_embed: ChatEmbed
         button: Button
         for chat_embed in self.gui.values():
-            for button in chat_embed.actions:
-                await button.remove_all(remove_reaction = False)
+            if chat_embed.actions:
+                for button in chat_embed.actions:
+                    await button.remove_all(remove_reaction = False)
 
     async def clean_chat(self):
         await self.unregister_all()
