@@ -1,4 +1,4 @@
-import tasks.player
+from tasks.music.player import Player
 import logging
 import discord
 from tasks.commander.messenger import Messenger
@@ -9,7 +9,7 @@ class Profile:
         self.valid_channels = command_channel
         self.ready = False
         self.messenger: Messenger = Messenger(guild.text_channels[0], client, self.valid_channels)
-        self.player = tasks.player.Player(guild.voice_channels, ffmpeg_path='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe', messenger=self.messenger)
+        self.player = Player(guild.voice_channels, ffmpeg_path='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe', messenger=self.messenger)
     
     async def setup(self):
         if(not self.ready):

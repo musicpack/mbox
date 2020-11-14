@@ -1,6 +1,6 @@
 import logging
 import re
-import tasks.player
+from tasks.music.player import Player
 
 async def message(message, profile):
     logging.info('Parsing message from [{1.name}]{0.author}: {0.content}'.format(message, profile.guild))
