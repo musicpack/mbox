@@ -4,6 +4,7 @@ import discord
 import logging
 import asyncio
 import os
+import threading
 from tasks.commander.messenger import Messenger
 from tasks.commander.element.Button import Button
 from tasks.commander.element.ChatEmbed import ChatEmbed
@@ -12,6 +13,7 @@ from tasks.music.element.cache import Cache
 
 YOUTUBE_ICON = 'https://yt3.ggpht.com/a/AATXAJxHHP_h8bUovc1qC4c07sVXxVbp3gwDEg-iq8gbFQ=s100-c-k-c0xffffffff-no-rj-mo'
 DOWNLOAD_PATH = os.path.join('cache', 'youtube')
+MAX_FILESIZE = 10000000 # in bytes, default 10 MB
 
 class Player:
     def __init__(self, voice_channels, ffmpeg_path, messenger: Messenger) -> None:
@@ -21,9 +23,9 @@ class Player:
         self.playlist = []
         self.buttons = {
             'play_pause': Button(emoji='⏯️', client = self.messenger.client, action=self.play_pause),
-            'toggle_description': Button(emoji='💬', client = self.messenger.client, action=self.toggle_description),
             'lower_volume': Button(emoji='🔉', client = self.messenger.client, action=self.lower_volume),
-            'raise_volume': Button(emoji='🔊', client = self.messenger.client, action=self.raise_volume)
+            'raise_volume': Button(emoji='🔊', client = self.messenger.client, action=self.raise_volume),
+            'toggle_description': Button(emoji='💬', client = self.messenger.client, action=self.toggle_description)
         }
         self.ChatEmbed : ChatEmbed = None
         self.cache = Cache()
@@ -31,11 +33,10 @@ class Player:
         self.ffmpeg_path = ffmpeg_path
         self.FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
-            # ,'options': '-vn -ss 40'
+            ,'options': '-vn'
         }
         self.ydl_opts = {
-            'format': 'bestaudio',
-            'outtmpl': os.path.join(DOWNLOAD_PATH, '%(title)s.%(ext)s')
+            'format': 'bestaudio/worst'
         }
         self.description = None
         self.display = False
@@ -43,7 +44,7 @@ class Player:
     
     async def setup(self):
         self.ChatEmbed = self.messenger.gui['player']
-        self.ChatEmbed.actions = [self.buttons['play_pause'],self.buttons['toggle_description'],self.buttons['lower_volume'],self.buttons['raise_volume']]
+        self.ChatEmbed.actions = list(self.buttons.values())
         self.ChatEmbed.embed.title = 'Not Playing'
         await self.ChatEmbed.update()
 
@@ -68,7 +69,8 @@ class Player:
     async def toggle_description(self):
         if self.description:
             if self.display:
-                self.ChatEmbed.embed.description = self.description[0:150] + '...'
+                list_description = self.description.splitlines()
+                self.ChatEmbed.embed.description = '\n'.join(list_description[0:3])
                 self.display = False
                 await self.ChatEmbed.update()
             else:
@@ -118,22 +120,49 @@ class Player:
         self.read += 20
         # print(self.read)
 
+    def download_hook(self, d):
+        if d['status'] == 'finished':
+            path = os.path.abspath(d['filename'])
+            filename, file_extension = os.path.splitext(path)
+            print(file_extension)
+            if file_extension == '.webm' or file_extension == '.m4a':
+                self.audio_swap(path)
+    
+    # Replaces currently streaming audio with on disk audio
+    def audio_swap(self, path):
+        if self.connected_client.is_connected():
+            custom_options = {'options': '-vn -ss ' + str(self.read) + 'ms'}
+
+            audio: AudioSource = discord.FFmpegPCMAudio(executable=self.ffmpeg_path, source=path, **custom_options)
+            if self.connected_client.is_playing():
+                self.connected_client.source = MusicSource(audio, self.on_read)
+            else:
+                self.connected_client.play(source = MusicSource(audio, self.on_read), after=self.on_finished)
+
+            self.ChatEmbed.embed.set_footer(text= 'Source: Youtube (file)', icon_url=YOUTUBE_ICON)
+            asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.connected_client.loop)
+
     async def play_youtube(self, link):
         if self.connected_client.is_connected():
                 # Check cache for hit
-                print(link[-11:])
+                print(link[-11:]) # TODO change id finding method
+
                 database = self.cache.find_ytid(link[-11:])
+                
                 if database:
-                    print('pass')
+                    print('FOUND IN DATABASE')
                 else:
                     # if not grab info for streaming
                     with youtube_dlc.YoutubeDL(self.ydl_opts) as ydl:
-                        video_info = ydl.extract_info(link, download=True)
+                        video_info = ydl.extract_info(link, download=False)
+
+
                         source = video_info['formats'][0]['url']
 
                         self.description = video_info['description']
+                        list_description = video_info['description'].splitlines()
 
-                        self.ChatEmbed.embed.description = video_info['description'][0:150] + '...'
+                        self.ChatEmbed.embed.description = '\n'.join(list_description[0:3])
                         self.ChatEmbed.embed.title = video_info['title']
                         self.ChatEmbed.embed.url = video_info['webpage_url']
                         self.ChatEmbed.embed.set_author(name = video_info['uploader'], url = video_info['uploader_url'])
@@ -149,6 +178,16 @@ class Player:
                             self.connected_client.source = MusicSource(audio, self.on_read)
                         else:
                             self.connected_client.play(source = MusicSource(audio, self.on_read), after=self.on_finished)
+                           
+                        # Determine if video is cacheable
+                        if not video_info['is_live']:
+                            if video_info['filesize'] <= MAX_FILESIZE:
+                                threading.Thread(target=lambda: self.download_youtube(link=link, cache=False)).start()
+                            else:
+                                # TODO threading must be able to be canceled ( or be aware when the song has changed)
+                                # Download in temp folder
+                                # self.messenger.client.loop.create_task(asyncio.coroutine(self.download_youtube)(link=link, cache=False))
+                                threading.Thread(target=lambda: self.download_youtube(link=link, cache=False)).start()
 
         else:
             logging.error('Can\'t play_youtube() without connecting first')
@@ -159,3 +198,20 @@ class Player:
                 self.connected_client.source = MusicSource(audio, self.on_read)
             else:
                 self.connected_client.play(source = MusicSource(audio, self.on_read), after=self.on_finished)
+    
+    def download_youtube(self, link, cache=True) -> str:
+        custom_opts = {
+            'format': 'bestaudio',
+            'writesubtitles': True,
+            'writeautomaticsub': True,
+            'allsubtitles': True,
+            'progress_hooks': [self.download_hook],
+        }
+        if cache:
+            custom_opts['outtmpl'] = os.path.join(DOWNLOAD_PATH, '%(title)s-%(id)s.%(ext)s')
+            with youtube_dlc.YoutubeDL(custom_opts) as ydl:
+                video_info = ydl.extract_info(link, download=True)
+        else:
+            custom_opts['outtmpl'] = os.path.join('cache','temp', '%(title)s-%(id)s.%(ext)s')
+            with youtube_dlc.YoutubeDL(custom_opts) as ydl:
+                video_info = ydl.extract_info(link, download=True)
