@@ -39,6 +39,34 @@ class Cache:
             self.connection.commit()
         else:
             raise FileExistsError('Cannot add ID {0}: already exists'.format(id))
+    #TODO untested function
+    def modify_ytid(self, id, **kwargs):
+        dbid, date_download, date_hit, hits, file_name, title, description, uploader, uploader_url, thumbnail_url, user_requested = self.find_ytid(id)
+
+        default_date_download = kwargs.get('date_download', date_download)
+        default_date_hit = kwargs.get('date_hit', date_hit)
+        default_hits = kwargs.get('hits', hits)
+        default_file_name = kwargs.get('file_name', file_name)
+        default_title = kwargs.get('title', title)
+        default_description = kwargs.get('description', description)
+        default_uploader = kwargs.get('uploader', uploader)
+        default_uploader_url = kwargs.get('uploader_url', uploader_url)
+        default_thumbnail_url = kwargs.get('thumbnail_url', thumbnail_url)
+        default_user_requested = kwargs.get('user_requested', user_requested)
+        
+        self.cursor.execute('''UPDATE youtube SET 
+         date_download = ?
+         date_hit = ?
+         hits = ?
+         file_name = ?
+         title = ?
+         description = ?
+         uploader = ?
+         uploader_url = ?
+         thumbnail_url = ?
+         user_requested = ? WHERE id=?''', (default_date_download, default_date_hit, default_hits, default_file_name, default_title, default_description, default_uploader, default_uploader_url, default_thumbnail_url, default_user_requested, id))
+        self.connection.commit()
+
 
     def find_ytid(self, id) -> Tuple or bool:
         t = (id,)

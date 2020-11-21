@@ -18,7 +18,7 @@ class Button:
             return True
         return False
     
-    # TODO Function needs testing to make sure it doesn't spawn unnessasary threads
+    # TODO Function needs testing to make sure it doesn't spawn unnessasary tasks
     async def register(self, message: discord.Message):
         if type(message) == discord.Message:
             if message not in self.coro:
@@ -43,9 +43,6 @@ class Button:
                         await self.action()
                 
                 self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
-                # while self.coro[message]:
-                #     await self.coro[message]
-                #     self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
             else:
                 logging.error('Registering button ' + self.emoji + 'failed. Message already registered.')
         else:

@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "main.py",
             "args": ["debug"],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "justMyCode": false
         },
         {
             "name": "Run main.py in info mode",
