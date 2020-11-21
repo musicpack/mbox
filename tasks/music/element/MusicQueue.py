@@ -1,11 +1,17 @@
 import asyncio
+import discord
+import logging
 from tasks.music.element.MusicSource import MusicSource
 from tasks.commander.element.ChatEmbed import ChatEmbed
+from tasks.commander.element.Button import Button
 class MusicQueue:
-    def __init__(self, active_embed: ChatEmbed, list: list[MusicSource] = []) -> None:
+    def __init__(self, active_embed: ChatEmbed, client: discord.Client, list: list[MusicSource] = []) -> None:
         self.list = list
         self.index = None
-        self.buttons = {}
+        self.client = client
+        self.buttons = {
+            'reset_all': Button(emoji='🗑️', client = self.client, action=self.reset_next_playing)
+        }
         self.ChatEmbed = active_embed
         if not list:
             self.at_beginning = True
@@ -21,12 +27,21 @@ class MusicQueue:
     def remove_index(self, index: int):
         return self.list.pop(index)
     
-    def reset_all(self):
-        pass
+    async def reset_all(self):
+        self.list = []
+        self.index = None
+        self.at_beginning = True
+        self.at_end = False
+        self.on_remove_all()
+        await self.update_embed_from_queue()
+    
+    async def reset_next_playing(self):
+        self.list = self.list[:self.index+1]
+        await self.update_embed_from_queue()
 
     async def update_embed_from_queue(self) -> None:
         title = 'Queue Empty'
-        if self.at_end:
+        if self.at_end or self.index == None or not self.list:
             self.ChatEmbed.embed.description = 'No Song Playing'
             self.ChatEmbed.embed.title = title
             await self.ChatEmbed.update()
@@ -36,7 +51,6 @@ class MusicQueue:
         text_n = '**Next**'
         description_np = ''
         description_n = ''
-
         
         for index in range(self.index, len(self.list)):
             if self.index == index:
@@ -67,20 +81,22 @@ class MusicQueue:
             else:
                 return self.list[self.index]
         return None
-        
 
     def next(self) -> MusicSource:
         if self.list:
             if self.at_beginning or self.index == None:
                 self.index = 0
                 self.at_beginning = False
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
                 return self.list[self.index]
             elif self.index + 1 < len(self.list):
                 self.at_end = False
                 self.index += 1
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
                 return self.list[self.index]
             else:
                 self.at_end = True
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
                 return None
         raise IndexError('MusicQueue list empty')
 
@@ -88,10 +104,27 @@ class MusicQueue:
         if self.list:
             if self.at_end:
                 self.at_end = False
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
                 return self.list[self.index]
             elif self.index - 1 >= 0:
                 self.index -= 1
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
                 return self.list[self.index]
             else:
                 return None
         raise IndexError('MusicQueue list empty')
+
+    def event(self, event):
+        """A decorator that registers an event to listen to.
+
+          Events
+        ---------
+        on_remove_all()
+        """
+
+        setattr(self, event.__name__, event)
+        logging.debug('%s has successfully been registered as an event', event.__name__)
+        return event
+    
+    def on_remove_all(self):
+        pass

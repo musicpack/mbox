@@ -18,11 +18,14 @@ class Player:
         self.connected_client: discord.VoiceClient = None
         self.voice_channels = voice_channels
         self.messenger: Messenger = messenger
+        self.client = self.messenger.client
         self.buttons = {
-            'play_pause': Button(emoji='⏯️', client = self.messenger.client, action=self.play_pause),
-            'lower_volume': Button(emoji='🔉', client = self.messenger.client, action=self.lower_volume),
-            'raise_volume': Button(emoji='🔊', client = self.messenger.client, action=self.raise_volume),
-            'toggle_description': Button(emoji='💬', client = self.messenger.client, action=self.toggle_description)
+            'last_track': Button(emoji='⏮️', client = self.client, action=self.last),
+            'play_pause': Button(emoji='⏯️', client = self.client, action=self.play_pause),
+            'next_track': Button(emoji='⏭️', client = self.client, action=self.next),
+            'lower_volume': Button(emoji='🔉', client = self.client, action=self.lower_volume),
+            'raise_volume': Button(emoji='🔊', client = self.client, action=self.raise_volume),
+            'toggle_description': Button(emoji='💬', client = self.client, action=self.toggle_description)
         }
         self.ChatEmbed : ChatEmbed = None
         self.cache = Cache()
@@ -46,18 +49,29 @@ class Player:
         self.ChatEmbed.embed.title = 'Not Playing'
         await self.ChatEmbed.update()
 
-        self.playlist = MusicQueue(self.messenger.gui['queue'])
+        self.playlist = MusicQueue(active_embed = self.messenger.gui['queue'], client = self.messenger.client)
         await self.playlist.setup()
 
+        # @self.playlist.event
+        # def on_remove_all():
+        #     self.stop()
+
     async def lower_volume(self):
-        self.connected_client.source.volume -= .1
+        self.connected_client.source.volume -= .16666666666
         print(self.connected_client.source.volume)
 
     async def raise_volume(self):
-        self.connected_client.source.volume += .1
+        self.connected_client.source.volume += .16666666666
         print(self.connected_client.source.volume)
 
     def stop(self):
+        self.messenger.gui['player'].embed = discord.Embed.from_dict({
+            'title': 'Not Playing',
+            'description': 'Nothing is playing. Send a youtube link to add a song.'
+        })
+        # self.playlist.reset_all()
+        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)
         return self.connected_client.stop()
     
     def pause(self):
@@ -66,12 +80,43 @@ class Player:
     def resume(self):
         return self.connected_client.resume()
     
+    def last(self) -> MusicSource:
+        music_source = self.playlist.prev()
+        if music_source:
+            music_source.reset()
+            if music_source.resolved:
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
+            else:
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
+            
+            if self.connected_client:
+                if self.connected_client.is_connected():
+                    if self.connected_client.is_playing():
+                        self.connected_client.source = music_source
+                        return music_source
+                    else:
+                        self.connected_client.play(source = music_source, after=self.on_finished)
+                        return music_source
+                else:
+                    self.connect(self.voice_channels[0])
+                    self.connected_client.play(source = music_source, after=self.on_finished)
+                    return music_source
+            else:
+                # TODO fix logic (connected_client will not be available)
+                self.connect(self.voice_channels[0])
+                self.connected_client.play(source = music_source, after=self.on_finished)
+                return music_source
+        else:
+            print('cant go back any further')
+            return None
+    
     def next(self) -> MusicSource:
         music_source = self.playlist.next()
-        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.playlist.update_embed_from_queue)(), self.connected_client.loop)
         if music_source:
+            music_source.reset()
+
             if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube (file)'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
             else:
                 asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
                 
@@ -135,18 +180,10 @@ class Player:
 
     def on_finished(self, error):
         print('finished playing: ' + str(error))
-        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.playlist.update_embed_from_queue)(), self.connected_client.loop)
-        next_music = self.next()
-        if not next_music:
-            self.messenger.gui['player'].embed = discord.Embed.from_dict({
-                'title': 'Not Playing',
-                'description': 'Nothing is playing. Send a youtube link to add a song.'
-            })
-            future = asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.connected_client.loop)
-            try:
-                future.result()
-            except:
-                print('FUTURE Error')
+        try:
+            self.next()
+        except IndexError:
+            pass
 
     def on_read(self, ms):
         pass

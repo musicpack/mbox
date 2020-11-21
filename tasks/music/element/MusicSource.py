@@ -72,6 +72,14 @@ class MusicSource(AudioSource):
         ret = self.original.read()
         return audioop.mul(ret, 2, min(self._volume, 2.0))
 
+    def reset(self):
+        custom_options = {'options': '-vn'}
+        if self.amount_read > 0:
+            if self.file_path:
+                self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.file_path, **custom_options)
+            else:
+                self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.info['formats'][0]['url'], **custom_options)
+
     def resolve(self, cache=True):
         custom_opts = {
             'format': 'bestaudio',

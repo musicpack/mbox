@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import logging
+import inspect
 from types import FunctionType
 from typing import Dict
 
@@ -33,14 +34,18 @@ class Button:
                     except asyncio.TimeoutError:
                         await message.remove_reaction(self.emoji, self.client.user)
                         logging.info(self.emoji + ' reaction button timed out')
-                        await self.action_timeout()
+                        res = self.action_timeout()
+                        if inspect.isawaitable(res):
+                            await res
                     except asyncio.CancelledError:
                         logging.debug(self.emoji + ' canceled')
                         raise
                     else:
                         logging.debug(self.emoji + ' pressed')
                         self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
-                        await self.action()
+                        res = self.action()
+                        if inspect.isawaitable(res):
+                            await res
                 
                 self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
             else:
