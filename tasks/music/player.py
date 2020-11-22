@@ -42,6 +42,7 @@ class Player:
         self.description = None
         self.display = False
         self.playlist = None
+        self.volume = 1.0
     
     async def setup(self):
         self.ChatEmbed = self.messenger.gui['player']
@@ -57,19 +58,21 @@ class Player:
         #     self.stop()
 
     async def lower_volume(self):
-        self.connected_client.source.volume -= .16666666666
-        print(self.connected_client.source.volume)
+        self.volume -= .16666666666
+        self.connected_client.source.volume = self.volume
+        print(self.volume)
 
     async def raise_volume(self):
-        self.connected_client.source.volume += .16666666666
-        print(self.connected_client.source.volume)
+        self.volume += .16666666666
+        self.connected_client.source.volume = self.volume
+        print(self.volume)
 
     def stop(self):
         self.messenger.gui['player'].embed = discord.Embed.from_dict({
             'title': 'Not Playing',
             'description': 'Nothing is playing. Send a youtube link to add a song.'
         })
-        # self.playlist.reset_all()
+        # self.playlist.reset_all() # TODO figure out why python does not remove past refrences 
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)
         return self.connected_client.stop()
@@ -79,6 +82,10 @@ class Player:
 
     def resume(self):
         return self.connected_client.resume()
+    
+    async def play(self, audio: MusicSource):
+        await self.connect(self.voice_channels[0])
+        await self.connected_client.play(source = audio, after=self.on_finished)
     
     def last(self) -> MusicSource:
         music_source = self.playlist.prev()
@@ -98,13 +105,10 @@ class Player:
                         self.connected_client.play(source = music_source, after=self.on_finished)
                         return music_source
                 else:
-                    self.connect(self.voice_channels[0])
-                    self.connected_client.play(source = music_source, after=self.on_finished)
+                    asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
                     return music_source
             else:
-                # TODO fix logic (connected_client will not be available)
-                self.connect(self.voice_channels[0])
-                self.connected_client.play(source = music_source, after=self.on_finished)
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
                 return music_source
         else:
             print('cant go back any further')
@@ -130,13 +134,10 @@ class Player:
                         self.connected_client.play(source = music_source, after=self.on_finished)
                         return music_source
                 else:
-                    self.connect(self.voice_channels[0])
-                    self.connected_client.play(source = music_source, after=self.on_finished)
+                    asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
                     return music_source
             else:
-                # TODO fix logic (connected_client will not be available)
-                self.connect(self.voice_channels[0])
-                self.connected_client.play(source = music_source, after=self.on_finished)
+                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
                 return music_source
         else:
             print('no music')
@@ -171,6 +172,7 @@ class Player:
                 logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
                 return
         self.connected_client = await channel.connect()
+        self.volume = 1.0
 
     async def disconnect(self):
         if self.connected_client.is_connected():
@@ -203,7 +205,7 @@ class Player:
                         source = video_info['formats'][0]['url']
 
                         raw_audio_source: AudioSource = discord.FFmpegPCMAudio(executable=self.ffmpeg_path, source=source, **self.FFMPEG_OPTIONS)
-                        audio = MusicSource(raw_audio_source, info = video_info)
+                        audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume)
                         self.playlist.add(audio)
 
                         if not self.connected_client.is_playing():
