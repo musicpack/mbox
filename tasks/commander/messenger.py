@@ -5,6 +5,7 @@ from typing import List, Dict
 import logging
 from tasks.commander.element.ChatEmbed import ChatEmbed
 from tasks.commander.element.Button import Button
+from tasks.constants import *
 
 class Messenger:
     def __init__(self, default_channel, client, command_channel: discord.TextChannel = None) -> None:
@@ -21,9 +22,17 @@ class Messenger:
     
     def set_gui(self) -> None:
         self.gui: Dict[str, ChatEmbed] = {
-            'lyrics' : ChatEmbed('lyrics', {
-                'title': 'Lyrics',
-                'description': 'Play a song to display lyrics'
+            'reporter' : ChatEmbed('lyrics', {
+                'title': 'Music Box ' + VERSION,
+                'description': """Early Access, please report any bugs!
+                **Please mute this channel to avoid notification spam!**
+
+                *Send a youtube link in this channel to start playing a song!*
+
+                **Help**
+                > 🔄: Refresh the chat (if your client shows a phantom message)
+                > 🟥: Stops the bot for every server. **(USE SPARINGLY)**
+                """
             }, self.command_channel),
             'queue' : ChatEmbed('queue', {
                 'title': 'Queue',

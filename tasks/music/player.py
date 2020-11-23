@@ -63,21 +63,23 @@ class Player:
         #     self.stop()
 
     async def lower_volume(self):
-        self.volume -= .16666666666
-        self.connected_client.source.volume = self.volume
-        print(self.volume)
+        if self.connected_client:
+            if self.connected_client.is_connected():
+                self.volume -= .16666666666
+                self.connected_client.source.volume = self.volume
 
     async def raise_volume(self):
-        self.volume += .16666666666
-        self.connected_client.source.volume = self.volume
-        print(self.volume)
+        if self.connected_client:
+            if self.connected_client.is_connected():
+                self.volume += .16666666666
+                self.connected_client.source.volume = self.volume
 
     def stop(self):
         self.messenger.gui['player'].embed = discord.Embed.from_dict({
             'title': 'Not Playing',
             'description': 'Nothing is playing. Send a youtube link to add a song.'
         })
-        # self.playlist.reset_all() # TODO figure out why python does not remove past refrences 
+        asyncio.run_coroutine_threadsafe(self.playlist.reset_all(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)
         return self.connected_client.stop()
@@ -98,7 +100,10 @@ class Player:
         await self.connected_client.play(source = audio, after=self.on_finished)
     
     def last(self) -> MusicSource:
-        music_source = self.playlist.prev()
+        try:
+            music_source = self.playlist.prev()
+        except IndexError:
+            music_source = None
         if music_source:
             music_source.reset()
             if music_source.resolved:
@@ -125,7 +130,10 @@ class Player:
             return None
     
     def next(self) -> MusicSource:
-        music_source = self.playlist.next()
+        try:
+            music_source = self.playlist.next()
+        except IndexError:
+            music_source = None
         if music_source:
             music_source.reset()
 
@@ -209,8 +217,10 @@ class Player:
     async def play_youtube(self, link):
         if self.connected_client.is_connected():
                 # Check cache for hit
-                print(link[-11:]) # TODO change id finding method
-                database = self.cache.find_ytid(link[-11:])
+                # print(link[-11:]) # TODO change id finding method
+                # database = self.cache.find_ytid(link[-11:])
+                
+                database = False
                 
                 if database:
                     print('FOUND IN DATABASE')

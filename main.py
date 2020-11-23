@@ -31,8 +31,7 @@ async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
     await tasks.preinitialization.generate_profiles(mbox.guilds, mbox, profiles)
     for profile in profiles:
-        if(not profile.ready):
-            await profile.setup()
+        await profile.setup()
 
 @mbox.event
 async def on_typing(channel, user, when):
@@ -44,8 +43,7 @@ async def on_guild_join(guild):
     await guild.text_channels[0].send('Thanks for adding Music Bot!')
     await tasks.preinitialization.generate_profile(guild, mbox, profiles)
     for profile in profiles:
-        if(not profile.ready):
-            await profile.setup()
+        await profile.setup()
     print(len(profiles))
 
 @mbox.event
@@ -89,5 +87,13 @@ async def on_reaction_add(reaction: discord.Reaction, user: Union[discord.Member
     if user != mbox.user:
         if reaction.message.author == mbox.user:
             await reaction.message.remove_reaction(reaction, user)
+
+@mbox.event
+async def on_voice_state_update(member, before, after):
+    if member == mbox.user:
+        if before.channel and after.channel == None:
+            for profile in profiles:
+                if profile.guild == member.guild:
+                    profile.player.stop()
 
 mbox.run(discord_token)
