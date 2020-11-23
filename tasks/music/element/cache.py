@@ -30,8 +30,8 @@ class Cache:
              user_requested text)''')
     
     def cleanup(self):
-        for f in os.listdir('temp'):
-            os.remove(os.path.join('temp', f))
+        for f in os.listdir(TEMP_DIR):
+            os.remove(os.path.join(TEMP_DIR, f))
     
     def add_youtube(self, id, date_download, date_hit, hits, file_name, title, description, uploader, uploader_url, thumbnail_url, user_requested):
         if not self.find_ytid(id):

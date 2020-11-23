@@ -10,10 +10,6 @@ class Reporter:
         self.buttons = {
             'refresh': Button(emoji='🔄', client = self.client, action=self.refresh),
             'logout': Button(emoji='🟥', client = self.client, action=self.logout)
-            # 'next_track': Button(emoji='⏭️', client = self.client, action=self.next),
-            # 'lower_volume': Button(emoji='🔉', client = self.client, action=self.lower_volume),
-            # 'raise_volume': Button(emoji='🔊', client = self.client, action=self.raise_volume),
-            # 'toggle_description': Button(emoji='💬', client = self.client, action=self.toggle_description)
         }
         
         self.ChatEmbed = None
@@ -27,4 +23,7 @@ class Reporter:
         await self.client.logout()
 
     async def refresh(self):
+        if self.profile.player.connected_client:
+            if self.profile.player.connected_client.is_connected():
+                self.profile.player.stop()
         await self.profile.setup()

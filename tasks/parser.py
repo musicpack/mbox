@@ -4,8 +4,10 @@ import discord
 from typing import List
 from tasks.music.player import Player
 from tasks.profile import Profile
+from youtube_search import YoutubeSearch
 
 async def message(message: discord.Message, profile: Profile):
+    
     logging.info('Parsing message from [{1.name}]{0.author}: {0.content}'.format(message, profile.guild))
 
     youtube = re.compile('(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})')
@@ -13,13 +15,20 @@ async def message(message: discord.Message, profile: Profile):
     match = youtube.findall(message.content)
     if match:
         youtube_id = match[0]
-        base_url = 'https://www.youtube.com/watch?v='
-        normalized_url = base_url+youtube_id
-        channel = determine_voice_channel(voice_channels= message.guild.voice_channels, message=message, profile=profile)
+        await play_ytid(youtube_id, message, profile)
+    else:
+        results = YoutubeSearch(message.content, max_results=1).to_dict()
+        if results:
+            await play_ytid(results[0]['id'], message, profile)
 
-        if(channel):
-            await profile.player.connect(channel)
-        await profile.player.play_youtube(normalized_url)
+async def play_ytid(id, message: discord.Message, profile: Profile):
+    base_url = 'https://www.youtube.com/watch?v='
+    normalized_url = base_url+id
+    channel = determine_voice_channel(voice_channels= message.guild.voice_channels, message=message, profile=profile)
+
+    if(channel):
+        await profile.player.connect(channel)
+    await profile.player.play_youtube(normalized_url)
 
 def determine_voice_channel(voice_channels: List[discord.VoiceChannel], *, message: discord.Message = None, profile: Profile= None, player: Player = None) -> discord.VoiceChannel:
     """Tries to determine the voice channel given context. Pass as much arguments possible for the best result.

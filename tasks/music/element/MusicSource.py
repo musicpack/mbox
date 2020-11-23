@@ -58,12 +58,14 @@ class MusicSource(AudioSource):
         self._volume = max(value, 0.0)
 
     def cleanup(self):
+        self.original.cleanup()
         if self.temp:
             try:
                 os.remove(self.file_path)
             except PermissionError:
                 logging.warn('Premission Error when removing {0}. Maybe the file is being used in other sessions?'.format(self.file_path))
-        self.original.cleanup()
+            except Exception as e:
+                logging.error(e)
 
     def read(self):
         self.amount_read += 20

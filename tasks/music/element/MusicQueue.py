@@ -28,6 +28,8 @@ class MusicQueue:
         return self.list.pop(index)
     
     async def reset_all(self):
+        for music in self.list:
+            music.cleanup()
         self.list = []
         self.index = None
         self.at_beginning = True

@@ -79,9 +79,9 @@ class Player:
             'title': 'Not Playing',
             'description': 'Nothing is playing. Send a youtube link to add a song.'
         })
-        asyncio.run_coroutine_threadsafe(self.playlist.reset_all(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.playlist.reset_all(), self.client.loop)
         return self.connected_client.stop()
     
     def pause(self):
@@ -201,11 +201,16 @@ class Player:
             logging.warn('Player is not connected')
 
     def on_finished(self, error):
-        print('finished playing: ' + str(error))
-        try:
-            self.next()
-        except IndexError:
-            pass
+        if error:
+            logging.exception('error when finished playing: ',exc_info=error)
+            self.stop()
+        else:
+            logging.info('finished playing')
+            try:
+                # TODO change race condiiton for main look to check if on_finished exec because of disconnect or next song
+                self.next()
+            except IndexError:
+                pass
 
     def on_read(self, ms):
         # if ms % 7000 == 0:
@@ -221,7 +226,7 @@ class Player:
                 # database = self.cache.find_ytid(link[-11:])
                 
                 database = False
-                
+
                 if database:
                     print('FOUND IN DATABASE')
                 else:
