@@ -76,8 +76,10 @@ class MusicSource(AudioSource):
         custom_options = {'options': '-vn'}
         if self.amount_read > 0:
             if self.file_path:
+                self.amount_read = 0
                 self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.file_path, **custom_options)
             else:
+                self.amount_read = 0
                 self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.info['formats'][0]['url'], **custom_options)
 
     def resolve(self, cache=True):

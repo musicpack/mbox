@@ -1,3 +1,4 @@
+from discord.channel import VoiceChannel
 from discord.player import AudioSource
 import youtube_dlc
 import discord
@@ -12,6 +13,7 @@ from tasks.music.element.MusicSource import MusicSource
 from tasks.music.element.MusicQueue import MusicQueue
 from tasks.music.element.cache import Cache
 from tasks.constants import *
+from datetime import timedelta
 
 class Player:
     def __init__(self, voice_channels, ffmpeg_path, messenger: Messenger) -> None:
@@ -43,6 +45,9 @@ class Player:
         self.display = False
         self.playlist = None
         self.volume = 1.0
+        self.last_voice_channel = None
+
+        # self.footer = [] #TODO setup adaptive footer
     
     async def setup(self):
         self.ChatEmbed = self.messenger.gui['player']
@@ -83,8 +88,13 @@ class Player:
     def resume(self):
         return self.connected_client.resume()
     
-    async def play(self, audio: MusicSource):
-        await self.connect(self.voice_channels[0])
+    async def play(self, audio: MusicSource, channel: discord.VoiceChannel = None):
+        if channel:
+            await self.connect(channel)
+        elif self.last_voice_channel:
+            await self.connect(self.last_voice_channel)
+        else:
+            await self.connect(self.voice_channels[0])
         await self.connected_client.play(source = audio, after=self.on_finished)
     
     def last(self) -> MusicSource:
@@ -166,16 +176,18 @@ class Player:
                 # client has not queued anything and tried to press play
                 pass
 
-    async def connect(self, channel):
+    async def connect(self, channel: VoiceChannel):
         if self.connected_client:
             if self.connected_client.is_connected():
                 logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
                 return
         self.connected_client = await channel.connect()
+        self.last_voice_channel = channel
         self.volume = 1.0
 
     async def disconnect(self):
         if self.connected_client.is_connected():
+            self.last_voice_channel = self.connected_client.channel
             await self.connected_client.disconnect()
         else:
             logging.warn('Player is not connected')
@@ -188,6 +200,10 @@ class Player:
             pass
 
     def on_read(self, ms):
+        # if ms % 7000 == 0:
+        #     delta = timedelta(milliseconds=ms)
+        #     self.ChatEmbed.embed.set_footer(text=str(delta))
+        #     asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.ChatEmbed.update)(), self.connected_client.loop)
         pass
 
     async def play_youtube(self, link):

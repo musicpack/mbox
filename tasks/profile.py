@@ -4,7 +4,7 @@ import discord
 from tasks.commander.messenger import Messenger
 
 class Profile:
-    def __init__(self, guild, client, command_channel = None) -> None:
+    def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
         self.guild = guild
         self.valid_channels = command_channel
         self.ready = False
