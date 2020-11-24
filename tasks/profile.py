@@ -38,6 +38,8 @@ class Profile:
                 self.valid_channels = music_box
                 self.messenger.command_channel = music_box
                 await self.messenger.setup()
+                await self.player.setup()
+                await self.reporter.setup()
         
             await self.messenger.notify_action_required(err_msg, action_failed, action_success, act_msg)
         
@@ -66,5 +68,7 @@ class Profile:
                 self.valid_channels = music_box
                 self.messenger.command_channel = music_box
                 await self.messenger.setup()
+                await self.player.setup()
+                await self.reporter.setup()
 
             await self.messenger.notify_action_required(err_msg, action_failed, action_success, act_msg)
