@@ -5,8 +5,8 @@ import logging
 import tasks.preinitialization
 import tasks.parser
 import tasks.profile
+from tasks.constants import *
 
-discord_token = os.environ.get('DiscordToken_mbox')
 mbox = discord.Client()
 
 logging_level = logging.INFO
@@ -96,4 +96,4 @@ async def on_voice_state_update(member, before, after):
                 if profile.guild == member.guild:
                     profile.player.stop()
 
-mbox.run(discord_token)
+mbox.run(TOKEN)

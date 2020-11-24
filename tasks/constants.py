@@ -8,3 +8,4 @@ MAX_CACHESIZE = 0 # in bytes, default 10 MB
 MAX_FILESIZE = 100000000 # in bytes, default 100 MB
 
 FFMPEG_PATH ='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe'
+TOKEN = os.environ.get('DiscordToken_mbox')

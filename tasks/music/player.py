@@ -235,7 +235,7 @@ class Player:
                         video_info = ydl.extract_info(link, download=False)
                         source = video_info['formats'][0]['url']
 
-                        raw_audio_source: AudioSource = discord.FFmpegPCMAudio(executable=self.ffmpeg_path, source=source, **self.FFMPEG_OPTIONS)
+                        raw_audio_source: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
                         audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume)
                         self.playlist.add(audio)
 

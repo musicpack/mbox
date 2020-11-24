@@ -3,13 +3,14 @@ import discord
 from tasks.music.player import Player
 from tasks.commander.messenger import Messenger
 from tasks.reporter import Reporter
+from tasks.constants import *
 
 class Profile:
     def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
         self.guild = guild
         self.valid_channels = command_channel
         self.messenger: Messenger = Messenger(guild.text_channels[0], client, self.valid_channels)
-        self.player = Player(guild.voice_channels, ffmpeg_path='C:/Users/bliao/Desktop/mbox/ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/bin/ffmpeg.exe', messenger=self.messenger)
+        self.player = Player(guild.voice_channels, ffmpeg_path=FFMPEG_PATH, messenger=self.messenger)
         self.reporter = Reporter(profile = self, messenger=self.messenger)
 
     async def setup(self):
