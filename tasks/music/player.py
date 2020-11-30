@@ -1,6 +1,6 @@
 from discord.channel import VoiceChannel
 from discord.player import AudioSource
-import youtube_dlc
+import youtube_dl
 import discord
 import logging
 import asyncio
@@ -231,7 +231,7 @@ class Player:
                     print('FOUND IN DATABASE')
                 else:
                     # if not grab info to add for streaming queue
-                    with youtube_dlc.YoutubeDL(self.ydl_opts) as ydl:
+                    with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
                         video_info = ydl.extract_info(link, download=False)
                         source = video_info['formats'][0]['url']
 
