@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ![image](images/install1.png)
 The name you choose will be the bot's name. (recommended to name 'Music Box')
 ![image](images/install2.png)
-(1.) Click on Bot tab and (2.) click on copy button under token
+Click on your application and then (1.) click on Bot tab and (2.) click on copy button under token
 8. Navigate to tasks/constants.py and change variable TOKEN to the copied value.
 
 ## Usage
@@ -30,7 +30,8 @@ python main.py
 ```bash
 python main.py debug
 ```
-
+![image](images/install3.png)
+After running successfully, get the url to add the bot to your server by (1.) clicking OAuth2 tab on your [discord developer](https://discord.com/developers/applications/) application page (2.) checking bot and (3.) copying the url and opening it!
 ## Issues
 
 * Buttons (reactions) pressed events dont get triggered after 3 days (wait_for event expired)
