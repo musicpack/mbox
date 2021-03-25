@@ -1,5 +1,11 @@
-# mbox
+# Music Box
 Music Box is a discord streaming bot designed to use no commands.
+
+**Features:**
+
+Playing back from Youtube links, livestreams
+Searching Youtube from the bot
+
 ![image](images/example.png)
 ## Installation
 1. Install Python 3.7 or greater from https://www.python.org/
