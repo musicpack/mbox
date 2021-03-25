@@ -2,8 +2,8 @@ import logging
 import re
 import discord
 from typing import List
-from tasks.music.player import Player
-from tasks.profile import Profile
+from src.music.player import Player
+from src.profile import Profile
 from youtube_search import YoutubeSearch
 
 async def message(message: discord.Message, profile: Profile):

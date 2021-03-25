@@ -2,9 +2,9 @@ import asyncio
 import discord
 import logging
 from typing import List
-from tasks.music.element.MusicSource import MusicSource
-from tasks.commander.element.ChatEmbed import ChatEmbed
-from tasks.commander.element.Button import Button
+from src.music.element.MusicSource import MusicSource
+from src.commander.element.ChatEmbed import ChatEmbed
+from src.commander.element.Button import Button
 class MusicQueue:
     def __init__(self, active_embed: ChatEmbed, client: discord.Client, list: List[MusicSource] = []) -> None:
         self.list = list

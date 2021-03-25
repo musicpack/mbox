@@ -2,10 +2,10 @@ from typing import List, Union
 import discord
 import os, sys
 import logging
-import tasks.preinitialization
-import tasks.parser
-import tasks.profile
-from tasks.constants import *
+import src.preinitialization
+import src.parser
+import src.profile
+from src.constants import *
 
 mbox = discord.Client()
 
@@ -24,12 +24,12 @@ logging.basicConfig(
 )
 
 watching_channels = []
-profiles: List[tasks.profile.Profile] = []
+profiles: List[src.profile.Profile] = []
 
 @mbox.event
 async def on_ready():
     logging.info('Logged on as {0.user}'.format(mbox))
-    await tasks.preinitialization.generate_profiles(mbox.guilds, mbox, profiles)
+    await src.preinitialization.generate_profiles(mbox.guilds, mbox, profiles)
     for profile in profiles:
         await profile.setup()
 
@@ -41,7 +41,7 @@ async def on_typing(channel, user, when):
 async def on_guild_join(guild):
     logging.info('Joined Server: {0.name}'.format(guild))
     await guild.text_channels[0].send('Thanks for adding Music Bot!')
-    await tasks.preinitialization.generate_profile(guild, mbox, profiles)
+    await src.preinitialization.generate_profile(guild, mbox, profiles)
     for profile in profiles:
         await profile.setup()
     print(len(profiles))
@@ -79,7 +79,7 @@ async def on_message(message):
             break
         if profile.messenger.command_channel == message.channel:
             await message.delete()
-            await tasks.parser.message(message, profile)
+            await src.parser.message(message, profile)
             break
 
 @mbox.event

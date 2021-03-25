@@ -1,6 +1,6 @@
 import logging
-import tasks.commander.messenger
-import tasks.profile
+import src.commander.messenger
+import src.profile
 
 def valid_channels(guild):
     verified_channels = 0
@@ -17,13 +17,13 @@ async def generate_profiles(guilds, client, profiles = []):
     for server in guilds:
         hashed_channels = valid_channels(server)
         if len(hashed_channels) == 1:
-            server_profile = tasks.profile.Profile(server, client, hashed_channels[0])
+            server_profile = src.profile.Profile(server, client, hashed_channels[0])
             profiles.append(server_profile)
         elif len(hashed_channels) > 1:
-            server_profile = tasks.profile.Profile(server, client, hashed_channels)
+            server_profile = src.profile.Profile(server, client, hashed_channels)
             profiles.append(server_profile)
         else:
-            server_profile = tasks.profile.Profile(server, client)
+            server_profile = src.profile.Profile(server, client)
             profiles.append(server_profile)
     return True
 

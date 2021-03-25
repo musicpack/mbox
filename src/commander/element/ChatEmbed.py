@@ -1,7 +1,7 @@
 from __future__ import annotations
 import discord
 from typing import List
-from tasks.commander.element.Button import Button
+from src.commander.element.Button import Button
 
 class ChatEmbed:
     def __init__(self, name, embed_dict, text_channel, actions: List[Button] = None) -> None:

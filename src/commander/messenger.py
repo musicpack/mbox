@@ -3,9 +3,9 @@ import asyncio
 import discord
 from typing import List, Dict
 import logging
-from tasks.commander.element.ChatEmbed import ChatEmbed
-from tasks.commander.element.Button import Button
-from tasks.constants import *
+from src.commander.element.ChatEmbed import ChatEmbed
+from src.commander.element.Button import Button
+from src.constants import *
 
 class Messenger:
     def __init__(self, default_channel, client, command_channel: discord.TextChannel = None) -> None:

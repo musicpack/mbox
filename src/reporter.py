@@ -1,5 +1,5 @@
-from tasks.commander.messenger import Messenger
-from tasks.commander.element.Button import Button
+from src.commander.messenger import Messenger
+from src.commander.element.Button import Button
 
 class Reporter:
     def __init__(self, profile,  messenger: Messenger) -> None:

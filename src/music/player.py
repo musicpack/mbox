@@ -6,13 +6,13 @@ import logging
 import asyncio
 import os
 import threading
-from tasks.commander.messenger import Messenger
-from tasks.commander.element.Button import Button
-from tasks.commander.element.ChatEmbed import ChatEmbed
-from tasks.music.element.MusicSource import MusicSource
-from tasks.music.element.MusicQueue import MusicQueue
-from tasks.music.element.cache import Cache
-from tasks.constants import *
+from src.commander.messenger import Messenger
+from src.commander.element.Button import Button
+from src.commander.element.ChatEmbed import ChatEmbed
+from src.music.element.MusicSource import MusicSource
+from src.music.element.MusicQueue import MusicQueue
+from src.music.element.cache import Cache
+from src.constants import *
 from datetime import timedelta
 
 class Player:

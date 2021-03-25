@@ -1,9 +1,9 @@
 import logging
 import discord
-from tasks.music.player import Player
-from tasks.commander.messenger import Messenger
-from tasks.reporter import Reporter
-from tasks.constants import *
+from src.music.player import Player
+from src.commander.messenger import Messenger
+from src.reporter import Reporter
+from src.constants import *
 
 class Profile:
     def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
