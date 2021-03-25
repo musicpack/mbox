@@ -15,6 +15,10 @@ class Profile:
 
     async def setup(self):
         if type(self.valid_channels) == discord.TextChannel:
+            # Update topic if out of date or malformed
+            expected_topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(self.valid_channels))
+            if self.valid_channels.topic != expected_topic: await self.valid_channels.edit(topic = expected_topic) 
+
             # Setup all nessasary runtime objects here
             await self.messenger.setup()
             await self.player.setup()
