@@ -32,7 +32,7 @@ class Profile:
 
             async def action_success(text_channel):
                 music_box = await self.guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.valid_channels = music_box
@@ -62,7 +62,7 @@ class Profile:
                     await channel.edit(topic='')
                 
                 music_box = await self.guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.valid_channels = music_box

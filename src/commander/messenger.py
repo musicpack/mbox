@@ -72,7 +72,7 @@ class Messenger:
                 await self.command_channel.delete()
 
                 music_box = await guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.command_channel = music_box
