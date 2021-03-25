@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
 import discord
+from datetime import datetime
 from typing import List, Dict
 import logging
 from src.commander.element.ChatEmbed import ChatEmbed
@@ -67,6 +68,8 @@ class Messenger:
         message: discord.Message
         async for message in self.command_channel.history(limit=101):
             counter += 1
+            if (datetime.today() - message.created_at).days > 14:
+                counter += 100
             if counter > 100:
                 guild = self.command_channel.guild
                 await self.command_channel.delete()
