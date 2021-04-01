@@ -77,7 +77,7 @@ class Player:
     def stop(self):
         self.messenger.gui['player'].embed = discord.Embed.from_dict({
             'title': 'Not Playing',
-            'description': 'Nothing is playing. Send a youtube link to add a song.'
+            'description': 'Nothing is playing. ' + USAGE_TEXT
         })
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)

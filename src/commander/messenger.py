@@ -25,23 +25,19 @@ class Messenger:
         self.gui: Dict[str, ChatEmbed] = {
             'reporter' : ChatEmbed('lyrics', {
                 'title': 'Music Box ' + VERSION,
-                'description': """Early Access, please report any bugs!
+                'description': """
                 **Please mute this channel to avoid notification spam!**
-
-                *Send a youtube link in this channel to start playing a song!*
-
-                **Help**
-                > 🔄: Refresh the chat (if your client shows a phantom message)
-                > 🟥: Stops the bot for every server. **(USE SPARINGLY)**
+                """ + USAGE_TEXT + """
+                *Early Access, please report any bugs!*
                 """
             }, self.command_channel),
             'queue' : ChatEmbed('queue', {
                 'title': 'Queue',
-                'description': 'Nothing is in your queue. Send a link to add a song.'
+                'description': 'Nothing is in your queue. ' + USAGE_TEXT
             }, self.command_channel),
             'player' : ChatEmbed('player', {
                 'title': 'Player',
-                'description': 'Nothing is playing. Send a link to add a song.'
+                'description': 'Nothing is playing. ' + USAGE_TEXT
             }, self.command_channel)
         }
     

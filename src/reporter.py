@@ -8,8 +8,8 @@ class Reporter:
         self.profile = profile
 
         self.buttons = {
-            'refresh': Button(emoji='🔄', client = self.client, action=self.refresh),
-            'logout': Button(emoji='🟥', client = self.client, action=self.logout)
+            # 'refresh': Button(emoji='🔄', client = self.client, action=self.refresh),
+            # 'logout': Button(emoji='🟥', client = self.client, action=self.logout)
         }
         
         self.ChatEmbed = None
