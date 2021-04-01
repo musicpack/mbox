@@ -77,6 +77,11 @@ async def on_message(message):
             await message.delete()
             await profile.messenger.gui['lyrics'].actions[0].remove_all()
             break
+        if message.content == 'play':
+            logging.info('Received play from {0.name}'.format(message.author))
+            await message.delete()
+            await src.parser.play_ytid('SIuF37EWaLU', message, profile)
+            break
         if profile.messenger.command_channel == message.channel:
             await message.delete()
             await src.parser.message(message, profile)

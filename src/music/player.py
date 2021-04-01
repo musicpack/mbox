@@ -248,7 +248,7 @@ class Player:
                         
                         # Determine if video is cacheable
                         if not video_info['is_live']:
-                            if video_info['filesize'] <= MAX_CACHESIZE:
+                            if video_info['filesize'] <= MAX_CACHESIZE: # TODO add handling when video_info['filesize'] is not found/supported
                                 threading.Thread(target=lambda: audio.resolve(cache=True)).start()
 
                             else:
