@@ -190,6 +190,8 @@ class Player:
                 logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
                 return
         self.connected_client = await channel.connect()
+        await self.messenger.register_all()
+        # await self.ChatEmbed.update(update_buttons=True)
         self.last_voice_channel = channel
         self.volume = 1.0
 
@@ -198,7 +200,9 @@ class Player:
             self.last_voice_channel = self.connected_client.channel
             await self.connected_client.disconnect()
         else:
-            logging.warn('Player is not connected')
+            logging.warn('Player is not connected. Was it disconnected forcefully?')
+        # await self.ChatEmbed.remove_buttons()
+        await self.messenger.unregister_all()
 
     def on_finished(self, error):
         if error:
@@ -259,6 +263,7 @@ class Player:
                                 if(self.playlist.current().info == info):
                                     self.ChatEmbed.embed.set_footer(text= 'Source: Youtube (file)', icon_url=YOUTUBE_ICON)
                                     asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.connected_client.loop)
+                                    # TODO Remove all buttons
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
@@ -285,7 +290,7 @@ class Player:
         if footer: self.ChatEmbed.embed.set_footer(text= footer)
         if footer_thumbnail: self.ChatEmbed.embed.set_footer(icon_url=footer_thumbnail)
 
-        await self.ChatEmbed.update()
+        # await self.ChatEmbed.update()
 
     async def play_audio(self, audio: AudioSource):
         if self.connected_client.is_connected():
@@ -306,4 +311,4 @@ class Player:
         
         if footer:
             self.ChatEmbed.embed.set_footer(text= footer, icon_url=YOUTUBE_ICON)
-        await self.ChatEmbed.update()
+        # await self.ChatEmbed.update()

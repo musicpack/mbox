@@ -20,7 +20,7 @@ class ChatEmbed:
         print('dict set')
         self._dict[key] = value
 
-    async def send(self, content=None, *, tts=False, file=None, files=None, delete_after=None, nonce=None, allowed_mentions=None):
+    async def send(self, register_buttons = True, content=None, *, tts=False, file=None, files=None, delete_after=None, nonce=None, allowed_mentions=None):
         options = {
             'tts':tts,
             'embed':self.embed,
@@ -31,18 +31,20 @@ class ChatEmbed:
             'allowed_mentions':allowed_mentions
         }
         self.message = await self.text_channel.send(content, **options)
-        if self.actions:
-            for button in self.actions:
-                await button.register(self.message)
+        if register_buttons:
+            if self.actions:
+                for button in self.actions:
+                    await button.register(self.message)
         return self.message
 
-    async def update(self):
+    async def update(self, update_buttons = False):
         await self.message.edit(suppress= False, embed=self.embed)
         # await self.remove_buttons()
         # await self.register_buttons()
-        for button in self.actions:
-            if not button.is_registered(self.message):
-                await button.register(self.message)
+        if update_buttons:
+            for button in self.actions:
+                if not button.is_registered(self.message):
+                    await button.register(self.message)
         return self.message
 
     async def remove_buttons(self):

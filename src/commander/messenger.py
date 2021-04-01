@@ -19,7 +19,7 @@ class Messenger:
     async def setup(self):
         self.set_gui()
         await self.clean_chat()
-        await self.send_gui()
+        await self.send_gui(register_buttons=False)
     
     def set_gui(self) -> None:
         self.gui: Dict[str, ChatEmbed] = {
@@ -53,13 +53,19 @@ class Messenger:
                     return True
         return False
     
+    async def register_all(self):
+        chat_embed: ChatEmbed
+        button: Button
+        for chat_embed in self.gui.values():
+            await chat_embed.register_buttons()
+
     async def unregister_all(self):
         chat_embed: ChatEmbed
         button: Button
         for chat_embed in self.gui.values():
             if chat_embed.actions:
                 for button in chat_embed.actions:
-                    await button.remove_all(remove_reaction = False)
+                    await button.remove_all()
 
     async def clean_chat(self):
         await self.unregister_all()
@@ -106,7 +112,7 @@ class Messenger:
             await message_warning.edit(content=err_str+'\n' + '**' + act_msg + '**')
             await action_sucesss(text_channel)
 
-    async def send_gui(self):
+    async def send_gui(self, register_buttons = True):
         if self.command_channel:
             for chat_embed in self.gui.values():
-                await chat_embed.send()
+                await chat_embed.send(register_buttons=register_buttons)

@@ -75,7 +75,8 @@ async def on_message(message):
         if message.content == 'rem':
             logging.info('Received rem from {0.name}'.format(message.author))
             await message.delete()
-            await profile.messenger.gui['player'].actions[0].remove_all()
+            for action in profile.messenger.gui['player'].actions:
+                await action.remove_all()
             break
         if message.content == 'play':
             logging.info('Received play from {0.name}'.format(message.author))
