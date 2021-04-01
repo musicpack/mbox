@@ -193,7 +193,7 @@ class Player:
         await self.messenger.register_all()
         # await self.ChatEmbed.update(update_buttons=True)
         self.last_voice_channel = channel
-        self.volume = 1.0
+        # self.volume = 1.0
 
     async def disconnect(self):
         if self.connected_client.is_connected():
