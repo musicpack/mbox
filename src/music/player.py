@@ -263,7 +263,6 @@ class Player:
                                 if(self.playlist.current().info == info):
                                     self.ChatEmbed.embed.set_footer(text= 'Source: Youtube (file)', icon_url=YOUTUBE_ICON)
                                     asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.connected_client.loop)
-                                    # TODO Remove all buttons
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
@@ -290,7 +289,7 @@ class Player:
         if footer: self.ChatEmbed.embed.set_footer(text= footer)
         if footer_thumbnail: self.ChatEmbed.embed.set_footer(icon_url=footer_thumbnail)
 
-        # await self.ChatEmbed.update()
+        await self.ChatEmbed.update()
 
     async def play_audio(self, audio: AudioSource):
         if self.connected_client.is_connected():
@@ -311,4 +310,4 @@ class Player:
         
         if footer:
             self.ChatEmbed.embed.set_footer(text= footer, icon_url=YOUTUBE_ICON)
-        # await self.ChatEmbed.update()
+        await self.ChatEmbed.update()
