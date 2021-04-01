@@ -1,11 +1,12 @@
 from __future__ import annotations
 import asyncio
 import discord
+from datetime import datetime
 from typing import List, Dict
 import logging
-from tasks.commander.element.ChatEmbed import ChatEmbed
-from tasks.commander.element.Button import Button
-from tasks.constants import *
+from src.commander.element.ChatEmbed import ChatEmbed
+from src.commander.element.Button import Button
+from src.constants import *
 
 class Messenger:
     def __init__(self, default_channel, client, command_channel: discord.TextChannel = None) -> None:
@@ -18,29 +19,25 @@ class Messenger:
     async def setup(self):
         self.set_gui()
         await self.clean_chat()
-        await self.send_gui()
+        await self.send_gui(register_buttons=False)
     
     def set_gui(self) -> None:
         self.gui: Dict[str, ChatEmbed] = {
             'reporter' : ChatEmbed('lyrics', {
                 'title': 'Music Box ' + VERSION,
-                'description': """Early Access, please report any bugs!
+                'description': """
                 **Please mute this channel to avoid notification spam!**
-
-                *Send a youtube link in this channel to start playing a song!*
-
-                **Help**
-                > 🔄: Refresh the chat (if your client shows a phantom message)
-                > 🟥: Stops the bot for every server. **(USE SPARINGLY)**
+                """ + USAGE_TEXT + """
+                *Early Access, please report any bugs!*
                 """
             }, self.command_channel),
             'queue' : ChatEmbed('queue', {
                 'title': 'Queue',
-                'description': 'Nothing is in your queue. Send a link to add a song.'
+                'description': 'Nothing is in your queue. ' + USAGE_TEXT
             }, self.command_channel),
             'player' : ChatEmbed('player', {
                 'title': 'Player',
-                'description': 'Nothing is playing. Send a link to add a song.'
+                'description': 'Nothing is playing. ' + USAGE_TEXT
             }, self.command_channel)
         }
     
@@ -52,13 +49,19 @@ class Messenger:
                     return True
         return False
     
+    async def register_all(self):
+        chat_embed: ChatEmbed
+        button: Button
+        for chat_embed in self.gui.values():
+            await chat_embed.register_buttons()
+
     async def unregister_all(self):
         chat_embed: ChatEmbed
         button: Button
         for chat_embed in self.gui.values():
             if chat_embed.actions:
                 for button in chat_embed.actions:
-                    await button.remove_all(remove_reaction = False)
+                    await button.remove_all()
 
     async def clean_chat(self):
         await self.unregister_all()
@@ -67,12 +70,14 @@ class Messenger:
         message: discord.Message
         async for message in self.command_channel.history(limit=101):
             counter += 1
+            if (datetime.today() - message.created_at).days > 14:
+                counter += 100
             if counter > 100:
                 guild = self.command_channel.guild
                 await self.command_channel.delete()
 
                 music_box = await guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.command_channel = music_box
@@ -103,7 +108,7 @@ class Messenger:
             await message_warning.edit(content=err_str+'\n' + '**' + act_msg + '**')
             await action_sucesss(text_channel)
 
-    async def send_gui(self):
+    async def send_gui(self, register_buttons = True):
         if self.command_channel:
             for chat_embed in self.gui.values():
-                await chat_embed.send()
+                await chat_embed.send(register_buttons=register_buttons)

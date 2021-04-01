@@ -6,13 +6,13 @@ import logging
 import asyncio
 import os
 import threading
-from tasks.commander.messenger import Messenger
-from tasks.commander.element.Button import Button
-from tasks.commander.element.ChatEmbed import ChatEmbed
-from tasks.music.element.MusicSource import MusicSource
-from tasks.music.element.MusicQueue import MusicQueue
-from tasks.music.element.cache import Cache
-from tasks.constants import *
+from src.commander.messenger import Messenger
+from src.commander.element.Button import Button
+from src.commander.element.ChatEmbed import ChatEmbed
+from src.music.element.MusicSource import MusicSource
+from src.music.element.MusicQueue import MusicQueue
+from src.music.element.cache import Cache
+from src.constants import *
 from datetime import timedelta
 
 class Player:
@@ -77,7 +77,7 @@ class Player:
     def stop(self):
         self.messenger.gui['player'].embed = discord.Embed.from_dict({
             'title': 'Not Playing',
-            'description': 'Nothing is playing. Send a youtube link to add a song.'
+            'description': 'Nothing is playing. ' + USAGE_TEXT
         })
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
         asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)
@@ -190,15 +190,19 @@ class Player:
                 logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
                 return
         self.connected_client = await channel.connect()
+        await self.messenger.register_all()
+        # await self.ChatEmbed.update(update_buttons=True)
         self.last_voice_channel = channel
-        self.volume = 1.0
+        # self.volume = 1.0
 
     async def disconnect(self):
         if self.connected_client.is_connected():
             self.last_voice_channel = self.connected_client.channel
             await self.connected_client.disconnect()
         else:
-            logging.warn('Player is not connected')
+            logging.warn('Player is not connected. Was it disconnected forcefully?')
+        # await self.ChatEmbed.remove_buttons()
+        await self.messenger.unregister_all()
 
     def on_finished(self, error):
         if error:
@@ -248,11 +252,12 @@ class Player:
                         
                         # Determine if video is cacheable
                         if not video_info['is_live']:
-                            if video_info['filesize'] <= MAX_CACHESIZE:
-                                threading.Thread(target=lambda: audio.resolve(cache=True)).start()
+                            if video_info['filesize']: # TODO add handling when video_info['filesize'] is not found/supported
+                                if video_info['filesize'] <= MAX_CACHESIZE: 
+                                    threading.Thread(target=lambda: audio.resolve(cache=True)).start()
 
-                            else:
-                                threading.Thread(target=lambda: audio.resolve(cache=False)).start()
+                                else:
+                                    threading.Thread(target=lambda: audio.resolve(cache=False)).start()
 
                             @audio.event
                             def on_resolve(info, path):

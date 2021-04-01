@@ -4,9 +4,9 @@ from discord import ClientException
 import audioop
 import os
 import youtube_dl
-from tasks.constants import *
+from src.constants import *
 import discord
-from tasks.music.element.cache import Cache
+from src.music.element.cache import Cache
 
 class MusicSource(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.

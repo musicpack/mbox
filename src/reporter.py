@@ -1,5 +1,5 @@
-from tasks.commander.messenger import Messenger
-from tasks.commander.element.Button import Button
+from src.commander.messenger import Messenger
+from src.commander.element.Button import Button
 
 class Reporter:
     def __init__(self, profile,  messenger: Messenger) -> None:
@@ -8,8 +8,8 @@ class Reporter:
         self.profile = profile
 
         self.buttons = {
-            'refresh': Button(emoji='🔄', client = self.client, action=self.refresh),
-            'logout': Button(emoji='🟥', client = self.client, action=self.logout)
+            # 'refresh': Button(emoji='🔄', client = self.client, action=self.refresh),
+            # 'logout': Button(emoji='🟥', client = self.client, action=self.logout)
         }
         
         self.ChatEmbed = None

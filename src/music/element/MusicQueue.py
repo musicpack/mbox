@@ -2,9 +2,10 @@ import asyncio
 import discord
 import logging
 from typing import List
-from tasks.music.element.MusicSource import MusicSource
-from tasks.commander.element.ChatEmbed import ChatEmbed
-from tasks.commander.element.Button import Button
+from src.music.element.MusicSource import MusicSource
+from src.commander.element.ChatEmbed import ChatEmbed
+from src.commander.element.Button import Button
+from src.constants import *
 class MusicQueue:
     def __init__(self, active_embed: ChatEmbed, client: discord.Client, list: List[MusicSource] = []) -> None:
         self.list = list
@@ -45,7 +46,7 @@ class MusicQueue:
     async def update_embed_from_queue(self) -> None:
         title = 'Queue Empty'
         if self.at_end or self.index == None or not self.list:
-            self.ChatEmbed.embed.description = 'No Song Playing'
+            self.ChatEmbed.embed.description = 'Your queue is empty. ' + USAGE_TEXT
             self.ChatEmbed.embed.title = title
             await self.ChatEmbed.update()
             return

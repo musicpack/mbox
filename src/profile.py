@@ -1,9 +1,9 @@
 import logging
 import discord
-from tasks.music.player import Player
-from tasks.commander.messenger import Messenger
-from tasks.reporter import Reporter
-from tasks.constants import *
+from src.music.player import Player
+from src.commander.messenger import Messenger
+from src.reporter import Reporter
+from src.constants import *
 
 class Profile:
     def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
@@ -15,6 +15,10 @@ class Profile:
 
     async def setup(self):
         if type(self.valid_channels) == discord.TextChannel:
+            # Update topic if out of date or malformed
+            expected_topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(self.valid_channels))
+            if self.valid_channels.topic != expected_topic: await self.valid_channels.edit(topic = expected_topic) 
+
             # Setup all nessasary runtime objects here
             await self.messenger.setup()
             await self.player.setup()
@@ -32,7 +36,7 @@ class Profile:
 
             async def action_success(text_channel):
                 music_box = await self.guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.valid_channels = music_box
@@ -62,7 +66,7 @@ class Profile:
                     await channel.edit(topic='')
                 
                 music_box = await self.guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version 0.1 ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.valid_channels = music_box
