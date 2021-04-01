@@ -30,7 +30,7 @@ async def play_ytid(id, message: discord.Message, profile: Profile):
         await profile.player.connect(channel)
     await profile.player.play_youtube(normalized_url)
 
-def determine_voice_channel(voice_channels: List[discord.VoiceChannel], *, message: discord.Message = None, profile: Profile= None, player: Player = None) -> discord.VoiceChannel:
+def determine_voice_channel(voice_channels: List[discord.VoiceChannel], *, message: discord.Message = None, profile: Profile= None) -> discord.VoiceChannel:
     """Tries to determine the voice channel given context. Pass as much arguments possible for the best result.
 
     Args:
@@ -44,16 +44,16 @@ def determine_voice_channel(voice_channels: List[discord.VoiceChannel], *, messa
         None: No suitable voice channel (player is already connected, no suitable voice_channels were given)
     """
     last_connected_channel = None
-    if player:
-        if(player.connected_client):
-            if player.connected_client.is_connected():
+    if profile.player:
+        if(profile.player.connected_client):
+            if profile.player.connected_client.is_connected():
                 return None
-        last_connected_channel = player.last_voice_channel
+        last_connected_channel = profile.player.last_voice_channel
                 
     if message:
         voice_channel : discord.VoiceChannel
         for voice_channel in message.guild.voice_channels:
-            if message.author in voice_channel.members:
+            if message.author.id in voice_channel.voice_states.keys():
                 return voice_channel
     
     if last_connected_channel:
