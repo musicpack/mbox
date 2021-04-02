@@ -190,7 +190,7 @@ class Player:
                 logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
                 return
         self.connected_client = await channel.connect()
-        await self.messenger.register_all()
+        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.register_all)(), self.client.loop)
         # await self.ChatEmbed.update(update_buttons=True)
         self.last_voice_channel = channel
         # self.volume = 1.0
@@ -202,7 +202,7 @@ class Player:
         else:
             logging.warn('Player is not connected. Was it disconnected forcefully?')
         # await self.ChatEmbed.remove_buttons()
-        await self.messenger.unregister_all()
+        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.unregister_all)(), self.client.loop)
 
     def on_finished(self, error):
         if error:
