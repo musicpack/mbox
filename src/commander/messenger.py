@@ -29,6 +29,7 @@ class Messenger:
                 **Please mute this channel to avoid notification spam!**
                 """ + USAGE_TEXT + """
                 *Early Access, please report any bugs!*
+                [Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)
                 """
             }, self.command_channel),
             'queue' : ChatEmbed('queue', {
