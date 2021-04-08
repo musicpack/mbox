@@ -42,6 +42,7 @@ class Messenger:
         }
     
     def is_gui(self, message: discord.Message) -> bool:
+        """Determine if a message that has been sent already matches a ChatEmbed"""
         if len(message.embeds) == 1:
             for key in self.gui:
                 if(self.gui[key].embed.title == message.embeds[0].title):
@@ -50,12 +51,13 @@ class Messenger:
         return False
     
     async def register_all(self):
+        """Sends all reactions to the message and watches for additional reactions"""
         chat_embed: ChatEmbed
-        button: Button
         for chat_embed in self.gui.values():
             await chat_embed.register_buttons()
 
     async def unregister_all(self):
+        """Remove all reactions to the message and unregisters all watch events"""
         chat_embed: ChatEmbed
         button: Button
         for chat_embed in self.gui.values():
@@ -64,6 +66,10 @@ class Messenger:
                     await button.remove_all()
 
     async def clean_chat(self):
+        """
+        Removes all messages in the command channel to prepare for sending a gui.
+        If messages cannot be deleted, the channel will be deleted and replaced.
+        """
         await self.unregister_all()
         counter = 0
         deleted_messages: List[discord.Message]= []
@@ -90,6 +96,7 @@ class Messenger:
                     
     
     async def notify_action_required(self, err_msg, action_failed, action_sucesss, act_msg):
+        """Sends a message to the channel to confirm first time setup for creating a new channel."""
         text_channel = self.default_channel
         err_str = err_msg
         message_warning = await text_channel.send(err_str + '\n**Click on the toolbox below to auto finish setup!**')
@@ -109,6 +116,7 @@ class Messenger:
             await action_sucesss(text_channel)
 
     async def send_gui(self, register_buttons = True):
+        """Sends all GUIs in the messenger to the command channel"""
         if self.command_channel:
             for chat_embed in self.gui.values():
                 await chat_embed.send(register_buttons=register_buttons)

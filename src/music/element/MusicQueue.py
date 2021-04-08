@@ -7,6 +7,8 @@ from src.commander.element.ChatEmbed import ChatEmbed
 from src.commander.element.Button import Button
 from src.constants import *
 class MusicQueue:
+    """Reperesents a Queue GUI object. Handles which MusicSource to play next and displays in the GUI.
+    """
     def __init__(self, active_embed: ChatEmbed, client: discord.Client, list: List[MusicSource] = []) -> None:
         self.list = list
         self.index = None
@@ -27,9 +29,11 @@ class MusicQueue:
         await self.ChatEmbed.update()
 
     def remove_index(self, index: int):
+        """Removes a song from a list. Does not update ChatEmbed, call update_embed_from_queue() if needed."""
         return self.list.pop(index)
     
     async def reset_all(self):
+        """Removes all MusicSources from the queue"""
         for music in self.list:
             music.cleanup()
         self.list = []
@@ -40,10 +44,12 @@ class MusicQueue:
         await self.update_embed_from_queue()
     
     async def reset_next_playing(self):
+        """Removes all but the current queued song from the list"""
         self.list = self.list[:self.index+1]
         await self.update_embed_from_queue()
 
     async def update_embed_from_queue(self) -> None:
+        """Update the queue ChatEmbed based on state."""
         title = 'Queue Empty'
         if self.at_end or self.index == None or not self.list:
             self.ChatEmbed.embed.description = 'Your queue is empty. ' + USAGE_TEXT
@@ -74,11 +80,13 @@ class MusicQueue:
             await self.ChatEmbed.update()
 
     def add(self, music) -> None:
+        """Add a MusicSource to the music queue. Updates the ChatEmbed."""
         self.list.append(music)
         asyncio.create_task(asyncio.coroutine(self.update_embed_from_queue)())
 
     
     def current(self):
+        """Get the currently playing MusicSource"""
         if self.list:
             if self.index == None:
                 return None
@@ -87,6 +95,7 @@ class MusicQueue:
         return None
 
     def next(self) -> MusicSource:
+        """Get the next MusicSource and change the head to the next MusicSource. Updates the ChatEmbed."""
         if self.list:
             if self.at_beginning or self.index == None:
                 self.index = 0
@@ -105,6 +114,7 @@ class MusicQueue:
         raise IndexError('MusicQueue list empty')
 
     def prev(self):
+        """Get the previous MusicSource and changes the head to the previous MusicSource. Updates the ChatEmbed."""
         if self.list:
             if self.at_end:
                 self.at_end = False
@@ -131,4 +141,5 @@ class MusicQueue:
         return event
     
     def on_remove_all(self):
+        """Event function called when reset_all is called. Placeholder function to be overwritten."""
         pass
