@@ -1,6 +1,6 @@
 import os
 
-VERSION = '0.3'
+VERSION = '0.4'
 YOUTUBE_ICON = 'https://yt3.ggpht.com/a/AATXAJxHHP_h8bUovc1qC4c07sVXxVbp3gwDEg-iq8gbFQ=s100-c-k-c0xffffffff-no-rj-mo'
 DOWNLOAD_PATH = os.path.join('cache', 'youtube')
 TEMP_PATH = os.path.join('cache', 'temp')
