@@ -40,7 +40,6 @@ python main.py debug
 After running successfully, get the url to add the bot to your server by (1.) clicking OAuth2 tab on your [discord developer](https://discord.com/developers/applications/) application page (2.) checking bot and (3.) copying the url and opening it!
 ## Issues
 
-* Buttons (reactions) pressed events dont get triggered after 3 days (wait_for event expired)
 * youtube-dl should update automatically during the runtime of this program
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

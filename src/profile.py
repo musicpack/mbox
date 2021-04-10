@@ -6,6 +6,8 @@ from src.reporter import Reporter
 from src.constants import *
 
 class Profile:
+    """Base class function representing one server.
+    """
     def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
         self.guild = guild
         self.valid_channels = command_channel

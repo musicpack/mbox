@@ -58,6 +58,7 @@ class MusicSource(AudioSource):
         self._volume = max(value, 0.0)
 
     def cleanup(self):
+        """Calls the original cleanup function and removes the downloaded file if it is marked as a temporary file"""
         self.original.cleanup()
         if self.temp:
             try:
@@ -75,6 +76,7 @@ class MusicSource(AudioSource):
         return audioop.mul(ret, 2, min(self._volume, 2.0))
 
     def reset(self):
+        """Set the current audiosource back to 0:00"""
         custom_options = {'options': '-vn'}
         if self.amount_read > 0:
             if self.file_path:
@@ -85,6 +87,7 @@ class MusicSource(AudioSource):
                 self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.info['formats'][0]['url'], **custom_options)
 
     def resolve(self, cache=True):
+        """Downloads song and sets it as the audiosource"""
         custom_opts = {
             'format': 'bestaudio',
             'writesubtitles': True,
@@ -132,7 +135,9 @@ class MusicSource(AudioSource):
         return event
     
     def on_read(self, ms):
+        """A placeholder event function intended to be overwritten"""
         pass
 
     def on_resolve(self, info, path):
+        """A placeholder event function intended to be overwritten"""
         pass
