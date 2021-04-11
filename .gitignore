@@ -130,3 +130,4 @@ dmypy.json
 
 ffmpeg-2020-09-30-git-9d8f9b2e40-full_build/
 cache
+config.ini
