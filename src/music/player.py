@@ -8,7 +8,6 @@ import asyncio
 import os
 import threading
 
-from youtube_dl.utils import TV_PARENTAL_GUIDELINES
 from src.commander.messenger import Messenger
 from src.commander.element.Button import Button
 from src.commander.element.ChatEmbed import ChatEmbed
@@ -96,8 +95,8 @@ class Player:
             'description': 'Nothing is playing. ' + USAGE_TEXT
         })
         self.paused = True
-        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.disconnect)(), self.client.loop)
-        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.client.loop)
         asyncio.run_coroutine_threadsafe(self.playlist.reset_all(), self.client.loop)
         return self.connected_client.stop()
     
@@ -124,9 +123,9 @@ class Player:
         if music_source:
             music_source.reset()
             if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
             else:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
             
             if self.connected_client:
                 if self.connected_client.is_connected():
@@ -137,10 +136,10 @@ class Player:
                         self.connected_client.play(source = music_source, after=self.on_finished)
                         return music_source
                 else:
-                    asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
+                    asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
                     return music_source
             else:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
                 return music_source
         else:
             print('cant go back any further')
@@ -156,9 +155,9 @@ class Player:
             music_source.reset()
 
             if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
             else:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_ytdict)(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
                 
             
             if self.connected_client:
@@ -170,10 +169,10 @@ class Player:
                         self.connected_client.play(source = music_source, after=self.on_finished)
                         return music_source
                 else:
-                    asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
+                    asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
                     return music_source
             else:
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.play)(music_source), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
                 return music_source
         else:
             print('no music')
@@ -218,7 +217,7 @@ class Player:
                 return
         self.clear_footer()
         self.connected_client = await channel.connect()
-        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.register_all)(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.messenger.register_all(), self.client.loop)
         # await self.ChatEmbed.update(update_buttons=True)
         self.last_voice_channel = channel
         # self.volume = 1.0
@@ -230,7 +229,7 @@ class Player:
         else:
             logging.warn('Player is not connected. Was it disconnected forcefully?')
         # await self.ChatEmbed.remove_buttons()
-        asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.unregister_all)(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.messenger.unregister_all(), self.client.loop)
 
     def on_finished(self, error):
         if error:
@@ -249,7 +248,7 @@ class Player:
         self.timeline = timedelta(milliseconds=ms)
         if ms % 14000 == 0:
             self.update_footer_text()
-            asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.ChatEmbed.update)(), self.connected_client.loop)
+            asyncio.run_coroutine_threadsafe(self.ChatEmbed.update(), self.connected_client.loop)
         pass
 
     async def play_youtube(self, link):
@@ -293,7 +292,7 @@ class Player:
                             def on_resolve(info, path):
                                 if(self.playlist.current().info == info): # TODO: fix if client skips song/video before finished downloading, current() will be None
                                     self.add_to_footer(source= 'Source: Youtube (file)', icon_url=YOUTUBE_ICON)
-                                    asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.messenger.gui['player'].update)(), self.connected_client.loop)
+                                    asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
@@ -346,7 +345,7 @@ class Player:
     ########### FOOTER ############
 
     def add_to_footer(self, *, paused = None, icon_url=None, source = None, track=None, volume=None, timeline=None):
-        """Add info to footer and updates the footer in ChatEmbed. Does not update the ChatEmbed"""
+        """Add info to footer and updates the footer in ChatEmbed. Does not send the ChatEmbed."""
         if (paused): self.footer['paused'] = paused
         if (icon_url): self.footer['icon_url'] = icon_url
         if (source): self.footer['source'] = source
@@ -357,13 +356,13 @@ class Player:
         self.update_footer_text()
     
     def update_footer_text(self):
-        """Generates new text and updates the footer text in chatEmbed"""
+        """Generates new text and updates the footer text in chatEmbed. Generates paused, volume, timeline states."""
         footer_text = self.generate_footer_text()
 
         self.ChatEmbed.embed.set_footer(text= footer_text, icon_url=self.footer['icon_url'])
     
     def generate_footer_text(self):
-        """Generates footer text based on current infomation"""
+        """Generates footer text based on current infomation. Generates paused, volume, timeline states."""
         self.footer['paused'] = self.get_paused()
         self.footer['volume'] = self.get_volume()
         self.footer['timeline'] = self.get_timeline()
@@ -375,7 +374,7 @@ class Player:
         return ' | '.join(footer_list)
 
     def clear_footer(self):
-        """Clears the footer text internally and in the ChatEmbed. Does not update the ChatEmbed"""
+        """Clears the footer text internally and in the ChatEmbed. Does not send the ChatEmbed"""
         self.footer = {
             'icon_url': None,
             'paused': None,
