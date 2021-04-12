@@ -43,6 +43,9 @@ def determine_voice_channel(voice_channels: List[discord.VoiceChannel], *, messa
         discord.VoiceChannel: Determined voice channel
         None: No suitable voice channel (player is already connected, no suitable voice_channels were given)
     """
+    if profile.messenger.command_channel != message.channel:
+        raise Exception('Profiles do not match up with the message. You are cross matching between two different servers.')
+
     last_connected_channel = None
     if profile.player:
         if(profile.player.connected_client):
