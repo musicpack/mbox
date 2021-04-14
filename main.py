@@ -97,6 +97,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: Union[discord.Member
 
 @mbox.event
 async def on_voice_state_update(member, before, after):
+    # Makes sure the player stops playing the song if the bot was disconnected by force
     if member == mbox.user:
         if before.channel and after.channel == None:
             for profile in profiles:

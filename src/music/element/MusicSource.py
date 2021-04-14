@@ -62,6 +62,7 @@ class MusicSource(AudioSource):
         self.original.cleanup()
         if self.temp:
             try:
+                logging.debug('Removing temp file {0}'.format(self.file_path))
                 os.remove(self.file_path)
             except PermissionError:
                 logging.warn('Premission Error when removing {0}. Maybe the file is being used in other sessions?'.format(self.file_path))

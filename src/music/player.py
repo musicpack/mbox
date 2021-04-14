@@ -46,7 +46,7 @@ class Player:
         self.description = None
         self.display = False
         self.playlist = None
-        self.volume = 1.0
+        self.volume = 50
         self.last_voice_channel = None
         self.timeline = timedelta(seconds=0)
         self.paused = True
@@ -76,34 +76,42 @@ class Player:
     async def lower_volume(self):
         if self.connected_client:
             if self.connected_client.is_connected():
-                self.volume -= .16666666666
-                self.connected_client.source.volume = self.volume
-                self.add_to_footer(volume=self.get_volume())
-                await self.ChatEmbed.update()
+                if not self.volume <= 0:
+                    self.volume -= 10
+                    self.connected_client.source.volume = self.volume/100
+                    self.add_to_footer(volume=self.get_volume())
+                    await self.ChatEmbed.update()
 
     async def raise_volume(self):
         if self.connected_client:
             if self.connected_client.is_connected():
-                self.volume += .16666666666
-                self.connected_client.source.volume = self.volume
-                self.add_to_footer(volume=self.get_volume())
-                await self.ChatEmbed.update()
+                if not self.volume >= 200:
+                    self.volume += 10
+                    self.connected_client.source.volume = self.volume/100
+                    self.add_to_footer(volume=self.get_volume())
+                    await self.ChatEmbed.update()
 
     def stop(self):
+        if self.connected_client:
+            self.connected_client.stop()
+
+            if self.connected_client.is_connected():
+                asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
+        
         self.messenger.gui['player'].embed = discord.Embed.from_dict({
             'title': 'Not Playing',
             'description': 'Nothing is playing. ' + USAGE_TEXT
         })
         self.paused = True
-        asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
         asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.client.loop)
         asyncio.run_coroutine_threadsafe(self.playlist.reset_all(), self.client.loop)
-        return self.connected_client.stop()
     
     def pause(self):
+        self.paused = True
         return self.connected_client.pause()
 
     def resume(self):
+        self.paused = False
         return self.connected_client.resume()
     
     async def play(self, audio: MusicSource, channel: discord.VoiceChannel = None):
@@ -131,16 +139,13 @@ class Player:
                 if self.connected_client.is_connected():
                     if self.connected_client.is_playing():
                         self.connected_client.source = music_source
-                        return music_source
                     else:
                         self.connected_client.play(source = music_source, after=self.on_finished)
-                        return music_source
-                else:
-                    asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
+                        
                     return music_source
-            else:
-                asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-                return music_source
+                
+            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
+            return music_source
         else:
             print('cant go back any further')
             return None
@@ -151,31 +156,28 @@ class Player:
             music_source = self.playlist.next()
         except IndexError:
             music_source = None
+
         if music_source:
             music_source.reset()
 
+            footer_text = 'Source: Youtube'
             if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
-            else:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
-                
+                footer_text += ' (cache)'
+            asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
             
             if self.connected_client:
                 if self.connected_client.is_connected():
                     if self.connected_client.is_playing():
                         self.connected_client.source = music_source
-                        return music_source
                     else:
                         self.connected_client.play(source = music_source, after=self.on_finished)
-                        return music_source
                 else:
                     asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-                    return music_source
             else:
                 asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-                return music_source
+            return music_source
         else:
-            print('no music')
+            logging.info('No more music to play. Stopping...')
             self.stop()
             return None
 
@@ -198,12 +200,10 @@ class Player:
         if self.connected_client:
             if self.connected_client.is_playing():
                 self.pause()
-                self.paused = True
                 self.update_footer_text()
                 await self.ChatEmbed.update()
             elif self.connected_client.is_paused():
                 self.resume()
-                self.paused = False
                 self.update_footer_text()
                 await self.ChatEmbed.update()
             else:
@@ -218,9 +218,7 @@ class Player:
         self.clear_footer()
         self.connected_client = await channel.connect()
         asyncio.run_coroutine_threadsafe(self.messenger.register_all(), self.client.loop)
-        # await self.ChatEmbed.update(update_buttons=True)
         self.last_voice_channel = channel
-        # self.volume = 1.0
 
     async def disconnect(self):
         if self.connected_client.is_connected():
@@ -228,15 +226,14 @@ class Player:
             await self.connected_client.disconnect()
         else:
             logging.warn('Player is not connected. Was it disconnected forcefully?')
-        # await self.ChatEmbed.remove_buttons()
         asyncio.run_coroutine_threadsafe(self.messenger.unregister_all(), self.client.loop)
 
     def on_finished(self, error):
         if error:
-            logging.exception('error when finished playing: ',exc_info=error)
+            logging.exception('Error when finished playing: ',exc_info=error)
             self.stop()
         else:
-            logging.info('finished playing')
+            logging.debug('Finished playing song')
             self.timeline = None
             try:
                 # TODO change race condiiton for main look to check if on_finished exec because of disconnect or next song
@@ -268,7 +265,7 @@ class Player:
                         source = video_info['formats'][0]['url']
 
                         raw_audio_source: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
-                        audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume)
+                        audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume/100)
                         self.playlist.add(audio)
                         self.paused = False
 
@@ -328,7 +325,7 @@ class Player:
             else:
                 self.connected_client.play(source = MusicSource(audio), after=self.on_finished)
 
-    async def update_embed_from_ytdict(self, info: dict, truncate_description = True, footer = 'Source: Youtube'):
+    async def update_embed_from_ytdict(self, info: dict, footer = 'Source: Youtube'):
         self.description = info['description']
         list_description = info['description'].splitlines()
 
@@ -390,18 +387,15 @@ class Player:
         emoji = '🔊'
         if self.volume <= 0:
             emoji = '🔇'
-        elif self.volume <= 0.3:
+        elif self.volume <= 30:
             emoji = '🔈'
-        elif self.volume <= 0.7:
+        elif self.volume <= 70:
             emoji = '🔉'
         else:
             emoji = '🔊'
 
         # TODO: Fix volume string when negative
-        if self.volume:
-            return emoji + str(self.volume)[:3] 
-        else:
-            return None
+        return emoji + str(self.volume/100)[:3] if self.volume != None else None
     
     def get_timeline(self):
         """Gets a string formated timeline/length value. Primarly for footer text."""
@@ -423,7 +417,4 @@ class Player:
     def get_paused(self):
         """Gets a string formated paused value. Primarly for footer text."""
 
-        if self.paused:
-            return 'PAUSED'
-        else:
-            return None
+        return 'PAUSED' if self.paused else None
