@@ -133,7 +133,7 @@ class Player:
         if music_source:
             music_source.reset()
             if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube (cache)'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube 🗃️'), self.connected_client.loop)
             else:
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube'), self.connected_client.loop)
             
@@ -164,7 +164,7 @@ class Player:
 
             footer_text = 'Youtube'
             if music_source.resolved:
-                footer_text += ' (cache)'
+                footer_text += ' 🗃️'
             asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
             
             if self.connected_client:
@@ -298,7 +298,7 @@ class Player:
                             @audio.event
                             def on_resolve(info, path):
                                 if(self.playlist.current().info == info): # TODO: fix if client skips song/video before finished downloading, current() will be None
-                                    self.add_to_footer(source= 'Youtube (file)', icon_url=YOUTUBE_ICON)
+                                    self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
                                     asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
@@ -420,7 +420,15 @@ class Player:
                 return None
 
             if self.timeline != None:
-                return str(self.timeline)[0:7] + '/' +  str(duration)[:7]
+                current = str(self.timeline)[:7]
+                total = str(duration)[:7]
+                if total[:2] == '0:':
+                    current = current[2:]
+                    total = total[2:]
+                if total[:1] == '0':
+                    current = current[1:]
+                    total = total[1:]
+                return current + '/' +  total
             else:
                 return None
         else:
