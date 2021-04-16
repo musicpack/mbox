@@ -47,7 +47,7 @@ class MusicSource(AudioSource):
         self.amount_read = 0
         self.info: dict= info
         self.skip_non_music = skip_non_music
-        self.sponsor_segments: list = sponsor_segments
+        self.sponsor_segments: list or None = sponsor_segments
         self.resolved: bool = resolved
         self.temp = False
         self.file_path = None
@@ -88,11 +88,12 @@ class MusicSource(AudioSource):
     
     def in_non_music(self) -> bool:
         current_time = timedelta(milliseconds=self.amount_read)
-        for segment_response in self.sponsor_segments:
-            segment_begin = timedelta(seconds = segment_response['segment'][0])
-            segment_end = timedelta(seconds = segment_response['segment'][1])
-            if segment_begin <= current_time and current_time < segment_end:
-                return True
+        if self.sponsor_segments:
+            for segment_response in self.sponsor_segments:
+                segment_begin = timedelta(seconds = segment_response['segment'][0])
+                segment_end = timedelta(seconds = segment_response['segment'][1])
+                if segment_begin <= current_time and current_time < segment_end:
+                    return True
 
         return False
 

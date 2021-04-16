@@ -126,6 +126,9 @@ class Player:
         await self.connected_client.play(source = audio, after=self.on_finished)
     
     def last(self) -> MusicSource:
+        self.timeline = timedelta(seconds=0)
+        self.footer['sponsorblock'] = None
+        self.ms_displayed = -1
         try:
             music_source = self.playlist.prev()
         except IndexError:
@@ -154,6 +157,8 @@ class Player:
     
     def next(self) -> MusicSource:
         self.timeline = timedelta(seconds=0)
+        self.footer['sponsorblock'] = None
+        self.ms_displayed = -1
         try:
             music_source = self.playlist.next()
         except IndexError:
