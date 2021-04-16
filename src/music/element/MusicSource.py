@@ -7,6 +7,8 @@ import youtube_dl
 from src.constants import *
 import discord
 from src.music.element.cache import Cache
+import requests
+from datetime import timedelta
 
 class MusicSource(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.
@@ -32,7 +34,7 @@ class MusicSource(AudioSource):
         The audio source is opus encoded.
     """
 
-    def __init__(self, original, info: dict, volume=1.0, resolved = False):
+    def __init__(self, original, info: dict, volume=1.0, resolved = False, sponsor_segments = [], skip_non_music = True):
         if not isinstance(original, AudioSource):
             raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(original))
 
@@ -44,6 +46,8 @@ class MusicSource(AudioSource):
 
         self.amount_read = 0
         self.info: dict= info
+        self.skip_non_music = skip_non_music
+        self.sponsor_segments: list or None = sponsor_segments
         self.resolved: bool = resolved
         self.temp = False
         self.file_path = None
@@ -62,6 +66,7 @@ class MusicSource(AudioSource):
         self.original.cleanup()
         if self.temp:
             try:
+                logging.debug('Removing temp file {0}'.format(self.file_path))
                 os.remove(self.file_path)
             except PermissionError:
                 logging.warn('Premission Error when removing {0}. Maybe the file is being used in other sessions?'.format(self.file_path))
@@ -69,11 +74,28 @@ class MusicSource(AudioSource):
                 logging.error(e)
 
     def read(self):
-        self.amount_read += 20
-        self.on_read(self.amount_read)
 
+        if self.skip_non_music:
+            while self.in_non_music():
+                self.amount_read += 20
+                ret = self.original.read()
+                self.on_read(self.amount_read, True)
+
+        self.amount_read += 20
         ret = self.original.read()
+        self.on_read(self.amount_read, False)
         return audioop.mul(ret, 2, min(self._volume, 2.0))
+    
+    def in_non_music(self) -> bool:
+        current_time = timedelta(milliseconds=self.amount_read)
+        if self.sponsor_segments:
+            for segment_response in self.sponsor_segments:
+                segment_begin = timedelta(seconds = segment_response['segment'][0])
+                segment_end = timedelta(seconds = segment_response['segment'][1])
+                if segment_begin <= current_time and current_time < segment_end:
+                    return True
+
+        return False
 
     def reset(self):
         """Set the current audiosource back to 0:00"""
@@ -87,7 +109,15 @@ class MusicSource(AudioSource):
                 self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.info['formats'][0]['url'], **custom_options)
 
     def resolve(self, cache=True):
-        """Downloads song and sets it as the audiosource"""
+        """Downloads song and sets it as the audiosource. Also finds non_music sections of the song if skip_non_music is true."""
+        if self.skip_non_music:
+            if not self.sponsor_segments:
+                r = requests.get(SPONSORBLOCK_MUSIC_API.format(self.info['id']))
+                if 'json' in r.headers.get('Content-Type'):
+                    self.sponsor_segments = r.json()
+                else:
+                    self.sponsor_segments = None
+
         custom_opts = {
             'format': 'bestaudio',
             'writesubtitles': True,
@@ -96,14 +126,14 @@ class MusicSource(AudioSource):
             'progress_hooks': [self.on_download_state],
         }
         if cache:
-            custom_opts['outtmpl'] = os.path.join(DOWNLOAD_PATH, '%(title)s-%(id)s.%(ext)s')
-            with youtube_dl.YoutubeDL(custom_opts) as ydl:
-                ydl.process_ie_result(self.info, download=True)
+            path = DOWNLOAD_PATH
+
         else:
+            path = TEMP_PATH
             self.temp = True
-            custom_opts['outtmpl'] = os.path.join(TEMP_PATH, '%(title)s-%(id)s.%(ext)s')
-            with youtube_dl.YoutubeDL(custom_opts) as ydl:
-                ydl.process_ie_result(self.info, download=True)
+        custom_opts['outtmpl'] = os.path.join(path, '%(title)s-%(id)s.%(ext)s')
+        with youtube_dl.YoutubeDL(custom_opts) as ydl:
+            ydl.process_ie_result(self.info, download=True)
 
     def on_download_state(self, d):
         if d['status'] == 'finished':
@@ -134,7 +164,7 @@ class MusicSource(AudioSource):
         logging.debug('%s has successfully been registered as an event', event.__name__)
         return event
     
-    def on_read(self, ms):
+    def on_read(self, ms, non_music):
         """A placeholder event function intended to be overwritten"""
         pass
 

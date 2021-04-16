@@ -82,7 +82,7 @@ class MusicQueue:
     def add(self, music) -> None:
         """Add a MusicSource to the music queue. Updates the ChatEmbed."""
         self.list.append(music)
-        asyncio.create_task(asyncio.coroutine(self.update_embed_from_queue)())
+        asyncio.create_task(self.update_embed_from_queue())
 
     
     def current(self):
@@ -100,16 +100,16 @@ class MusicQueue:
             if self.at_beginning or self.index == None:
                 self.index = 0
                 self.at_beginning = False
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
                 return self.list[self.index]
             elif self.index + 1 < len(self.list):
                 self.at_end = False
                 self.index += 1
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
                 return self.list[self.index]
             else:
                 self.at_end = True
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
                 return None
         raise IndexError('MusicQueue list empty')
 
@@ -118,11 +118,11 @@ class MusicQueue:
         if self.list:
             if self.at_end:
                 self.at_end = False
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
                 return self.list[self.index]
             elif self.index - 1 >= 0:
                 self.index -= 1
-                asyncio.run_coroutine_threadsafe(asyncio.coroutine(self.update_embed_from_queue)(), self.client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
                 return self.list[self.index]
             else:
                 return None

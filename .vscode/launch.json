@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run main.py in debug mode",
+            "name": "Debug Mode",
             "type": "python",
             "request": "launch",
             "program": "main.py",
@@ -14,7 +14,7 @@
             "justMyCode": false
         },
         {
-            "name": "Run main.py in info mode",
+            "name": "Normal Mode",
             "type": "python",
             "request": "launch",
             "program": "main.py",

@@ -53,12 +53,12 @@ class Button:
                         raise
                     else:
                         logging.debug(self.emoji + ' pressed')
-                        self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
+                        self.coro[message] = asyncio.create_task(refresh())
                         res = self.action()
                         if inspect.isawaitable(res):
                             await res
                 
-                self.coro[message] = asyncio.create_task(asyncio.coroutine(refresh)())
+                self.coro[message] = asyncio.create_task(refresh())
             else:
                 logging.error('Registering button ' + self.emoji + 'failed. Message already registered.')
         else:
