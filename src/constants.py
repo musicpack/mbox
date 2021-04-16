@@ -41,6 +41,7 @@ else:
     print('No token in config file or in enviroment variable \'DiscordToken_mbox\'. Please generate a token and enter it below.')
     print('token',end=': ')
     TOKEN = input()
+    os.environ['DiscordToken_mbox'] = TOKEN
 
 __config_ffmpeg_path = __config['Default']['FFMPEG_PATH']
 __glob_results = glob.glob('ffmpeg*')
