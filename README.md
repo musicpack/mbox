@@ -1,6 +1,8 @@
 # Music Box
 Music Box is a discord streaming bot designed to use no commands.
 
+Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https://sponsor.ajay.app/
+
 **Features:**
 
 Playing back from Youtube links, livestreams

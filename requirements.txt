@@ -1,3 +1,4 @@
 discord.py
 youtube-dl
 youtube-search
+requests

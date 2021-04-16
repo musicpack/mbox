@@ -5,6 +5,7 @@ from typing import List
 from src.music.player import Player
 from src.profile import Profile
 from youtube_search import YoutubeSearch
+from ytmusicapi import YTMusic
 
 async def message(message: discord.Message, profile: Profile):
     
@@ -17,6 +18,9 @@ async def message(message: discord.Message, profile: Profile):
         youtube_id = match[0]
         await play_ytid(youtube_id, message, profile)
     else:
+        # ytmusic = YTMusic()
+        # results = ytmusic.search(query = message.content, limit = 1)
+        # if results: await play_ytid(results[0]['videoId'], message, profile)
         results = YoutubeSearch(message.content, max_results=1).to_dict()
         if results:
             await play_ytid(results[0]['id'], message, profile)

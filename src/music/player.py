@@ -50,6 +50,7 @@ class Player:
         self.last_voice_channel = None
         self.timeline = timedelta(seconds=0)
         self.paused = True
+        self.ms_displayed = 0
 
         self.footer = {
             'icon_url': None,
@@ -57,7 +58,8 @@ class Player:
             'source': None,
             'track': None,
             'volume': self.get_volume(),
-            'timeline': self.get_timeline()
+            'timeline': self.get_timeline(),
+            'sponsorblock': None
             }
     
     async def setup(self):
@@ -131,9 +133,9 @@ class Player:
         if music_source:
             music_source.reset()
             if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube (cache)'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube (cache)'), self.connected_client.loop)
             else:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Source: Youtube'), self.connected_client.loop)
+                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube'), self.connected_client.loop)
             
             if self.connected_client:
                 if self.connected_client.is_connected():
@@ -160,7 +162,7 @@ class Player:
         if music_source:
             music_source.reset()
 
-            footer_text = 'Source: Youtube'
+            footer_text = 'Youtube'
             if music_source.resolved:
                 footer_text += ' (cache)'
             asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
@@ -241,9 +243,17 @@ class Player:
             except IndexError:
                 pass
 
-    def on_read(self, ms):
+    def on_read(self, ms, non_music):
         self.timeline = timedelta(milliseconds=ms)
-        if ms % 14000 == 0:
+        if non_music:
+            self.add_to_footer(sponsorblock='✔️Skipped Non Music')
+            self.ms_displayed = 14000
+        if self.ms_displayed > 0:
+            self.ms_displayed -= 20
+        if (ms % 14000 == 0 and not non_music) or self.ms_displayed == 13960: # 13960 represents the point where ms_displayed starts decrementing
+            if self.ms_displayed == 0:
+                self.footer['sponsorblock'] = None
+                self.ms_displayed = -1 # make negative to avoid line above assignment multiple times
             self.update_footer_text()
             asyncio.run_coroutine_threadsafe(self.ChatEmbed.update(), self.connected_client.loop)
         pass
@@ -264,7 +274,7 @@ class Player:
                         video_info = ydl.extract_info(link, download=False)
                         source = video_info['formats'][0]['url']
 
-                        raw_audio_source: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
+                        raw_audio_source = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
                         audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume/100)
                         self.playlist.add(audio)
                         self.paused = False
@@ -273,8 +283,8 @@ class Player:
                             self.next()
                         
                         @audio.event
-                        def on_read(ms):
-                            self.on_read(ms)
+                        def on_read(ms, non_music):
+                            self.on_read(ms, non_music)
                         
                         # Determine if video is cacheable
                         if not video_info['is_live']:
@@ -288,7 +298,7 @@ class Player:
                             @audio.event
                             def on_resolve(info, path):
                                 if(self.playlist.current().info == info): # TODO: fix if client skips song/video before finished downloading, current() will be None
-                                    self.add_to_footer(source= 'Source: Youtube (file)', icon_url=YOUTUBE_ICON)
+                                    self.add_to_footer(source= 'Youtube (file)', icon_url=YOUTUBE_ICON)
                                     asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
@@ -325,7 +335,7 @@ class Player:
             else:
                 self.connected_client.play(source = MusicSource(audio), after=self.on_finished)
 
-    async def update_embed_from_ytdict(self, info: dict, footer = 'Source: Youtube'):
+    async def update_embed_from_ytdict(self, info: dict, footer = 'Youtube'):
         self.description = info['description']
         list_description = info['description'].splitlines()
 
@@ -341,7 +351,7 @@ class Player:
 
     ########### FOOTER ############
 
-    def add_to_footer(self, *, paused = None, icon_url=None, source = None, track=None, volume=None, timeline=None):
+    def add_to_footer(self, *, paused = None, icon_url=None, source = None, track=None, volume=None, timeline=None, sponsorblock = None):
         """Add info to footer and updates the footer in ChatEmbed. Does not send the ChatEmbed."""
         if (paused): self.footer['paused'] = paused
         if (icon_url): self.footer['icon_url'] = icon_url
@@ -349,6 +359,7 @@ class Player:
         if (track): self.footer['track'] = track
         if (volume): self.footer['volume'] = volume
         if (timeline): self.footer['timeline'] = timeline
+        if (sponsorblock): self.footer['sponsorblock'] = sponsorblock
 
         self.update_footer_text()
     
@@ -378,7 +389,8 @@ class Player:
             'source': None,
             'track': None,
             'volume': self.get_volume(),
-            'timeline': self.get_timeline()
+            'timeline': self.get_timeline(),
+            'sponsorblock': None
         }
         self.ChatEmbed.embed.set_footer()
     

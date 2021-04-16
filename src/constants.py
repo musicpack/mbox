@@ -8,6 +8,7 @@ VERSION = '0.4'
 YOUTUBE_ICON = 'https://yt3.ggpht.com/a/AATXAJxHHP_h8bUovc1qC4c07sVXxVbp3gwDEg-iq8gbFQ=s100-c-k-c0xffffffff-no-rj-mo'
 USAGE_TEXT = 'Send a search phrase or a link to play a song!'
 CONFIG_PATH = 'config.ini'
+SPONSORBLOCK_MUSIC_API = 'https://sponsor.ajay.app/api/skipSegments?videoID={0}&category=music_offtopic'
 __config = configparser.ConfigParser()
 
 def generate_config():
