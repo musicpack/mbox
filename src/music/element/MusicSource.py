@@ -111,7 +111,11 @@ class MusicSource(AudioSource):
         """Downloads song and sets it as the audiosource. Also finds non_music sections of the song if skip_non_music is true."""
         if self.skip_non_music:
             if not self.sponsor_segments:
-                self.sponsor_segments = requests.get(SPONSORBLOCK_MUSIC_API.format(self.info['id'])).json() # TODO ERROR HANDLING
+                r = requests.get(SPONSORBLOCK_MUSIC_API.format(self.info['id']))
+                if 'json' in r.headers.get('Content-Type'):
+                    self.sponsor_segments = r.json()
+                else:
+                    self.sponsor_segments = None
 
         custom_opts = {
             'format': 'bestaudio',
