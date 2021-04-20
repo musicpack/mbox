@@ -63,8 +63,9 @@ class Messenger:
         button: Button
         for chat_embed in self.gui.values():
             if chat_embed.actions:
+                await chat_embed.message.clear_reactions()
                 for button in chat_embed.actions:
-                    await button.remove_all()
+                    await button.remove_all(remove_reaction=False)
 
     async def clean_chat(self):
         """
