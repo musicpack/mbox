@@ -1,12 +1,9 @@
 from discord.channel import VoiceChannel
-from discord.message import flatten_handlers
 from discord.player import AudioSource
 import youtube_dl
 import discord
 import logging
 import asyncio
-import os
-import threading
 
 from src.commander.messenger import Messenger
 from src.commander.element.Button import Button
@@ -294,11 +291,9 @@ class Player:
                         # Determine if video is cacheable
                         if not video_info['is_live']:
                             if video_info['filesize']: # TODO add handling when video_info['filesize'] is not found/supported
-                                if video_info['filesize'] <= MAX_CACHESIZE: 
-                                    threading.Thread(target=lambda: audio.resolve(cache=True)).start()
-
-                                else:
-                                    threading.Thread(target=lambda: audio.resolve(cache=False)).start()
+                                do_cache = True if video_info['filesize'] <= MAX_CACHESIZE else False
+                                m = audio.resolve(cache=do_cache)
+                                asyncio.run_coroutine_threadsafe(m, self.client.loop)
 
                             @audio.event
                             def on_resolve(info, path):

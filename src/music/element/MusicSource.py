@@ -108,7 +108,7 @@ class MusicSource(AudioSource):
                 self.amount_read = 0
                 self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.info['formats'][0]['url'], **custom_options)
 
-    def resolve(self, cache=True):
+    async def resolve(self, cache=True):
         """Downloads song and sets it as the audiosource. Also finds non_music sections of the song if skip_non_music is true."""
         if self.skip_non_music:
             if not self.sponsor_segments:
