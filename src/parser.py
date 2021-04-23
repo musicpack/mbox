@@ -1,5 +1,7 @@
 import logging
 import re
+
+from discord.voice_client import VoiceClient
 from src.element.context import Context
 import discord
 from typing import List
@@ -12,6 +14,7 @@ YTRE = '(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:m
 YOUTUBE_ID_REGEX = re.compile(YTRE)
 
 async def message(context: Context):
+    """Parses finding youtube id command context"""
     logging.info('Parsing context [{0}]{1}: {2}'.format(context.get_guild(), context.get_author(), context.get_str_full_input()))
 
     # General bot command
@@ -24,17 +27,26 @@ async def message(context: Context):
             await play_ytid(id = youtube_id, context = context)
         else:
             # search youtube for the phrase the user has typed
-
-            # ytmusic = YTMusic()
-            # results = ytmusic.search(query = message.content, limit = 1)
-            # if results: await play_ytid(results[0]['videoId'], message, profile)
-            results = YoutubeSearch(user_input, max_results=1).to_dict()
-            if results:
-                await play_ytid(id = results[0]['id'], context = context)
+            youtube_id = search_ytmusic(user_input)
+            if youtube_id: await play_ytid(youtube_id, context)
 
         return f"{user_input} accepted"
     
     return "Unknown commmand"
+
+def search_yt(phrase: str) -> str:
+    results = YoutubeSearch(phrase, max_results=1).to_dict()
+    if results:
+        return results[0]['id']
+    logging.error('Youtube did not find any video.' + str(results))
+
+def search_ytmusic(phrase: str) -> str:
+    ytmusic = YTMusic()
+    results = ytmusic.search(query = phrase)
+    for result in results:
+        if result['resultType'] == 'video' or result['resultType'] == 'song':
+            return result['videoId']
+    logging.error('Youtube Music did not find any music.' + str(results))
 
 async def play_ytid(id: str, context: Context):
     """Loads a youtube id to the player
@@ -50,28 +62,63 @@ async def play_ytid(id: str, context: Context):
     if(voice_channel): await context.profile.player.connect(voice_channel)
     await context.profile.player.play_youtube(normalized_url)
 
+def get_player_client(context: Context) -> VoiceClient:
+    if context.profile.player.connected_client:
+        if context.profile.player.connected_client.is_connected():
+            return context.profile.player.connected_client
+
+async def player_prev(context: Context):
+    if context.name == 'prev' or context.name == 'back':
+        p_client = get_player_client(context)
+        
+        if p_client:
+            result = context.profile.player.last()
+            if result:
+                return 'Playing previous song.'
+            else:
+                return 'No more songs to go back.'
+        return 'Player not connected.'
+    else:
+        logging.error('Context name prev/back does not match function.')
+
+async def player_next(context: Context):
+    if context.name == 'skip' or context.name == 'next':
+        p_client = get_player_client(context)
+        
+        if p_client:
+            result = context.profile.player.next()
+            if result:
+                return 'Playing next song.'
+            else:
+                return 'Skipped. No more music to play.'
+        return 'Player not connected.'
+    else:
+        logging.error('Context name next/skip does not match function.')
+
 async def pause_player(context: Context) -> str:
     if context.name == 'pause':
-        if context.profile.player.connected_client:
-            if context.profile.player.connected_client.is_connected():
-                if not context.profile.player.connected_client.is_paused():
-                    await context.profile.player.play_pause()  
-                    return 'Paused player'
-                else:
-                    return 'Player is already paused'
+        p_client = get_player_client(context)
+        
+        if p_client:
+            if not p_client.is_paused():
+                await context.profile.player.play_pause()  
+                return 'Paused player'
+            else:
+                return 'Player is already paused'
         return 'Player not connected'
     else:
         logging.error('Context name is not pause. Cannot pause player')
 
 async def resume_player(context: Context) -> str:
     if context.name == 'play':
-        if context.profile.player.connected_client:
-            if context.profile.player.connected_client.is_connected():
-                if context.profile.player.connected_client.is_paused():
-                    await context.profile.player.play_pause()  
-                    return 'Resumed player'
-                else:
-                    return 'Player is already playing'
+        p_client = get_player_client(context)
+        
+        if p_client:
+            if p_client.is_paused():
+                await context.profile.player.play_pause()  
+                return 'Resumed player'
+            else:
+                return 'Player is already playing'
         return 'Player not connected'
     else:
         logging.error('Context name is not play. Cannot resume player')

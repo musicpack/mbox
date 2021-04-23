@@ -70,6 +70,28 @@ async def _command(ctx: SlashContext, command: str):
 async def _pause(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.pause_player)
 
+@slash.slash(name="next",
+            description='Goes to the next song.',
+            guild_ids=guild_ids)
+async def _pause(ctx: SlashContext):
+    await process_slash_command(ctx, src.parser.player_next)
+@slash.slash(name="skip",
+            description='Goes to the next song.',
+            guild_ids=guild_ids)
+async def _pause(ctx: SlashContext):
+    await process_slash_command(ctx, src.parser.player_next)
+
+@slash.slash(name="prev",
+            description='Goes to the previous song.',
+            guild_ids=guild_ids)
+async def _pause(ctx: SlashContext):
+    await process_slash_command(ctx, src.parser.player_prev)
+@slash.slash(name="back",
+            description='Goes to the previous song.',
+            guild_ids=guild_ids)
+async def _pause(ctx: SlashContext):
+    await process_slash_command(ctx, src.parser.player_prev)
+
 @slash.slash(name="Play",
             description='Plays or resumes a song.',
             guild_ids=guild_ids,
