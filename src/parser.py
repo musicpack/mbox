@@ -18,7 +18,7 @@ async def message(context: Context):
     logging.info('Parsing context [{0}]{1}: {2}'.format(context.get_guild(), context.get_author(), context.get_str_full_input()))
 
     # General bot command
-    if context.name == '' or context.name == 'c' or context.name == 'play':
+    if context.name == '' or context.name == 'c' or context.name == 'play' or context.name == 'youtube':
         user_input = ' '.join(context.args)
 
         match = YOUTUBE_ID_REGEX.findall(user_input)
@@ -27,7 +27,10 @@ async def message(context: Context):
             await play_ytid(id = youtube_id, context = context)
         else:
             # search youtube for the phrase the user has typed
-            youtube_id = search_ytmusic(user_input)
+            if context.name == 'youtube':
+                youtube_id = search_yt(user_input)
+            else:
+                youtube_id = search_ytmusic(user_input)
             if youtube_id: await play_ytid(youtube_id, context)
 
         return f"{user_input} accepted"

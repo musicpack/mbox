@@ -73,23 +73,23 @@ async def _pause(ctx: SlashContext):
 @slash.slash(name="next",
             description='Goes to the next song.',
             guild_ids=guild_ids)
-async def _pause(ctx: SlashContext):
+async def _next(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_next)
 @slash.slash(name="skip",
             description='Goes to the next song.',
             guild_ids=guild_ids)
-async def _pause(ctx: SlashContext):
+async def _skip(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_next)
 
 @slash.slash(name="prev",
             description='Goes to the previous song.',
             guild_ids=guild_ids)
-async def _pause(ctx: SlashContext):
+async def _prev(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_prev)
 @slash.slash(name="back",
             description='Goes to the previous song.',
             guild_ids=guild_ids)
-async def _pause(ctx: SlashContext):
+async def _back(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_prev)
 
 @slash.slash(name="Play",
@@ -98,7 +98,7 @@ async def _pause(ctx: SlashContext):
             options=[
                create_option(
                  name="song_name_or_link",
-                 description="Adds this song to the queue",
+                 description="Adds this song to the queue.",
                  option_type=3,
                  required=False
                )
@@ -108,6 +108,19 @@ async def _play(ctx: SlashContext, song_name_or_link = None):
         await process_slash_command(ctx, src.parser.message)
     else:
         await process_slash_command(ctx, src.parser.resume_player)
+@slash.slash(name="Youtube",
+            description='Add a youtube video to the queue.',
+            guild_ids=guild_ids,
+            options=[
+               create_option(
+                 name="search",
+                 description="Name or link of a youtube video",
+                 option_type=3,
+                 required=True
+               )
+             ])
+async def _youtube(ctx: SlashContext, search):
+    await process_slash_command(ctx, src.parser.message)
 
 @mbox.event
 async def on_ready():
