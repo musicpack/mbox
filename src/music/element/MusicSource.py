@@ -52,6 +52,8 @@ class MusicSource(AudioSource):
         self.temp = False
         self.file_path = None
 
+        self.resolve_non_music()
+        
     @property
     def volume(self):
         """Retrieves or sets the volume as a floating point percentage (e.g. ``1.0`` for 100%)."""
@@ -108,8 +110,8 @@ class MusicSource(AudioSource):
                 self.amount_read = 0
                 self.original: AudioSource = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=self.info['formats'][0]['url'], **custom_options)
 
-    async def resolve(self, cache=True):
-        """Downloads song and sets it as the audiosource. Also finds non_music sections of the song if skip_non_music is true."""
+    def resolve_non_music(self):
+        """Finds non_music sections of the song if skip_non_music is true."""
         if self.skip_non_music:
             if not self.sponsor_segments:
                 r = requests.get(SPONSORBLOCK_MUSIC_API.format(self.info['id']))
@@ -118,10 +120,13 @@ class MusicSource(AudioSource):
                 else:
                     self.sponsor_segments = None
 
+    async def resolve(self, cache=True):
+        """Downloads song and sets it as the audiosource."""
+
         custom_opts = {
             'format': 'bestaudio',
             'writesubtitles': True,
-            'writeautomaticsub': True,
+            # 'writeautomaticsub': True,
             # 'allsubtitles': True,
             'progress_hooks': [self.on_download_state],
         }
