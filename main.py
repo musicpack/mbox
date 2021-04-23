@@ -16,7 +16,7 @@ mbox = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(mbox, sync_commands=True) 
 
 guild_ids = [758004272330833971] # Put your server ID in this array.
-COMMAND_CHANNEL_WARNING = 'Accepted command. Type your command in this text channel without /c next time!'
+COMMAND_CHANNEL_WARNING = 'Accepted command.'
 
 logging_level = logging.INFO
 if len(sys.argv) > 1:
@@ -34,6 +34,21 @@ logging.basicConfig(
 
 watching_channels = []
 profiles: List[src.element.profile.Profile] = []
+async def process_slash_command(ctx: SlashContext, f):
+    for profile in profiles:
+        if profile.guild == ctx.guild:
+            mbox_ctx = Context(prefix='/',profile=profile,name=ctx.name,slash_context=ctx,message=ctx.message,args=ctx.args,kwargs=ctx.kwargs)
+            if ctx.channel == profile.messenger.command_channel:
+                await ctx.send(content=COMMAND_CHANNEL_WARNING)
+                await f(mbox_ctx)
+                await ctx.message.delete()
+                return
+            else:
+                await ctx.defer(hidden=True)
+                status = await f(mbox_ctx)
+            break
+
+    await ctx.send(content = f"{status} ({mbox.latency*1000}ms) ", hidden=True)
 
 @slash.slash(name="c",
             description='General music-box command',
@@ -47,19 +62,30 @@ profiles: List[src.element.profile.Profile] = []
                )
              ])
 async def _command(ctx: SlashContext, command: str):
-    for profile in profiles:
-        if profile.guild == ctx.guild:
-            mbox_ctx = Context(prefix='/',profile=profile,name='c',slash_context=ctx,message=ctx.message,args=ctx.args,kwargs=ctx.kwargs)
-            if ctx.channel == profile.messenger.command_channel:
-                await ctx.send(content=COMMAND_CHANNEL_WARNING)
-                await src.parser.message(mbox_ctx)
-                return
-            else:
-                await ctx.defer(hidden=True)
-                await src.parser.message(mbox_ctx)
-            break
+    await process_slash_command(ctx, src.parser.message)
 
-    await ctx.send(content = f"{command} accepted ({mbox.latency*1000}ms) ", hidden=True)
+@slash.slash(name="pause",
+            description='Pauses actively playing song',
+            guild_ids=guild_ids)
+async def _pause(ctx: SlashContext):
+    await process_slash_command(ctx, src.parser.pause_player)
+
+@slash.slash(name="Play",
+            description='Plays or resumes a song.',
+            guild_ids=guild_ids,
+            options=[
+               create_option(
+                 name="song_name_or_link",
+                 description="Adds this song to the queue",
+                 option_type=3,
+                 required=False
+               )
+             ])
+async def _play(ctx: SlashContext, song_name_or_link = None):
+    if song_name_or_link:
+        await process_slash_command(ctx, src.parser.message)
+    else:
+        await process_slash_command(ctx, src.parser.resume_player)
 
 @mbox.event
 async def on_ready():
@@ -95,10 +121,8 @@ async def on_guild_remove(guild):
 async def on_message(message: discord.Message):
     logging.debug('Message from {0.author}: {0.content}'.format(message))
     
-    # Remove message if a user used /c slash command in a commmand channel
+    # Ignore message if it was from the bot
     if message.author == mbox.user:
-        if message.content == COMMAND_CHANNEL_WARNING:
-            await message.delete()
         return
 
     # Top level command stop

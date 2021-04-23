@@ -15,7 +15,7 @@ async def message(context: Context):
     logging.info('Parsing context [{0}]{1}: {2}'.format(context.get_guild(), context.get_author(), context.get_str_full_input()))
 
     # General bot command
-    if context.name == '' or context.name == 'c':
+    if context.name == '' or context.name == 'c' or context.name == 'play':
         user_input = ' '.join(context.args)
 
         match = YOUTUBE_ID_REGEX.findall(user_input)
@@ -32,6 +32,10 @@ async def message(context: Context):
             if results:
                 await play_ytid(id = results[0]['id'], context = context)
 
+        return f"{user_input} accepted"
+    
+    return "Unknown commmand"
+
 async def play_ytid(id: str, context: Context):
     """Loads a youtube id to the player
 
@@ -45,3 +49,29 @@ async def play_ytid(id: str, context: Context):
     voice_channel = context.determine_voice_channel()
     if(voice_channel): await context.profile.player.connect(voice_channel)
     await context.profile.player.play_youtube(normalized_url)
+
+async def pause_player(context: Context) -> str:
+    if context.name == 'pause':
+        if context.profile.player.connected_client:
+            if context.profile.player.connected_client.is_connected():
+                if not context.profile.player.connected_client.is_paused():
+                    await context.profile.player.play_pause()  
+                    return 'Paused player'
+                else:
+                    return 'Player is already paused'
+        return 'Player not connected'
+    else:
+        logging.error('Context name is not pause. Cannot pause player')
+
+async def resume_player(context: Context) -> str:
+    if context.name == 'play':
+        if context.profile.player.connected_client:
+            if context.profile.player.connected_client.is_connected():
+                if context.profile.player.connected_client.is_paused():
+                    await context.profile.player.play_pause()  
+                    return 'Resumed player'
+                else:
+                    return 'Player is already playing'
+        return 'Player not connected'
+    else:
+        logging.error('Context name is not play. Cannot resume player')

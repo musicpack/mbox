@@ -107,10 +107,12 @@ class Player:
     
     def pause(self):
         self.paused = True
+        self.update_footer_text()
         return self.connected_client.pause()
 
     def resume(self):
         self.paused = False
+        self.update_footer_text()
         return self.connected_client.resume()
     
     async def play(self, audio: MusicSource, channel: discord.VoiceChannel = None):
@@ -204,11 +206,9 @@ class Player:
         if self.connected_client:
             if self.connected_client.is_playing():
                 self.pause()
-                self.update_footer_text()
                 await self.ChatEmbed.update()
             elif self.connected_client.is_paused():
                 self.resume()
-                self.update_footer_text()
                 await self.ChatEmbed.update()
             else:
                 # client has not queued anything and tried to press play
