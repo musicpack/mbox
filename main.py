@@ -15,7 +15,6 @@ from discord_slash.utils.manage_commands import create_option
 mbox = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(mbox, sync_commands=True) 
 
-guild_ids = [758004272330833971] # Put your server ID in this array.
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 
 logging_level = logging.INFO
@@ -52,7 +51,6 @@ async def process_slash_command(ctx: SlashContext, f):
 
 @slash.slash(name="c",
             description='General music-box command',
-            guild_ids=guild_ids,
             options=[
                create_option(
                  name="command",
@@ -65,36 +63,30 @@ async def _command(ctx: SlashContext, command: str):
     await process_slash_command(ctx, src.parser.message)
 
 @slash.slash(name="pause",
-            description='Pauses actively playing song',
-            guild_ids=guild_ids)
+            description='Pauses actively playing song')
 async def _pause(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.pause_player)
 
 @slash.slash(name="next",
-            description='Goes to the next song.',
-            guild_ids=guild_ids)
+            description='Goes to the next song.')
 async def _next(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_next)
 @slash.slash(name="skip",
-            description='Goes to the next song.',
-            guild_ids=guild_ids)
+            description='Goes to the next song.')
 async def _skip(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_next)
 
 @slash.slash(name="prev",
-            description='Goes to the previous song.',
-            guild_ids=guild_ids)
+            description='Goes to the previous song.')
 async def _prev(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_prev)
 @slash.slash(name="back",
-            description='Goes to the previous song.',
-            guild_ids=guild_ids)
+            description='Goes to the previous song.')
 async def _back(ctx: SlashContext):
     await process_slash_command(ctx, src.parser.player_prev)
 
 @slash.slash(name="Play",
             description='Plays or resumes a song.',
-            guild_ids=guild_ids,
             options=[
                create_option(
                  name="song_name_or_link",
@@ -110,7 +102,6 @@ async def _play(ctx: SlashContext, song_name_or_link = None):
         await process_slash_command(ctx, src.parser.resume_player)
 @slash.slash(name="Youtube",
             description='Add a youtube video to the queue.',
-            guild_ids=guild_ids,
             options=[
                create_option(
                  name="search",
