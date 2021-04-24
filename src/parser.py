@@ -12,7 +12,7 @@ from ytmusicapi import YTMusic
 
 YTRE = '(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})'
 YOUTUBE_ID_REGEX = re.compile(YTRE)
-
+# TODO make sure user input is sanitized
 async def message(context: Context):
     """Parses finding youtube id command context"""
     logging.info('Parsing context [{0}]{1}: {2}'.format(context.get_guild(), context.get_author(), context.get_str_full_input()))
@@ -31,9 +31,14 @@ async def message(context: Context):
                 youtube_id = search_yt(user_input)
             else:
                 youtube_id = search_ytmusic(user_input)
-            if youtube_id: await play_ytid(youtube_id, context)
-
-        return f"{user_input} accepted"
+            if youtube_id:
+                await play_ytid(youtube_id, context)
+                return f"{user_input} accepted"
+            else:
+                if context.name == 'youtube':
+                    return f"Could not find a video named: {user_input}"
+                else:
+                    return f"Could not find a song named: {user_input}"
     
     return "Unknown commmand"
 
@@ -41,7 +46,7 @@ def search_yt(phrase: str) -> str:
     results = YoutubeSearch(phrase, max_results=1).to_dict()
     if results:
         return results[0]['id']
-    logging.error('Youtube did not find any video.' + str(results))
+    logging.error('Youtube did not find any video.')
 
 def search_ytmusic(phrase: str) -> str:
     ytmusic = YTMusic()
@@ -49,7 +54,8 @@ def search_ytmusic(phrase: str) -> str:
     for result in results:
         if result['resultType'] == 'video' or result['resultType'] == 'song':
             return result['videoId']
-    logging.error('Youtube Music did not find any music.' + str(results))
+    # TODO: Notify user if youtube did not find any music in the command channel
+    logging.error('Youtube Music did not find any music.')
 
 async def play_ytid(id: str, context: Context):
     """Loads a youtube id to the player
