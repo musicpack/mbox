@@ -48,7 +48,7 @@ async def process_slash_command(ctx: SlashContext, f):
                 status = await f(mbox_ctx)
             break
 
-    await ctx.send(content = f"{status} ({mbox.latency*1000}ms) ", hidden=True)
+    await ctx.send(content = f"{status}", hidden=True)
 
 @slash.slash(name="c",
             description='General music-box command',
