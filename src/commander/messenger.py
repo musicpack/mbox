@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+from src.music.element.Lyrics import Lyrics
 import discord
 from datetime import datetime
 from typing import List, Dict
@@ -27,11 +28,12 @@ class Messenger:
                 'title': 'Music Box ' + VERSION,
                 'description': """
                 **Please mute this channel to avoid notification spam!**
-                """ + USAGE_TEXT + """
+                **NEW!!** Try slash commands `/play`
                 *Early Access, please report any bugs!*
                 [Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)
                 """
             }, self.command_channel),
+            'lyrics': Lyrics(self.command_channel),
             'queue' : ChatEmbed('queue', {
                 'title': 'Queue',
                 'description': 'Nothing is in your queue. ' + USAGE_TEXT
@@ -63,8 +65,9 @@ class Messenger:
         button: Button
         for chat_embed in self.gui.values():
             if chat_embed.actions:
+                await chat_embed.message.clear_reactions()
                 for button in chat_embed.actions:
-                    await button.remove_all()
+                    await button.remove_all(remove_reaction=False)
 
     async def clean_chat(self):
         """
@@ -118,6 +121,7 @@ class Messenger:
 
     async def send_gui(self, register_buttons = True):
         """Sends all GUIs in the messenger to the command channel"""
+        # TODO: have logic using self.is_gui() to figure out if the gui is already sent
         if self.command_channel:
             for chat_embed in self.gui.values():
                 await chat_embed.send(register_buttons=register_buttons)

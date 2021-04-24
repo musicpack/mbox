@@ -1,74 +1,133 @@
 import logging
 import re
+
+from discord.voice_client import VoiceClient
+from src.element.context import Context
 import discord
 from typing import List
 from src.music.player import Player
-from src.profile import Profile
+from src.element.profile import Profile
 from youtube_search import YoutubeSearch
 from ytmusicapi import YTMusic
 
-async def message(message: discord.Message, profile: Profile):
+YTRE = '(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})'
+YOUTUBE_ID_REGEX = re.compile(YTRE)
+# TODO make sure user input is sanitized
+async def message(context: Context):
+    """Parses finding youtube id command context"""
+    logging.info('Parsing context [{0}]{1}: {2}'.format(context.get_guild(), context.get_author(), context.get_str_full_input()))
+
+    # General bot command
+    if context.name == '' or context.name == 'c' or context.name == 'play' or context.name == 'youtube':
+        user_input = ' '.join(context.args)
+
+        match = YOUTUBE_ID_REGEX.findall(user_input)
+        if match:
+            youtube_id: str = match[0]
+            await play_ytid(id = youtube_id, context = context)
+        else:
+            # search youtube for the phrase the user has typed
+            if context.name == 'youtube':
+                youtube_id = search_yt(user_input)
+            else:
+                youtube_id = search_ytmusic(user_input)
+            if youtube_id:
+                await play_ytid(youtube_id, context)
+                return f"{user_input} accepted"
+            else:
+                if context.name == 'youtube':
+                    return f"Could not find a video named: {user_input}"
+                else:
+                    return f"Could not find a song named: {user_input}"
     
-    logging.info('Parsing message from [{1.name}]{0.author}: {0.content}'.format(message, profile.guild))
+    return "Unknown commmand"
 
-    youtube = re.compile('(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})')
-    
-    match = youtube.findall(message.content)
-    if match:
-        youtube_id = match[0]
-        await play_ytid(youtube_id, message, profile)
-    else:
-        # ytmusic = YTMusic()
-        # results = ytmusic.search(query = message.content, limit = 1)
-        # if results: await play_ytid(results[0]['videoId'], message, profile)
-        results = YoutubeSearch(message.content, max_results=1).to_dict()
-        if results:
-            await play_ytid(results[0]['id'], message, profile)
+def search_yt(phrase: str) -> str:
+    results = YoutubeSearch(phrase, max_results=1).to_dict()
+    if results:
+        return results[0]['id']
+    logging.error('Youtube did not find any video.')
 
-async def play_ytid(id, message: discord.Message, profile: Profile):
-    base_url = 'https://www.youtube.com/watch?v='
-    normalized_url = base_url+id
-    channel = determine_voice_channel(voice_channels= message.guild.voice_channels, message=message, profile=profile)
+def search_ytmusic(phrase: str) -> str:
+    ytmusic = YTMusic()
+    results = ytmusic.search(query = phrase)
+    for result in results:
+        if result['resultType'] == 'video' or result['resultType'] == 'song':
+            return result['videoId']
+    # TODO: Notify user if youtube did not find any music in the command channel
+    logging.error('Youtube Music did not find any music.')
 
-    if(channel):
-        await profile.player.connect(channel)
-    await profile.player.play_youtube(normalized_url)
-
-def determine_voice_channel(voice_channels: List[discord.VoiceChannel], *, message: discord.Message = None, profile: Profile= None) -> discord.VoiceChannel:
-    """Tries to determine the voice channel given context. Pass as much arguments possible for the best result.
+async def play_ytid(id: str, context: Context):
+    """Loads a youtube id to the player
 
     Args:
-        voice_channels (List[discord.VoiceChannel])
-        message (discord.Message): Message that caused this function to be called
-        profile (Profile): Profile impacted
-        player (Player): Used to check the connection state when message is also passed
-
-    Returns:
-        discord.VoiceChannel: Determined voice channel
-        None: No suitable voice channel (player is already connected, no suitable voice_channels were given)
+        id (str): youtube video id
+        profile (src.Profile): Profile of a server
+        voice_channel (discord.VoiceChannel, optional): If provided, function will connect to this channel first. Defaults to None.
     """
-    if profile.messenger.command_channel != message.channel:
-        raise Exception('Profiles do not match up with the message. You are cross matching between two different servers.')
+    base_url = 'https://www.youtube.com/watch?v='
+    normalized_url = base_url+id
+    voice_channel = context.determine_voice_channel()
+    if(voice_channel): await context.profile.player.connect(voice_channel)
+    await context.profile.player.play_youtube(normalized_url)
 
-    last_connected_channel = None
-    if profile.player:
-        if(profile.player.connected_client):
-            if profile.player.connected_client.is_connected():
-                return None
-        last_connected_channel = profile.player.last_voice_channel
-                
-    if message:
-        voice_channel : discord.VoiceChannel
-        for voice_channel in message.guild.voice_channels:
-            if message.author.id in voice_channel.voice_states.keys():
-                return voice_channel
-    
-    if last_connected_channel:
-        return last_connected_channel
+def get_player_client(context: Context) -> VoiceClient:
+    if context.profile.player.connected_client:
+        if context.profile.player.connected_client.is_connected():
+            return context.profile.player.connected_client
+
+async def player_prev(context: Context):
+    if context.name == 'prev' or context.name == 'back':
+        p_client = get_player_client(context)
+        
+        if p_client:
+            result = context.profile.player.last()
+            if result:
+                return 'Playing previous song.'
+            else:
+                return 'No more songs to go back.'
+        return 'Player not connected.'
     else:
-        if voice_channels:
-            return voice_channels[0]
-        elif profile:
-            if profile.guild.voice_channels:
-                return profile.guild.voice_channels[0]
-        return None
+        logging.error('Context name prev/back does not match function.')
+
+async def player_next(context: Context):
+    if context.name == 'skip' or context.name == 'next':
+        p_client = get_player_client(context)
+        
+        if p_client:
+            result = context.profile.player.next()
+            if result:
+                return 'Playing next song.'
+            else:
+                return 'Skipped. No more music to play.'
+        return 'Player not connected.'
+    else:
+        logging.error('Context name next/skip does not match function.')
+
+async def pause_player(context: Context) -> str:
+    if context.name == 'pause':
+        p_client = get_player_client(context)
+        
+        if p_client:
+            if not p_client.is_paused():
+                await context.profile.player.play_pause()  
+                return 'Paused player'
+            else:
+                return 'Player is already paused'
+        return 'Player not connected'
+    else:
+        logging.error('Context name is not pause. Cannot pause player')
+
+async def resume_player(context: Context) -> str:
+    if context.name == 'play':
+        p_client = get_player_client(context)
+        
+        if p_client:
+            if p_client.is_paused():
+                await context.profile.player.play_pause()  
+                return 'Resumed player'
+            else:
+                return 'Player is already playing'
+        return 'Player not connected'
+    else:
+        logging.error('Context name is not play. Cannot resume player')

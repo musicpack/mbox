@@ -6,7 +6,13 @@ from src.reporter import Reporter
 from src.constants import *
 
 class Profile:
-    """Base class function representing one server.
+    """Base class function representing one server. Creates a messenger, reporter, player object that manages the gui state of the command channel
+
+    Args:
+        guild (discord.Guild): The server this profile is tracking
+        client (discord.Client): The client that is executing the operations
+        command_channel (List[discord.TextChannel], discord.TextChannel, optional): The text channel that the profile should track for commands. Defaults to None.
+            If None or a List of discord.TextChannels, setup() will request for a fix in discord 
     """
     def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
         self.guild = guild

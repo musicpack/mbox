@@ -1,12 +1,9 @@
 from discord.channel import VoiceChannel
-from discord.message import flatten_handlers
 from discord.player import AudioSource
 import youtube_dl
 import discord
 import logging
 import asyncio
-import os
-import threading
 
 from src.commander.messenger import Messenger
 from src.commander.element.Button import Button
@@ -14,6 +11,7 @@ from src.commander.element.ChatEmbed import ChatEmbed
 from src.music.element.MusicSource import MusicSource
 from src.music.element.MusicQueue import MusicQueue
 from src.music.element.cache import Cache
+from src.music.element.Lyrics import Lyrics
 from src.constants import *
 from datetime import timedelta
 
@@ -51,6 +49,7 @@ class Player:
         self.timeline = timedelta(seconds=0)
         self.paused = True
         self.ms_displayed = 0
+        self.lyrics: Lyrics = None
 
         self.footer = {
             'icon_url': None,
@@ -71,6 +70,9 @@ class Player:
         self.playlist = MusicQueue(active_embed = self.messenger.gui['queue'], client = self.messenger.client)
         await self.playlist.setup()
 
+        # initilization of variable happens here because messenger is not ready to provide this
+        # by the time this player class has be inilizied
+        self.lyrics = self.messenger.gui['lyrics']
         # @self.playlist.event
         # def on_remove_all():
         #     self.stop()
@@ -107,13 +109,16 @@ class Player:
         self.paused = True
         asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.client.loop)
         asyncio.run_coroutine_threadsafe(self.playlist.reset_all(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.lyrics.reset(), self.client.loop)
     
     def pause(self):
         self.paused = True
+        self.update_footer_text()
         return self.connected_client.pause()
 
     def resume(self):
         self.paused = False
+        self.update_footer_text()
         return self.connected_client.resume()
     
     async def play(self, audio: MusicSource, channel: discord.VoiceChannel = None):
@@ -125,6 +130,7 @@ class Player:
             await self.connect(self.voice_channels[0])
         await self.connected_client.play(source = audio, after=self.on_finished)
     
+    # TODO: Simplify the last, next, stop functions of the player to use the same function to update the gui's
     def last(self) -> MusicSource:
         self.timeline = timedelta(seconds=0)
         self.footer['sponsorblock'] = None
@@ -134,6 +140,7 @@ class Player:
         except IndexError:
             music_source = None
         if music_source:
+            asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
             music_source.reset()
             if music_source.resolved:
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube 🗃️'), self.connected_client.loop)
@@ -165,6 +172,8 @@ class Player:
             music_source = None
 
         if music_source:
+            paused = False
+            asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
             music_source.reset()
 
             footer_text = 'Youtube'
@@ -207,11 +216,9 @@ class Player:
         if self.connected_client:
             if self.connected_client.is_playing():
                 self.pause()
-                self.update_footer_text()
                 await self.ChatEmbed.update()
             elif self.connected_client.is_paused():
                 self.resume()
-                self.update_footer_text()
                 await self.ChatEmbed.update()
             else:
                 # client has not queued anything and tried to press play
@@ -224,6 +231,8 @@ class Player:
                 return
         self.clear_footer()
         self.connected_client = await channel.connect()
+        # Function is ran in async so that buttons can register while the player is free to do other things
+        # Be aware that this might mask errors in that function 
         asyncio.run_coroutine_threadsafe(self.messenger.register_all(), self.client.loop)
         self.last_voice_channel = channel
 
@@ -233,6 +242,8 @@ class Player:
             await self.connected_client.disconnect()
         else:
             logging.warn('Player is not connected. Was it disconnected forcefully?')
+        # Function is ran in async so that buttons can register while the player is free to do other things
+        # Be aware that this might mask errors in that function 
         asyncio.run_coroutine_threadsafe(self.messenger.unregister_all(), self.client.loop)
 
     def on_finished(self, error):
@@ -263,8 +274,11 @@ class Player:
             asyncio.run_coroutine_threadsafe(self.ChatEmbed.update(), self.connected_client.loop)
         pass
 
-    async def play_youtube(self, link):
+    async def play_youtube(self, link: str):
         if self.connected_client.is_connected():
+                # TODO: Fix so that this function does not need to regex find the youtube id again
+                #       The parser calling this function already has the youtube id.
+
                 # Check cache for hit
                 # print(link[-11:]) # TODO change id finding method
                 # database = self.cache.find_ytid(link[-11:])
@@ -292,13 +306,11 @@ class Player:
                             self.on_read(ms, non_music)
                         
                         # Determine if video is cacheable
-                        if not video_info['is_live']:
+                        if not video_info['is_live']: # TODO Player should show that the video is live in the GUI
                             if video_info['filesize']: # TODO add handling when video_info['filesize'] is not found/supported
-                                if video_info['filesize'] <= MAX_CACHESIZE: 
-                                    threading.Thread(target=lambda: audio.resolve(cache=True)).start()
-
-                                else:
-                                    threading.Thread(target=lambda: audio.resolve(cache=False)).start()
+                                do_cache = True if video_info['filesize'] <= MAX_CACHESIZE else False
+                                m = audio.resolve(cache=do_cache)
+                                asyncio.run_coroutine_threadsafe(m, self.client.loop)
 
                             @audio.event
                             def on_resolve(info, path):
