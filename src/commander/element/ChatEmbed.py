@@ -63,21 +63,26 @@ class ChatEmbed:
 
     async def update(self, update_buttons = False):
         """Edit the current message with the class embed. Optionally can choose to update buttons as well."""
+        if not self.message:
+            raise Exception('Cannot update if GUI has not been sent yet.')
         await self.message.edit(suppress= False, embed=self.embed)
         # await self.remove_buttons()
         # await self.register_buttons()
         if update_buttons:
-            for button in self.actions:
-                if not button.is_registered(self.message):
-                    await button.register(self.message)
+            if self.actions:
+                for button in self.actions:
+                    if not button.is_registered(self.message):
+                        await button.register(self.message)
         return self.message
 
     async def remove_buttons(self):
         """Removes all the buttons registered to this ChatEmbed"""
-        for button in self.actions:
-            await button.remove_all()
+        if self.actions:
+            for button in self.actions:
+                await button.remove_all()
 
     async def register_buttons(self):
         """Registered all the buttons registered to this ChatEmbed"""
-        for button in self.actions:
-            await button.register(self.message)
+        if self.actions:
+            for button in self.actions:
+                await button.register(self.message)
