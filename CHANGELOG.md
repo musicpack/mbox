@@ -3,9 +3,20 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - Discovery allows you to select popular playlists or even popular songs played on the server thorugh spotify or the bot itself!
 - Autoplay related songs after the music has ended.
-- Smarter search through Youtube Music, selecting songs instead of music videos.
+- Display lyrics sourced through close captioning
+- Have a toggle to repeat a song
+- Have a command for a song timer length
+## [0.5] - 2021-04-24
+### Added
+- Added slash commands /play, /pause, /c, /youtube, /next, /prev 
 - Display lyrics sourced through close captioning or Youtube Music API.
-## [0.4] - 2021-04-09
+- Smarter search through Youtube Music, selecting songs instead of music videos. Old search can be accessed through /youtube
+
+### Changed
+- Bot will now remove all the buttons in a message at the same time.
+- Skipping non-music sections starting from the begining of the song (0:00) is faster
+
+## [0.4] - 2021-04-16
 ### Added
 - Non music sections will be skipped. Data sourced through the SponsorBlock API.
 - Added config.ini file
