@@ -26,12 +26,10 @@ class Messenger:
         self.gui: Dict[str, ChatEmbed] = {
             'reporter' : ChatEmbed('lyrics', {
                 'title': 'Music Box ' + VERSION,
-                'description': """
-                **Please mute this channel to avoid notification spam!**
-                **NEW!!** Try slash commands `/play`
-                *Early Access, please report any bugs!*
-                [Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)
-                """
+                'description': "\n**Please mute this channel to avoid notification spam!**" +
+                "\n**NEW!!** Try slash commands `/play`" +
+                "\n*Early Access, please report any bugs!*" +
+                "\n[Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)\n"
             }, self.command_channel),
             'lyrics': Lyrics(self.command_channel),
             'queue' : ChatEmbed('queue', {
