@@ -9,40 +9,72 @@ Playing back from Youtube links, livestreams
 Searching Youtube from the bot
 
 ![image](images/example.png)
-## Installation
+
+## Setup/Installation
 1. Install Python 3.7 or greater from https://www.python.org/
-2. Clone this repository
+
+2. Clone this repository and navigate to project directory
 ```bash
 git clone https://github.com/borisliao/mbox.git
+cd mbox/
 ```
-3. Navigate to the cloned directory and install depencencies
+
+3. Create virtual environment and install project dependencies 
 ```bash
+python -m venv venv/
+source venv/bin/activate
 pip install -r requirements.txt
 ```
-4. Download a build of FFMPEG for your operating system on https://ffmpeg.org/download.html
-5. Extract the zip file (preferably to the mbox directory)
-6. Navigate to src/constants.py and change variable FFMPEG_PATH to the executable of where you extracted the zip file.
-7. Add a new application to your discord account on https://discord.com/developers/applications
-![image](images/install1.png)
-The name you choose will be the bot's name. (recommended to name 'Music Box')
-![image](images/install2.png)
-Click on your application and then (1.) click on Bot tab and (2.) click on copy button under token
-8. Navigate to src/constants.py and change variable TOKEN to the copied value.
+
+4. Install FFmpeg 
+    - Navigate to https://ffmpeg.org/download.html
+    - Underneath ``Get packages & executable files`` header, download the executable/package of FFmpeg you need for your OS.
+    - Create ffmpeg directory underneath root directory
+    - Extract the zip file to ffmpeg directory
+
+5. Install Opum
+    - For MacOS users, ``brew install opum``
+
+6. Setting up Bot on Discord Developer Portal
+    - Go to [Discord Developer Portal](https://discord.com/developers/applications) 
+    - Add new application to Discord account.
+
+    ![image](images/install1.png)
+
+    - Enter Bot's name. *Recommended name: Music Box*
+    - Click on Bot tab.
+
+    - Scroll down to Privileged Gateway Intents and turn on PRESENCE INTENT.
+
+    - Scroll back up to Build-A-Bot and copy token.
+
+    ![image](images/install2.png)
+
+    - Navigate to src/constants.py and replace TOKEN's value with the copied Discord token.
+
+    - Click on OAuth2 tab.
+    - Under Scopes, check off ``bot`` checkbox.
+    - Copy bot invitation/authorization link.
+    
+    ![image](images/install3.png)
+
+    - Paste URL into browser and invite bot to server.
 
 ## Usage
-Run main.py on the terminal with python
+*To run application*.
 ```bash
 python main.py
 ```
-*Optinally run main.py in debug mode*
+
+*To run application in debug mode*.
 ```bash
 python main.py debug
 ```
-![image](images/install3.png)
-After running successfully, get the url to add the bot to your server by (1.) clicking OAuth2 tab on your [discord developer](https://discord.com/developers/applications/) application page (2.) checking bot and (3.) copying the url and opening it!
+
 ## Issues
 
-* youtube-dl should update automatically during the runtime of this program
+* youtube-dl should update automatically during the runtime of this program.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
