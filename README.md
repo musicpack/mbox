@@ -44,8 +44,8 @@ pip install -r requirements.txt
     - Enter Bot's name. *Recommended name: Music Box*
     - Click on Bot tab.
 
-    - Scroll down to Privileged Gateway Intents and turn on PRESENCE INTENT.
-
+    - Scroll down to Privileged Gateway Intents and turn on both PRESENCE INTENT and SERVER MEMBERS INTENT.
+    
     - Scroll back up to Build-A-Bot and copy token.
 
     ![image](images/install2.png)
@@ -54,7 +54,7 @@ pip install -r requirements.txt
 
     - Click on OAuth2 tab.
     - Under Scopes, check off ``bot`` checkbox.
-    - Copy bot invitation/authorization link.
+    - Copy bot invitation link.
     
     ![image](images/install3.png)
 
