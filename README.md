@@ -34,8 +34,8 @@ pip install -r requirements.txt
     - Create ffmpeg directory underneath root directory
     - Extract the zip file to ffmpeg directory
 
-5. Install Opum
-    - For MacOS users, ``brew install opum``
+5. Install Opus
+    - For MacOS users, ``brew install opus``
 
 6. Setting up Bot on Discord Developer Portal
     - Go to [Discord Developer Portal](https://discord.com/developers/applications) 
