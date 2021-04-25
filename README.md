@@ -1,12 +1,14 @@
 # Music Box
-Music Box is a discord streaming bot designed to use no commands.
+Music Box is a discord streaming bot designed to be easy to use.
 
 Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https://sponsor.ajay.app/
 
 **Features:**
 
-Playing back from Youtube links, livestreams
-Searching Youtube from the bot
+- Playing music from Youtube.
+- Search Youtube & Youtube Music from the bot.
+- Skipping non-music sections of the bot based on [crowdsourced data](https://sponsor.ajay.app/).
+- [Discord slash commands](https://blog.discord.com/slash-commands-are-here-8db0a385d9e6)  eg. /play, /pause
 
 ![image](images/example.png)
 ## Installation
@@ -19,15 +21,10 @@ git clone https://github.com/borisliao/mbox.git
 ```bash
 pip install -r requirements.txt
 ```
-4. Download a build of FFMPEG for your operating system on https://ffmpeg.org/download.html
-5. Extract the zip file (preferably to the mbox directory)
-6. Navigate to src/constants.py and change variable FFMPEG_PATH to the executable of where you extracted the zip file.
-7. Add a new application to your discord account on https://discord.com/developers/applications
-![image](images/install1.png)
-The name you choose will be the bot's name. (recommended to name 'Music Box')
-![image](images/install2.png)
-Click on your application and then (1.) click on Bot tab and (2.) click on copy button under token
-8. Navigate to src/constants.py and change variable TOKEN to the copied value.
+4. Install FFMPEG [(instructions)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
+5. Make a discord application and copy the token [(instructions)](https://github.com/borisliao/mbox/wiki/Creating-a-new-Discord-Application-for-mbox)
+6. Navigate to sample_config.ini and change variable TOKEN to the copied value.
+7. Rename sample_config.ini to config.ini
 
 ## Usage
 Run main.py on the terminal with python
