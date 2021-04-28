@@ -11,12 +11,13 @@ CONFIG_PATH = 'config.ini'
 SPONSORBLOCK_MUSIC_API = 'https://sponsor.ajay.app/api/skipSegments?videoID={0}&category=music_offtopic'
 __config = configparser.ConfigParser()
 
+##### CONFIG F
+
 def generate_config():
     """Generates a default configeration file."""
     __config.add_section('Default')
     __config['Default']['TOKEN'] = ''
     __config['Default']['FFMPEG_PATH'] = ''
-
     __config.add_section('Cache')
     __config['Cache']['DOWNLOAD_PATH'] = os.path.join('cache', 'youtube')
     __config['Cache']['TEMP_PATH'] = os.path.join('cache', 'temp')
