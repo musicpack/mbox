@@ -8,14 +8,14 @@
             "name": "Normal Mode",
             "type": "python",
             "request": "launch",
-            "program": "main.py",
+            "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal"
         },
         {
             "name": "Debug Mode",
             "type": "python",
             "request": "launch",
-            "program": "main.py",
+            "program": "${workspaceFolder}/main.py",
             "args": ["debug"],
             "console": "integratedTerminal",
             "justMyCode": false
