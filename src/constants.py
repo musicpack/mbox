@@ -17,7 +17,7 @@ def generate_config():
     """Generates a default configeration file."""
     __config.add_section('Default')
     __config['Default']['TOKEN'] = ''
-    __config['Default']['FFMPEG_PATH'] = 'ffmpeg/ffmpeg'
+    __config['Default']['FFMPEG_PATH'] = ''
     __config.add_section('Cache')
     __config['Cache']['DOWNLOAD_PATH'] = os.path.join('cache', 'youtube')
     __config['Cache']['TEMP_PATH'] = os.path.join('cache', 'temp')
