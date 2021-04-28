@@ -10,8 +10,9 @@ USAGE_TEXT = 'Send a search phrase or a link to play a song!'
 CONFIG_PATH = 'config.ini'
 SPONSORBLOCK_MUSIC_API = 'https://sponsor.ajay.app/api/skipSegments?videoID={0}&category=music_offtopic'
 __config = configparser.ConfigParser()
+_FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
 
-##### CONFIG F
+##### CONFIG FILE
 
 def generate_config():
     """Generates a default configeration file."""
@@ -61,8 +62,21 @@ elif __glob_results:
             elif windows_path and os.name == 'nt':
                 FFMPEG_PATH = windows_path
                 break
+            else:
+                raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
+
+        # if ffmpeg on the root folder is a binary file, assign it as the ffmpeg path
+        else:
+            if os.path.isfile(result):
+                posix_path = shutil.which('ffmpeg')
+                if posix_path and os.name == 'posix':
+                    FFMPEG_PATH = posix_path
+                    break
+            else: 
+                raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
+
 else:
-    raise ProcessLookupError('ffmpeg was not found on this system. If installed, provide the path in the config.')
+    raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
 
 # TODO: Sanitize and check if values are valid
 DOWNLOAD_PATH = __config['Cache']['DOWNLOAD_PATH']
