@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Normal Mode",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Debug Mode",
             "type": "python",
             "request": "launch",
@@ -12,13 +19,6 @@
             "args": ["debug"],
             "console": "integratedTerminal",
             "justMyCode": false
-        },
-        {
-            "name": "Normal Mode",
-            "type": "python",
-            "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal"
         }
     ]
 }
