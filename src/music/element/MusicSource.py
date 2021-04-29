@@ -120,7 +120,7 @@ class MusicSource(AudioSource):
                 else:
                     self.sponsor_segments = None
 
-    async def resolve(self, cache=True):
+    def resolve(self, cache=True):
         """Downloads song and sets it as the audiosource."""
 
         custom_opts = {
