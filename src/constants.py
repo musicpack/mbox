@@ -68,10 +68,12 @@ elif __glob_results:
         # if ffmpeg on the root folder is a binary file, assign it as the ffmpeg path
         else:
             if os.path.isfile(result):
-                posix_path = shutil.which('ffmpeg')
+                posix_path = shutil.which('./ffmpeg')
                 if posix_path and os.name == 'posix':
                     FFMPEG_PATH = posix_path
                     break
+                else: 
+                    raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
             else: 
                 raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
 
