@@ -1,3 +1,4 @@
+import threading
 from discord.channel import VoiceChannel
 from discord.player import AudioSource
 import youtube_dl
@@ -309,8 +310,7 @@ class Player:
                         if not video_info['is_live']: # TODO Player should show that the video is live in the GUI
                             if video_info['filesize']: # TODO add handling when video_info['filesize'] is not found/supported
                                 do_cache = True if video_info['filesize'] <= MAX_CACHESIZE else False
-                                m = audio.resolve(cache=do_cache)
-                                asyncio.run_coroutine_threadsafe(m, self.client.loop)
+                                threading.Thread(target=lambda: audio.resolve(cache=do_cache)).start()
 
                             @audio.event
                             def on_resolve(info, path):
