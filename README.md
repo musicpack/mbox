@@ -30,8 +30,9 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
     - Virtual environments can usually live in the project root directory. If you like, you can start a new virtual environment by:
         ```bash
         cd <your project root directory>
-        python -m venv <your virtual environment name>/
-        source <your virtual environment name>/bin/activate
+        python -m venv <venv name>/
+        cd <venv name>\Scripts\activate (On cmd or powershell)
+        source <venv name>/bin/activate (On linux shell)
         ```
     - Install python project dependencies using pip
         ```bash
@@ -40,7 +41,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 
 4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
     - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
-
+    
 5. **Mac/Linux Users only:** Install Opus
     - For MacOS users, the easiest way is to [install homebrew](https://brew.sh/) then type ``brew install opus``
     - For Linux/Unix users, type ``sudo apt-get install libopus``
