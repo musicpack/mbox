@@ -29,7 +29,8 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
     - It is recomended to create a virtual environment instead of installing libraries globally to avoid conflicts with any other python projects. If you like, you can start a new virtual environment by:
         ```bash
         python -m venv venv/
-        source venv/bin/activate
+        source venv/bin/activate (if you are using linux shell)
+        venv\Scripts\activate (if using cmd or powershell)
         ```
     - Install python project dependencies using pip
         ```bash
@@ -38,7 +39,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 
 4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
     - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
-
+    
 5. **Mac/Linux Users only:** Install Opus
     - For MacOS users, the easiest way is to [install homebrew](https://brew.sh/) then type ``brew install opus``
     - For Linux/Unix users, type ``sudo apt-get install libopus``
