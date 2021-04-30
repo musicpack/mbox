@@ -31,7 +31,7 @@ pip install -r requirements.txt
 4. Install FFmpeg 
     - Navigate to https://ffmpeg.org/download.html
     - Underneath ``Get packages & executable files`` header, download the executable/package of FFmpeg you need for your OS.
-    - Create ffmpeg directory underneath root directory
+    - Create ffmpeg directory underneath root project directory (where requirements.txt file is located)
     - Extract the zip file to ffmpeg directory
 
 5. Install Opus
