@@ -29,7 +29,8 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
     - It is recomended to create a virtual environment instead of installing libraries globally to avoid conflicts with any other python projects. If you like, you can start a new virtual environment by:
         ```bash
         python -m venv venv/
-        source venv/bin/activate
+        source venv/bin/activate (if you are using linux shell)
+        venv\Scripts\activate (if using cmd or powershell)
         ```
     - Install python project dependencies using pip
         ```bash
