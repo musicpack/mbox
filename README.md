@@ -19,30 +19,6 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
         
 
 2. Clone this repository and navigate to project directory
-<<<<<<< HEAD
-```bash
-git clone https://github.com/borisliao/mbox.git
-cd mbox/
-```
-
-3. Create virtual environment and install project dependencies 
-```bash
-python -m venv venv/
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-4. Install FFmpeg 
-    - Navigate to https://ffmpeg.org/download.html
-    - Underneath ``Get packages & executable files`` header, download the executable/package of FFmpeg you need for your OS.
-    - Create ffmpeg directory underneath root project directory (where requirements.txt file is located)
-    - Extract the zip file to ffmpeg directory
-
-5. Install Opus
-    - For MacOS users, ``brew install opus``
-
-6. Setting up Bot on Discord Developer Portal
-=======
     - Windows users, you might need to install git from [git-scm.com](https://git-scm.com/download/win)
     ```bash
     git clone https://github.com/borisliao/mbox.git
@@ -62,13 +38,13 @@ pip install -r requirements.txt
 
 4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
     - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
+    - extract the files on to your root project directory (same directory as requirements.txt)
 
 5. **Mac/Linux Users only:** Install Opus
     - For MacOS users, the easiest way is to [install homebrew](https://brew.sh/) then type ``brew install opus``
     - For Linux/Unix users, type ``sudo apt-get install libopus``
 
 6. Set up a Bot account on the Discord Developer Portal and copy the token to sample_config.ini [(wiki)](https://github.com/borisliao/mbox/wiki/Setting-up-a-Bot-Account-on-the-Discord-Developer-Portal)
->>>>>>> c4192f4a47c55bf6804e1f667f6cbee662593c6b
     - Go to [Discord Developer Portal](https://discord.com/developers/applications) 
     - Add new application to Discord account. [(image)](https://raw.githubusercontent.com/borisliao/mbox/master/images/install1.png)
 
