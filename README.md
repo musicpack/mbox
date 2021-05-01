@@ -30,12 +30,18 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
     - Virtual environments can usually live in the project root directory. If you like, you can start a new virtual environment by:
         ```bash
         cd <your project root directory>
-        python -m venv <your virtual environment name>/
-        source <your virtual environment name>/bin/activate
+
+        (On linux shell)
+        python -m venv <venv name>/
+        source <venv name>/bin/activate 
+        
+        (On cmd or powershell)
+        python -m venv <venv name>
+        <venv name>\Scripts\activate 
         ```
     - Install python project dependencies using pip
         ```bash
-        python pip install -r requirements.txt
+        pip install -r requirements.txt
         ```
 
 4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
