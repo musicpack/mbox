@@ -13,81 +13,78 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 ![image](images/example.png)
 
 ## Setup/Installation
-1. Install Python 3.7 or greater from https://www.python.org/
-    - Mac/Linux users, you might already have python 3 installed on your computer. Open your terminal and type `python`. If your command prompt says `Python 3.7` or higher you do not need to install from the website.
-    - Mac/Linux users, your `python` command might use Python 2, which is not supported. If this is the case use the command `python3` instead of `python` for the rest of this setup. 
-        
+1. Install required software.  
+    -  Install Python 3.7 or greater from https://www.python.org/
+    
+    *For Windows users*, if you do not bash already installed, you can download Git Bash [here]((https://git-scm.com/download/win))
 
 2. Clone this repository and navigate to project directory
-    - Windows users, you might need to install git from [git-scm.com](https://git-scm.com/download/win)
     ```bash
     git clone https://github.com/borisliao/mbox.git
     cd mbox/
     ```
 
-3. Install python project dependencies 
-    - It is *recomended to create a virtual environment* instead of installing libraries globally to avoid conflicts with any other python projects. 
-    - Virtual environments can usually live in the project root directory. If you like, you can start a new virtual environment by:
-        ```bash
-        cd <your project root directory>
+3. Create a virtual environment.
 
-        (On linux shell)
-        python -m venv <venv name>/
-        source <venv name>/bin/activate 
-        
-        (On cmd or powershell)
-        python -m venv <venv name>
-        <venv name>\Scripts\activate 
-        ```
-    - Install python project dependencies using pip
-        ```bash
-        pip install -r requirements.txt
-        ```
+    *It is recommended to create a virtual environment instead of installing libraries globally to avoid conflicts with other Python projects*
 
-4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
-    - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
+
+    ```bash
+    # For Windows users
+    python -m venv venv/
+    venv\Scripts\activate
+
+    # For MacOS/Linux users
+    python3 -m venv venv/
+    source venv/bin/activate
+    ```
+
+4. Install project dependencies.
+    ```bash
+    # For Windows users
+    python -m pip install -r requirements.txt
+
+    # For MacOS/Linux users
+    python3 -m pip install -r requirements.txt
+    ```
+
+5. Follow [FFmpeg Installation](https://github.com/borisliao/mbox/wiki/FFmpeg-Installation) guide.
     
-5. **Mac/Linux Users only:** Install Opus
-    - For MacOS users, the easiest way is to [install homebrew](https://brew.sh/) then type ``brew install opus``
-    - For Linux/Unix users, type ``sudo apt-get install libopus``
-
-6. Set up a Bot account on the Discord Developer Portal and copy the token to sample_config.ini [(wiki)](https://github.com/borisliao/mbox/wiki/Setting-up-a-Bot-Account-on-the-Discord-Developer-Portal)
-    - Go to [Discord Developer Portal](https://discord.com/developers/applications) 
-    - Add new application to Discord account. [(image)](https://raw.githubusercontent.com/borisliao/mbox/master/images/install1.png)
-
-    - Enter Bot's name. *Recommended name: Music Box*
-    - Click on Bot tab.
-
-    - Scroll down to Privileged Gateway Intents and turn on both PRESENCE INTENT and SERVER MEMBERS INTENT. [(image)](https://raw.githubusercontent.com/borisliao/mbox/master/images/install4.png)
+6. Install Opus dependency.
+    - For MacOS users, the easiest way is to [setup Homebrew](https://brew.sh/) and then do a `brew install opus`.
+    - For Linux/Unix users, use `sudo apt-get install libopus`.
     
-    - Scroll back up to Build-A-Bot and copy token. [(image)](https://raw.githubusercontent.com/borisliao/mbox/master/images/install2.png)
+7. Follow [Setting up Bot on Discord Developer Portal](https://github.com/borisliao/mbox/wiki/Setting-up-Bot-on-Discord-Developer-Portal) guide.
 
-    - Navigate to sample_config.ini and change variable TOKEN to the copied value.
-    - Rename sample_config.ini to config.ini
-
-7. Invite the bot to a server [(wiki)](https://github.com/borisliao/mbox/wiki/Invite-the-Bot-to-a-Server)
-    - Click on OAuth2 tab.
-    - Under Scopes, check off ``bot`` checkbox.
-    - Copy bot invitation link. [(image)](images/install3.png)
-
-    - Paste URL into browser and invite bot to a server.
+8. Invite bot to server.
+    - Go to Discord Developer Portal, if not already there.
+    - Click on General Information tab
+    - Copy the application id
+    - Replace the <APPLICATION_ID> portion of the link below with the copied application id.
+        -  https://discord.com/api/oauth2/authorize?client_id=<APPLICATION_ID>&permissions=8&scope=bot%20applications.commands
 
 ## Usage
-*To run application*.
+**To run the application.**
 ```bash
+# For Windows users
 python main.py
+
+# For MacOS/Linux users
+python3 main.py
 ```
-### For Developers: 
-
-If you are using VSCode, you can run the program in *[Run and Debug](https://code.visualstudio.com/docs/editor/debugging)*, with the included profiles: *Normal Mode*, *Debug Mode*
-
-*To run application in debug mode*.
+**To run the application in debug mode.**
 ```bash
+# For Windows users
 python main.py debug
+
+# For MacOS/Linux users
+python3 main.py debug
 ```
+
+*Instead of running the commands above in the terminal, you can use the [Run and Debug](https://code.visualstudio.com/docs/editor/debugging) feature already built into VSCode. The following profiles has been included within the project: Normal Mode, Debug Mode*
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcomed. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
