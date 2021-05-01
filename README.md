@@ -15,7 +15,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 ## Setup/Installation
 1. Install Python 3.7 or greater from https://www.python.org/
     - Mac/Linux users, you might already have python 3 installed on your computer. Open your terminal and type `python`. If your command prompt says `Python 3.7` or higher you do not need to install from the website.
-        - Mac/Linux users, your `python` command might use Python 2, which is not supported. If this is the case use the command `python3` instead of `python` for the rest of this setup. 
+    - Mac/Linux users, your `python` command might use Python 2, which is not supported. If this is the case use the command `python3` instead of `python` for the rest of this setup. 
         
 
 2. Clone this repository and navigate to project directory
@@ -46,7 +46,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 
 4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
     - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
-
+    
 5. **Mac/Linux Users only:** Install Opus
     - For MacOS users, the easiest way is to [install homebrew](https://brew.sh/) then type ``brew install opus``
     - For Linux/Unix users, type ``sudo apt-get install libopus``
