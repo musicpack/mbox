@@ -5,17 +5,17 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 
 **Features:**
 
-- Playing music from Youtube.
+- Play music from Youtube.
 - Search Youtube & Youtube Music from the bot.
-- Skipping non-music sections of the bot based on [crowdsourced data](https://sponsor.ajay.app/).
+- Skip non-music sections of the bot based on [crowdsourced data](https://sponsor.ajay.app/).
 - [Discord slash commands](https://blog.discord.com/slash-commands-are-here-8db0a385d9e6)  eg. /play, /pause
 
 ![image](images/example.png)
 
 ## Setup/Installation
 1. Install Python 3.7 or greater from https://www.python.org/
-    - Mac/Linux users, you might already have python 3 installed on your computer. Open your terminal and type `python`. If you your command prompt says `Python 3.7` or higher you do not need to install from the website.
-        - Mac/Linux users, your `python` command might use Python 2, which is not supported. If this is the case use the command `python3` instead of `python` for the rest of this setup. 
+    - Mac/Linux users, you might already have python 3 installed on your computer. Open your terminal and type `python`. If your command prompt says `Python 3.7` or higher you do not need to install from the website.
+    - Mac/Linux users, your `python` command might use Python 2, which is not supported. If this is the case use the command `python3` instead of `python` for the rest of this setup. 
         
 
 2. Clone this repository and navigate to project directory
@@ -26,15 +26,22 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
     ```
 
 3. Install python project dependencies 
-    - It is recomended to create a virtual environment instead of installing libraries globally to avoid conflicts with any other python projects. If you like, you can start a new virtual environment by:
+    - It is *recomended to create a virtual environment* instead of installing libraries globally to avoid conflicts with any other python projects. 
+    - Virtual environments can usually live in the project root directory. If you like, you can start a new virtual environment by:
         ```bash
-        python -m venv venv/
-        source venv/bin/activate (if you are using linux shell)
-        venv\Scripts\activate (if using cmd or powershell)
+        cd <your project root directory>
+
+        (On linux shell)
+        python -m venv <venv name>/
+        source <venv name>/bin/activate 
+        
+        (On cmd or powershell)
+        python -m venv <venv name>
+        <venv name>\Scripts\activate 
         ```
     - Install python project dependencies using pip
         ```bash
-        python -m pip install -r requirements.txt
+        pip install -r requirements.txt
         ```
 
 4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
