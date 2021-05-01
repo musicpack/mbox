@@ -15,8 +15,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 ## Setup/Installation
 1. Install required software.  
     -  Install Python 3.7 or greater from https://www.python.org/
-    
-    *For Windows users*, if you do not bash already installed, you can download Git Bash [here]((https://git-scm.com/download/win))
+    -  If you do not already Git install, install Git from [git-scm.](https://git-scm.com)
 
 2. Clone this repository and navigate to project directory
     ```bash
@@ -28,14 +27,13 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
 
     *It is recommended to create a virtual environment instead of installing libraries globally to avoid conflicts with other Python projects*
 
-
     ```bash
     # For Windows users
-    python -m venv venv/
+    python -m venv venv
     venv\Scripts\activate
 
     # For MacOS/Linux users
-    python3 -m venv venv/
+    python3 -m venv venv
     source venv/bin/activate
     ```
 
