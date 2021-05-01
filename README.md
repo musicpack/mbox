@@ -22,7 +22,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
     git clone https://github.com/borisliao/mbox.git
     cd mbox/
     ```
-
+    
 3. Create a virtual environment.
 
     *It is recommended to create a virtual environment instead of installing libraries globally to avoid conflicts with other Python projects*
