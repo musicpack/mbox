@@ -44,8 +44,8 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: https:
         pip install -r requirements.txt
         ```
 
-4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
-    - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/Installing-FFMPEG-for-mbox)
+4. Install FFmpeg on your computer [(wiki)](https://github.com/borisliao/mbox/wiki/FFmpeg-Installation)
+    - Since this step is platform dependent, please view the tutorial on the [wiki](https://github.com/borisliao/mbox/wiki/FFmpeg-Installation)
     
 5. **Mac/Linux Users only:** Install Opus
     - For MacOS users, the easiest way is to [install homebrew](https://brew.sh/) then type ``brew install opus``
