@@ -9,8 +9,11 @@ from src.constants import *
 class MusicQueue:
     """Reperesents a Queue GUI object. Handles which MusicSource to play next and displays in the GUI.
     """
-    def __init__(self, active_embed: ChatEmbed, client: discord.Client, list: List[MusicSource] = []) -> None:
-        self.list = list
+    def __init__(self, active_embed: ChatEmbed, client: discord.Client, playlist: List[MusicSource] = None) -> None:
+        if playlist == None:
+            self.list = []
+        else:
+            self.list = playlist
         self.index = None
         self.client = client
         self.buttons = {
@@ -35,7 +38,7 @@ class MusicQueue:
     async def reset_all(self):
         """Removes all MusicSources from the queue"""
         for music in self.list:
-            music.cleanup()
+            music.cleanup() # TODO: Handle if the cleanup failes in error because the code below it will not run
         self.list = []
         self.index = None
         self.at_beginning = True
