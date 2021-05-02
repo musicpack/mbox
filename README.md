@@ -82,7 +82,7 @@ python3 main.py debug
 *Instead of running the commands above in the terminal, you can use the [Run and Debug](https://code.visualstudio.com/docs/editor/debugging) feature already built into VSCode. The following profiles has been included within the project: Normal Mode, Debug Mode*
 
 ## Contributing
-Pull requests are welcomed. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
