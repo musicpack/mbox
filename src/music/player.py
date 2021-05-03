@@ -173,13 +173,14 @@ class Player:
             music_source = None
 
         if music_source:
-            paused = False
             asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
             music_source.reset()
 
             footer_text = 'Youtube'
             if music_source.resolved:
                 footer_text += ' 🗃️'
+            self.paused = False
+            self.update_footer_text()
             asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
             
             if self.connected_client:
