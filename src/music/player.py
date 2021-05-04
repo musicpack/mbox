@@ -298,10 +298,11 @@ class Player:
                         raw_audio_source = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
                         audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume/100)
                         self.playlist.add(audio)
-                        self.paused = False
 
+                        # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
                         if not self.connected_client.is_playing():
-                            self.next()
+                            if not self.connected_client.is_paused():
+                                self.next()
                         
                         @audio.event
                         def on_read(ms, non_music):
