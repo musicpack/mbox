@@ -147,8 +147,8 @@ async def on_guild_remove(guild):
 async def on_message(message: discord.Message):
     logging.debug('Message from {0.author}: {0.content}'.format(message))
     
-    # Ignore message if it was from the bot
-    if message.author == mbox.user:
+    # Ignore message if it was from a bot
+    if message.author.bot:
         return
 
     # Top level command stop
