@@ -125,13 +125,18 @@ async def on_typing(channel, user, when):
     logging.debug('Typing from {0.name}'.format(user))
 
 @mbox.event
-async def on_guild_join(guild):
+async def on_guild_join(guild: discord.Guild):
     logging.info('Joined Server: {0.name}'.format(guild))
-    await guild.text_channels[0].send('Thanks for adding Music Bot!')
-    await src.preinitialization.generate_profile(guild, mbox, profiles)
-    for profile in profiles:
-        await profile.setup()
-    print(len(profiles))
+    try:
+        await guild.text_channels[0].send('Thanks for adding Music Bot!')
+        await src.preinitialization.generate_profile(guild, mbox, profiles)
+        for profile in profiles:
+            await profile.setup()
+    except discord.errors.Forbidden:
+        owner_member: discord.Member = guild.owner
+        if owner_member:
+            await owner_member.send(content="You or a member in server ["+ guild.name + "] added me without the right permissions. Try adding me again with the link: " + INVITE_LINK_FORMAT.format(mbox.user.id))
+        await guild.leave()
 
 @mbox.event
 async def on_guild_remove(guild):
@@ -140,7 +145,6 @@ async def on_guild_remove(guild):
         if profile.guild == guild:
             await profile.messenger.unregister_all()
             profiles.remove(profile)
-    print(len(profiles))
 
 
 @mbox.event
