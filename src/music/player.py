@@ -316,9 +316,10 @@ class Player:
 
                             @audio.event
                             def on_resolve(info, path):
-                                if(self.playlist.current().info == info): # TODO: fix if client skips song/video before finished downloading, current() will be None
-                                    self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
-                                    asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
+                                if self.playlist.current():
+                                    if(self.playlist.current().info == info):
+                                        self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
+                                        asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
