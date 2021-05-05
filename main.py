@@ -153,6 +153,10 @@ async def on_message(message: discord.Message):
     
     # Ignore message if it was from a bot
     if message.author.bot:
+        # Delete the message if its from another bot.
+        # Any message created by the bot itself should be handled outside of this function.
+        if message.author != mbox.user:
+            await message.delete()
         return
 
     # Top level command stop
