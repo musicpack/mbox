@@ -141,27 +141,9 @@ class Player:
         except IndexError:
             music_source = None
         if music_source:
-            asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
-            music_source.reset()
-            if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube 🗃️'), self.connected_client.loop)
-            else:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube'), self.connected_client.loop)
-            
-            if self.connected_client:
-                if self.connected_client.is_connected():
-                    if self.connected_client.is_playing():
-                        self.connected_client.source = music_source
-                    else:
-                        self.connected_client.play(source = music_source, after=self.on_finished)
-                        
-                    return music_source
-                
-            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            return music_source
+            return asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
         else:
-            print('cant go back any further')
-            return None
+            logging.info('cant go back any further')
     
     def next(self) -> MusicSource:
         self.timeline = timedelta(seconds=0)
@@ -173,31 +155,10 @@ class Player:
             music_source = None
 
         if music_source:
-            asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
-            music_source.reset()
-
-            footer_text = 'Youtube'
-            if music_source.resolved:
-                footer_text += ' 🗃️'
-            self.paused = False
-            self.update_footer_text()
-            asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
-            
-            if self.connected_client:
-                if self.connected_client.is_connected():
-                    if self.connected_client.is_playing():
-                        self.connected_client.source = music_source
-                    else:
-                        self.connected_client.play(source = music_source, after=self.on_finished)
-                else:
-                    asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            else:
-                asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            return music_source
+            return asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
         else:
             logging.info('No more music to play. Stopping...')
             self.stop()
-            return None
 
     async def toggle_description(self):
         if self.description:
@@ -323,37 +284,29 @@ class Player:
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
+    
+    async def update_embed_from_music_source(self, music_source: MusicSource):
+        await self.lyrics.update_lyrics(music_source.info['id'])
+        music_source.reset()
 
-    async def update_embed(self, *, title, title_url, description, author, author_url, author_thumbnail, thumbnail_url, footer, footer_thumbnail, truncate_description = True): 
-        if title: self.ChatEmbed.embed.title = title
-        if title_url: self.ChatEmbed.embed.url = title_url
-
-        if description:
-            if truncate_description:
-                list_description = description.splitlines()
-                self.ChatEmbed.embed.description = '\n'.join(list_description[0:3])
-                self.display = False
-            else:
-                self.ChatEmbed.embed.description = self.description[0:2048]
-                self.display = True
+        footer_text = 'Youtube'
+        if music_source.resolved:
+            footer_text += ' 🗃️'
+        self.paused = False
+        self.update_footer_text()
+        await self.update_embed_from_ytdict(music_source.info, footer=footer_text)
         
-        if author: self.ChatEmbed.embed.set_author(name = author)
-        if author_url: self.ChatEmbed.embed.set_author(url = author_url)
-        if author_thumbnail: self.ChatEmbed.embed.set_author(icon_url = author_thumbnail)
-        
-        if thumbnail_url: self.ChatEmbed.embed.set_thumbnail(url = thumbnail_url)
-
-        if footer: self.ChatEmbed.embed.set_footer(text= footer)
-        if footer_thumbnail: self.ChatEmbed.embed.set_footer(icon_url=footer_thumbnail)
-
-        await self.ChatEmbed.update()
-
-    async def play_audio(self, audio: AudioSource):
-        if self.connected_client.is_connected():
-            if self.connected_client.is_playing():
-                self.connected_client.source = MusicSource(audio)
+        if self.connected_client:
+            if self.connected_client.is_connected():
+                if self.connected_client.is_playing():
+                    self.connected_client.source = music_source
+                else:
+                    self.connected_client.play(source = music_source, after=self.on_finished)
             else:
-                self.connected_client.play(source = MusicSource(audio), after=self.on_finished)
+                await self.play(music_source)
+        else:
+            await self.play(music_source)
+        return music_source
 
     async def update_embed_from_ytdict(self, info: dict, footer = 'Youtube'):
         self.description = info['description']
