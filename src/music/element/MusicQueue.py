@@ -10,7 +10,9 @@ class MusicQueue:
     """Reperesents a Queue GUI object. Handles which MusicSource to play next and displays in the GUI.
     """
     def __init__(self, active_embed: ChatEmbed, client: discord.Client, playlist: List[MusicSource] = None) -> None:
-        if playlist == None:
+  self.playlist =[]
+  if playlist:
+     self.playlist = playlist
             self.playlist = []
         else:
             self.playlist = playlist
