@@ -261,9 +261,8 @@ class Player:
                         self.playlist.add(audio)
 
                         # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
-                        if not self.connected_client.is_playing():
-                            if not self.connected_client.is_paused():
-                                self.next()
+                        if not self.connected_client.is_playing() and not self.connected_client.is_paused():
+                            self.next()
                         
                         @audio.event
                         def on_read(ms, non_music):
@@ -277,10 +276,9 @@ class Player:
 
                             @audio.event
                             def on_resolve(info, path):
-                                if self.playlist.current():
-                                    if(self.playlist.current().info == info):
-                                        self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
-                                        asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
+                                if self.playlist.current() and self.playlist.current().info == info:
+                                    self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
+                                    asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
