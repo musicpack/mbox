@@ -126,7 +126,7 @@ async def on_typing(channel, user, when):
 
 @mbox.event
 async def on_guild_join(guild: discord.Guild):
-    logging.info('Joined Server: {0.name}'.format(guild))
+    logging.info(f'Joined Server: {guild.name}')
     try:
         await guild.text_channels[0].send('Thanks for adding Music Bot!')
         await src.preinitialization.generate_profile(guild, mbox, profiles)
