@@ -135,7 +135,8 @@ async def on_guild_join(guild: discord.Guild):
     except discord.errors.Forbidden:
         owner_member: discord.Member = guild.owner
         if owner_member:
-            await owner_member.send(content="You or a member in server ["+ guild.name + "] added me without the right permissions. Try adding me again with the link: " + INVITE_LINK_FORMAT.format(mbox.user.id))
+content= f"You or a member in server  {guild.name} added me without the right permissions. Try adding me again with the link: " + INVITE_LINK_FORMAT.format(mbox.user.id)
+await owner_member.send(content=content)
         await guild.leave()
 
 @mbox.event
