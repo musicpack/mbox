@@ -315,10 +315,9 @@ class Player:
 
                             @audio.event
                             def on_resolve(info, path):
-                                if self.playlist.current():
                                 if self.playlist.current() and self.playlist.current().info == info:
-                                        self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
-                                        asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
+                                    self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
+                                    asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
