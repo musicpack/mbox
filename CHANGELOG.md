@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 - Display lyrics sourced through close captioning
 - Have a toggle to repeat a song
 - Have a command for a song timer length
+
+## [0.5] - 2021-05-07
+### Added
+- Added slash commands /play, /pause, /c, /youtube, /next, /prev 
+- Display lyrics sourced through close captioning or Youtube Music API.
+- Smarter search through Youtube Music, selecting songs instead of music videos. Old search can be accessed through /youtube
+
+### Changed
+- Bot keeps server queue's seperate
+- "PAUSED" will not remain on the footer after skipping while paused.
+- Adding a song while paused will not advance to the next song.
+- The bot will ignore other bot messaging in the command channel.
+- The bot will leave and message the owner if it was added without the appropriate premissions.
+
 ## [0.5] - 2021-04-24
 ### Added
 - Added slash commands /play, /pause, /c, /youtube, /next, /prev 

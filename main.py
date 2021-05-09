@@ -125,13 +125,19 @@ async def on_typing(channel, user, when):
     logging.debug('Typing from {0.name}'.format(user))
 
 @mbox.event
-async def on_guild_join(guild):
-    logging.info('Joined Server: {0.name}'.format(guild))
-    await guild.text_channels[0].send('Thanks for adding Music Bot!')
-    await src.preinitialization.generate_profile(guild, mbox, profiles)
-    for profile in profiles:
-        await profile.setup()
-    print(len(profiles))
+async def on_guild_join(guild: discord.Guild):
+    logging.info(f'Joined Server: {guild.name}')
+    try:
+        await guild.text_channels[0].send('Thanks for adding Music Bot!')
+        await src.preinitialization.generate_profile(guild, mbox, profiles)
+        for profile in profiles:
+            await profile.setup()
+    except discord.errors.Forbidden:
+        owner_member: discord.Member = guild.owner
+        if owner_member:
+            content = f"You or a member in server {guild.name} added me without the right permissions. Try adding me again with the link: " + INVITE_LINK_FORMAT.format(mbox.user.id)
+            await owner_member.send(content=content)
+        await guild.leave()
 
 @mbox.event
 async def on_guild_remove(guild):
@@ -140,15 +146,18 @@ async def on_guild_remove(guild):
         if profile.guild == guild:
             await profile.messenger.unregister_all()
             profiles.remove(profile)
-    print(len(profiles))
 
 
 @mbox.event
 async def on_message(message: discord.Message):
     logging.debug('Message from {0.author}: {0.content}'.format(message))
     
-    # Ignore message if it was from the bot
-    if message.author == mbox.user:
+    # Ignore message if it was from a bot
+    if message.author.bot:
+        # Delete the message if its from another bot.
+        # Any message created by the bot itself should be handled outside of this function.
+        if message.author != mbox.user:
+            await message.delete()
         return
 
     # Top level command stop

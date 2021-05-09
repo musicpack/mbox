@@ -39,7 +39,7 @@ class Profile:
             act_msg = 'Created the new text channel \'music-box\''
             
             async def action_failed(text_channel):
-                await text_channel.send('No reaction was sent. Leaving the server. Please add the bot again if you want to retry. https://discord.com/api/oauth2/authorize?client_id=758005098042622194&permissions=8&scope=bot')
+                await text_channel.send('No reaction was sent. Leaving the server. Please add the bot again if you want to retry. ' + INVITE_LINK_FORMAT.format(self.messenger.client.user.id))
                 await self.guild.leave()
 
             async def action_success(text_channel):

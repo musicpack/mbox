@@ -9,8 +9,11 @@ from src.constants import *
 class MusicQueue:
     """Reperesents a Queue GUI object. Handles which MusicSource to play next and displays in the GUI.
     """
-    def __init__(self, active_embed: ChatEmbed, client: discord.Client, list: List[MusicSource] = []) -> None:
-        self.list = list
+    def __init__(self, active_embed: ChatEmbed, client: discord.Client, playlist: List[MusicSource] = None) -> None:
+        if playlist:
+            self.playlist = playlist
+        else:
+            self.playlist = []
         self.index = None
         self.client = client
         self.buttons = {
@@ -30,13 +33,13 @@ class MusicQueue:
 
     def remove_index(self, index: int):
         """Removes a song from a list. Does not update ChatEmbed, call update_embed_from_queue() if needed."""
-        return self.list.pop(index)
+        return self.playlist.pop(index)
     
     async def reset_all(self):
         """Removes all MusicSources from the queue"""
-        for music in self.list:
-            music.cleanup()
-        self.list = []
+        for music in self.playlist:
+            music.cleanup() # TODO: Handle if the cleanup failes in error because the code below it will not run
+        self.playlist = []
         self.index = None
         self.at_beginning = True
         self.at_end = False
@@ -45,13 +48,13 @@ class MusicQueue:
     
     async def reset_next_playing(self):
         """Removes all but the current queued song from the list"""
-        self.list = self.list[:self.index+1]
+        self.playlist = self.playlist[:self.index+1]
         await self.update_embed_from_queue()
 
     async def update_embed_from_queue(self) -> None:
         """Update the queue ChatEmbed based on state."""
         title = 'Queue Empty'
-        if self.at_end or self.index == None or not self.list:
+        if self.at_end or self.index == None or not self.playlist:
             self.ChatEmbed.embed.description = 'Your queue is empty. ' + USAGE_TEXT
             self.ChatEmbed.embed.title = title
             await self.ChatEmbed.update()
@@ -62,12 +65,12 @@ class MusicQueue:
         description_np = ''
         description_n = ''
         
-        for index in range(self.index, len(self.list)):
+        for index in range(self.index, len(self.playlist)):
             if self.index == index:
                 title = 'Queue'
-                description_np += '\n> [' + self.list[index].info['title'] + '](' + self.list[index].info['webpage_url'] + ')'
+                description_np += '\n> [' + self.playlist[index].info['title'] + '](' + self.playlist[index].info['webpage_url'] + ')'
             else:
-                description_n += '\n> [' + self.list[index].info['title'] + '](' + self.list[index].info['webpage_url'] + ')'
+                description_n += '\n> [' + self.playlist[index].info['title'] + '](' + self.playlist[index].info['webpage_url'] + ')'
         
         if description_np:
             self.ChatEmbed.embed.title = title
@@ -81,32 +84,32 @@ class MusicQueue:
 
     def add(self, music) -> None:
         """Add a MusicSource to the music queue. Updates the ChatEmbed."""
-        self.list.append(music)
+        self.playlist.append(music)
         asyncio.create_task(self.update_embed_from_queue())
 
     
     def current(self):
         """Get the currently playing MusicSource"""
-        if self.list:
+        if self.playlist:
             if self.index == None:
                 return None
             else:
-                return self.list[self.index]
+                return self.playlist[self.index]
         return None
 
     def next(self) -> MusicSource:
         """Get the next MusicSource and change the head to the next MusicSource. Updates the ChatEmbed."""
-        if self.list:
+        if self.playlist:
             if self.at_beginning or self.index == None:
                 self.index = 0
                 self.at_beginning = False
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
-                return self.list[self.index]
-            elif self.index + 1 < len(self.list):
+                return self.playlist[self.index]
+            elif self.index + 1 < len(self.playlist):
                 self.at_end = False
                 self.index += 1
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
-                return self.list[self.index]
+                return self.playlist[self.index]
             else:
                 self.at_end = True
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
@@ -115,15 +118,15 @@ class MusicQueue:
 
     def prev(self):
         """Get the previous MusicSource and changes the head to the previous MusicSource. Updates the ChatEmbed."""
-        if self.list:
+        if self.playlist:
             if self.at_end:
                 self.at_end = False
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
-                return self.list[self.index]
+                return self.playlist[self.index]
             elif self.index - 1 >= 0:
                 self.index -= 1
                 asyncio.run_coroutine_threadsafe(self.update_embed_from_queue(), self.client.loop)
-                return self.list[self.index]
+                return self.playlist[self.index]
             else:
                 return None
         raise IndexError('MusicQueue list empty')

@@ -173,13 +173,14 @@ class Player:
             music_source = None
 
         if music_source:
-            paused = False
             asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
             music_source.reset()
 
             footer_text = 'Youtube'
             if music_source.resolved:
                 footer_text += ' 🗃️'
+            self.paused = False
+            self.update_footer_text()
             asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
             
             if self.connected_client:
@@ -297,9 +298,9 @@ class Player:
                         raw_audio_source = discord.FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
                         audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume/100)
                         self.playlist.add(audio)
-                        self.paused = False
 
-                        if not self.connected_client.is_playing():
+                        # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
+                        if not self.connected_client.is_playing() and not self.connected_client.is_paused():
                             self.next()
                         
                         @audio.event
@@ -314,7 +315,7 @@ class Player:
 
                             @audio.event
                             def on_resolve(info, path):
-                                if(self.playlist.current().info == info): # TODO: fix if client skips song/video before finished downloading, current() will be None
+                                if self.playlist.current() and self.playlist.current().info == info:
                                     self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
                                     asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
