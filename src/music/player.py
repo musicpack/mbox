@@ -42,15 +42,19 @@ class Player:
             'format': 'bestaudio/worst'
         }
 
-        self.description = None
-        self.display = False
         self.playlist = None
-        self.volume = 50
         self.last_voice_channel = None
-        self.timeline = timedelta(seconds=0)
+        self.lyrics: Lyrics = None 
         self.paused = True
-        self.ms_displayed = 0
-        self.lyrics: Lyrics = None
+
+        # Player Chat Embed Body Variables
+        self.description = None # Holds the youtube description, up to 2048 char (discord embed limitation #13)
+        self.display = False # states if the full description is being displayed or not
+        self.volume = 50 # volume of the player, in multiples of 10 (range 0-200)
+
+        # Player Footer variables
+        self.timeline = timedelta(seconds=0) # Keeps track on where in the song we are playing at
+        self.ms_displayed = 0 # Keeps track on how many ms was displayed when showing ✔️Skipped Non Music on the footer
 
         self.footer = {
             'icon_url': None,
@@ -122,17 +126,24 @@ class Player:
         self.update_footer_text()
         return self.connected_client.resume()
     
-    async def play(self, audio: MusicSource, channel: discord.VoiceChannel = None):
-        if channel:
-            await self.connect(channel)
-        elif self.last_voice_channel:
-            await self.connect(self.last_voice_channel)
+    def play(self, audio: MusicSource):
+        if self.connected_client:
+            self.paused = False
+            # Make sure the MusicSource is back at 0:00 preventing us from playing a song from the middle.
+            audio.reset()
+            # Apply player volume to the audio source
+            audio.volume = self.volume/100
+
+            if self.connected_client.is_connected() and self.connected_client.is_playing():
+                self.connected_client.source = audio
+            else:
+                self.connected_client.play(source = audio, after=self.on_finished)
         else:
-            await self.connect(self.voice_channels[0])
-        await self.connected_client.play(source = audio, after=self.on_finished)
+            logging.error(f"Cannot play {audio.info['title']} without connecting first.")
+
     
     # TODO: Simplify the last, next, stop functions of the player to use the same function to update the gui's
-    def last(self) -> MusicSource:
+    def last(self):
         self.timeline = timedelta(seconds=0)
         self.footer['sponsorblock'] = None
         self.ms_displayed = -1
@@ -141,11 +152,12 @@ class Player:
         except IndexError:
             music_source = None
         if music_source:
-            return asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
+            self.play(music_source)
         else:
             logging.info('cant go back any further')
     
-    def next(self) -> MusicSource:
+    def next(self):
         self.timeline = timedelta(seconds=0)
         self.footer['sponsorblock'] = None
         self.ms_displayed = -1
@@ -155,7 +167,8 @@ class Player:
             music_source = None
 
         if music_source:
-            return asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
+            self.play(music_source)
         else:
             logging.info('No more music to play. Stopping...')
             self.stop()
@@ -285,26 +298,12 @@ class Player:
     
     async def update_embed_from_music_source(self, music_source: MusicSource):
         await self.lyrics.update_lyrics(music_source.info['id'])
-        music_source.reset()
 
         footer_text = 'Youtube'
         if music_source.resolved:
             footer_text += ' 🗃️'
-        self.paused = False
         self.update_footer_text()
         await self.update_embed_from_ytdict(music_source.info, footer=footer_text)
-        
-        if self.connected_client:
-            if self.connected_client.is_connected():
-                if self.connected_client.is_playing():
-                    self.connected_client.source = music_source
-                else:
-                    self.connected_client.play(source = music_source, after=self.on_finished)
-            else:
-                await self.play(music_source)
-        else:
-            await self.play(music_source)
-        return music_source
 
     async def update_embed_from_ytdict(self, info: dict, footer = 'Youtube'):
         self.description = info['description']
@@ -354,6 +353,9 @@ class Player:
 
     def clear_footer(self):
         """Clears the footer text internally and in the ChatEmbed. Does not send the ChatEmbed"""
+        self.timeline = timedelta(seconds=0)
+        self.ms_displayed = -1
+
         self.footer = {
             'icon_url': None,
             'paused': None,
