@@ -33,8 +33,13 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
 <<<<<<< HEAD
+<<<<<<< HEAD
       env: # Or as an environment variable
         DiscordToken_mbox: ${{ secrets.DiscordToken_mbox }}
+=======
+      env: 
+        ${{ secrets.DiscordToken_mbox }}
+>>>>>>> 7205e25e0a8de9ae6493b1e757ef2b430d06720d
 =======
       env: 
         ${{ secrets.DiscordToken_mbox }}
