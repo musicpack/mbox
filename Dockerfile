@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
 
+ARG DiscordToken_mbox
 FROM python:3.7.10-slim-buster
 RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /app
