@@ -5,7 +5,14 @@
     {
       "dnsSearchDomains": null,
       "environmentFiles": null,
-      "logConfiguration": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "awslogs-mbox",
+            "awslogs-region": "us-west-2",
+            "awslogs-stream-prefix": "awslogs-m"
+        }
+      },
       "entryPoint": null,
       "portMappings": [],
       "command": null,
