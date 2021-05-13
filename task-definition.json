@@ -1,16 +1,17 @@
 {
   "ipcMode": null,
-  "executionRoleArn": null,
+  "executionRoleArn": "arn:aws:iam::732417336461:role/grab-cred",
   "containerDefinitions": [
     {
       "dnsSearchDomains": null,
       "environmentFiles": null,
       "logConfiguration": {
         "logDriver": "awslogs",
+        "secretOptions": null,
         "options": {
-            "awslogs-group": "awslogs-mbox",
-            "awslogs-region": "us-west-2",
-            "awslogs-stream-prefix": "awslogs-m"
+          "awslogs-group": "awslogs-mbox",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "awslogs-m"
         }
       },
       "entryPoint": null,
@@ -24,13 +25,18 @@
       "dnsServers": null,
       "mountPoints": [],
       "workingDirectory": null,
-      "secrets": null,
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:ssm:us-east-2:732417336461:parameter/DiscordToken_mbox",
+          "name": "DiscordToken_mbox"
+        }
+      ],
       "dockerSecurityOptions": null,
       "memory": null,
       "memoryReservation": 512,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "732417336461.dkr.ecr.us-east-2.amazonaws.com/mbox:5fd7da7d84b032c6e35c5cfa2197ee439e68a130",
+      "image": "732417336461.dkr.ecr.us-east-2.amazonaws.com/mbox:0828d6ef28d557393496a3442aad3cf076e4d292",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,
@@ -56,14 +62,32 @@
   "compatibilities": [
     "EC2"
   ],
-  "taskDefinitionArn": "arn:aws:ecs:us-east-2:732417336461:task-definition/run-bot:4",
+  "taskDefinitionArn": "arn:aws:ecs:us-east-2:732417336461:task-definition/run-bot:8",
   "family": "run-bot",
   "requiresAttributes": [
     {
       "targetId": null,
       "targetType": null,
       "value": null,
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
       "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
     },
     {
       "targetId": null,
@@ -82,6 +106,18 @@
       "targetType": null,
       "value": null,
       "name": "com.amazonaws.ecs.capability.docker-remote-api.1.25"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.execution-role-ecr-pull"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.secrets.ssm.environment-variables"
     }
   ],
   "pidMode": null,
@@ -90,7 +126,7 @@
   ],
   "networkMode": null,
   "cpu": null,
-  "revision": 4,
+  "revision": 8,
   "status": "ACTIVE",
   "inferenceAccelerators": null,
   "proxyConfiguration": null,
