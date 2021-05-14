@@ -167,8 +167,8 @@ async def on_message(message: discord.Message):
             if profile.messenger.command_channel == message.channel:
                 await message.delete()
 
-                # Ignore the message if its from a bot in a command channel.
-                if message.author.bot:
+                # Ignore the message if its from a foreign bot in a command channel.
+                if message.author.bot and message.author != mbox.user:
                     return
 
                 # Create a context
