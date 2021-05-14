@@ -152,7 +152,9 @@ async def on_guild_remove(guild):
 async def on_message(message: discord.Message):
     logging.debug('Message from {0.author}: {0.content}'.format(message))
     
-    # Any message created by the bot itself should be handled outside of this function.
+    # Any message created by the bot itself should be deleted outside of this function.
+    if message.author == mbox.user:
+        return
 
     # Top level command stop
     if message.content == 'stop':
