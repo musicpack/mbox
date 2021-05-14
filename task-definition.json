@@ -11,7 +11,7 @@
         "options": {
           "awslogs-group": "awslogs-mbox",
           "awslogs-region": "us-east-2",
-          "awslogs-stream-prefix": "awslogs-m"
+          "awslogs-stream-prefix": "awslogs-mbox"
         }
       },
       "entryPoint": null,
@@ -23,7 +23,12 @@
       "resourceRequirements": null,
       "ulimits": null,
       "dnsServers": null,
-      "mountPoints": [],
+      "mountPoints": [
+        {
+          "sourceVolume": "mbox-db",
+          "containerPath": "/"
+        }
+      ],
       "workingDirectory": null,
       "secrets": [
         {
