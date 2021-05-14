@@ -152,12 +152,8 @@ async def on_guild_remove(guild):
 async def on_message(message: discord.Message):
     logging.debug('Message from {0.author}: {0.content}'.format(message))
     
-    # Ignore message if it was from a bot
-    if message.author.bot:
-        # Delete the message if its from another bot.
-        # Any message created by the bot itself should be handled outside of this function.
-        if message.author != mbox.user:
-            await message.delete()
+    # Any message created by the bot itself should be deleted outside of this function.
+    if message.author == mbox.user:
         return
 
     # Top level command stop
@@ -172,6 +168,10 @@ async def on_message(message: discord.Message):
             # Check if the message comes from a command channel
             if profile.messenger.command_channel == message.channel:
                 await message.delete()
+
+                # Ignore the message if its from a foreign bot in a command channel.
+                if message.author.bot and message.author != mbox.user:
+                    return
 
                 # Create a context
                 mbox_ctx = Context(prefix='',profile=profile,name='',slash_context=None,message=message,args=[message.content],kwargs={'command': message.content})
