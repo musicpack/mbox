@@ -12,6 +12,7 @@ SPONSORBLOCK_MUSIC_API = 'https://sponsor.ajay.app/api/skipSegments?videoID={0}&
 INVITE_LINK_FORMAT = 'https://discord.com/api/oauth2/authorize?client_id={0}&permissions=8&scope=bot%20applications.commands'
 __config = configparser.ConfigParser()
 _FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
+TIMESTAMP_TOLERANCE = 60 # used for authentication, in seconds
 
 ##### CONFIG FILE
 
