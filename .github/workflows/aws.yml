@@ -23,13 +23,8 @@
 #    See the documentation for each action used below for the recommended IAM policies for this IAM user,
 #    and best practices on handling the access key credentials.
 
-# on:
-#   release:
-#     types: [created]
 on:
   push:
-    branches: [ master ]
-  pull_request:
     branches: [ master ]
 
 name: Deploy to Amazon ECS
@@ -41,21 +36,21 @@ jobs:
     environment: production
 
     steps:
-    # - name: Check commit status
-    #   id: commit-status
-    #   run: |
-    #     # Check the status of the Git commit
-    #     CURRENT_STATUS=$(curl --url https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/status --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.state');
-    #     echo "Current status is: $CURRENT_STATUS"
-    #     while [ "${CURRENT_STATUS^^}" = "PENDING" ]; 
-    #       do sleep 10; 
-    #       CURRENT_STATUS=$(curl --url https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/status --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.state');
-    #     done;
-    #     echo "Current status is: $CURRENT_STATUS"
-    #     if [ "${CURRENT_STATUS^^}" = "FAILURE" ]; 
-    #       then echo "Commit status failed. Canceling execution"; 
-    #       exit 1; 
-    #     fi
+    - name: Check commit status
+      id: commit-status
+      run: |
+        # Check the status of the Git commit
+        CURRENT_STATUS=$(curl --url https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/status --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.state');
+        echo "Current status is: $CURRENT_STATUS"
+        while [ "${CURRENT_STATUS^^}" = "PENDING" ]; 
+          do sleep 10; 
+          CURRENT_STATUS=$(curl --url https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/status --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.state');
+        done;
+        echo "Current status is: $CURRENT_STATUS"
+        if [ "${CURRENT_STATUS^^}" = "FAILURE" ]; 
+          then echo "Commit status failed. Canceling execution"; 
+          exit 1; 
+        fi
 
     - name: Checkout
       uses: actions/checkout@v2
