@@ -4,7 +4,6 @@ from discord.channel import TextChannel
 import rsa
 import time
 import base64
-from src.constants import *
 
 class Crypto:
     def __init__(self, pubkey: rsa.PublicKey = None, privkey: rsa.PrivateKey = None) -> None:

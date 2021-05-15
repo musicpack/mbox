@@ -7,9 +7,8 @@ from src.auth import Crypto
 
 embed = []
 TOKEN = os.environ.get('DiscordToken_mbox')
-# url = os.environ.get('webhook_url')
-url = 'https://discord.com/api/webhooks/842600473789333504/itmdWwe0IJBJHtJqGy0d3ePNVpE4BDdKYvJv6HvRQS7sq_CePk6v8Bf7uc_PPA1Fa9ao'
-pubkey = rsa.PublicKey.load_pkcs1(base64.b64decode('LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JR0pBb0dCQUpMclBGMEF0MHJKQ0p1b09GMkhDeW9rbUpqRUF4ZSsyN1kyZFFiNnVNNHdHblhURkpUREZvM20KUklTUXpFU3I2aUtFMzVBQlJ2SHR2QVBkeTBXQnRhaDQ5ZDZ3WTRiZVdDeUw4WmI0bGNxQnpyR2wxb0ZXVkZqcwo2VDZTMXVubWpSNG5wK0R3UnlxeHlaUDZ3VTcxOVhTc0h2WmZiTC9QNmNRVVY5bzFrK3VWQWdNQkFBRT0KLS0tLS1FTkQgUlNBIFBVQkxJQyBLRVktLS0tLQo='))
+url = os.environ.get('webhook_url')
+pubkey = rsa.PublicKey.load_pkcs1(base64.b64decode(os.environ.get('pubkey')))
 Event_Name = os.environ.get('GITHUB_EVENT_NAME')
 Job_ID = os.environ.get('GITHUB_JOB')
 Action_ID = os.environ.get('GITHUB_ACTION')
