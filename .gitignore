@@ -131,3 +131,4 @@ ffmpeg*
 cache
 config.ini
 .DS_Store
+*.key
