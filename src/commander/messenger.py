@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
 from src.music.element.Lyrics import Lyrics
+from src.music.element.MusicQueue import MusicQueue
 import discord
 from datetime import datetime
 from typing import List, Dict
@@ -32,10 +33,7 @@ class Messenger:
                 "\n[Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)\n"
             }, self.command_channel),
             'lyrics': Lyrics(self.command_channel),
-            'queue' : ChatEmbed('queue', {
-                'title': 'Queue',
-                'description': 'Nothing is in your queue. ' + USAGE_TEXT
-            }, self.command_channel),
+            'queue' : MusicQueue(self.client, self.command_channel),
             'player' : ChatEmbed('player', {
                 'title': 'Player',
                 'description': 'Nothing is playing. ' + USAGE_TEXT

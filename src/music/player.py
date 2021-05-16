@@ -68,7 +68,7 @@ class Player:
         self.ChatEmbed.embed.title = 'Not Playing'
         await self.ChatEmbed.update()
 
-        self.playlist = MusicQueue(active_embed = self.messenger.gui['queue'], client = self.messenger.client)
+        self.playlist = self.messenger.gui['queue']
         await self.playlist.setup()
 
         # initilization of variable happens here because messenger is not ready to provide this
