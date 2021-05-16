@@ -2,6 +2,7 @@ from __future__ import annotations
 import asyncio
 from src.music.element.Lyrics import Lyrics
 from src.music.element.MusicQueue import MusicQueue
+from src.reporter import Reporter
 import discord
 from datetime import datetime
 from typing import List, Dict
@@ -11,12 +12,13 @@ from src.commander.element.Button import Button
 from src.constants import *
 
 class Messenger:
-    def __init__(self, default_channel, client, command_channel: discord.TextChannel = None) -> None:
+    def __init__(self, profile, default_channel, client, command_channel: discord.TextChannel = None) -> None:
         self.default_channel: discord.TextChannel = default_channel
         self.command_channel: discord.TextChannel = command_channel
         self.client: discord.Client = client
         self.user = client.user
         self.gui: Dict[str, ChatEmbed] = {}
+        self.profile = profile
     
     async def setup(self):
         self.set_gui()
@@ -25,13 +27,7 @@ class Messenger:
     
     def set_gui(self) -> None:
         self.gui: Dict[str, ChatEmbed] = {
-            'reporter' : ChatEmbed('lyrics', {
-                'title': 'Music Box ' + VERSION,
-                'description': "\n**Please mute this channel to avoid notification spam!**" +
-                "\n**NEW!!** Try slash commands `/play`" +
-                "\n*Early Access, please report any bugs!*" +
-                "\n[Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)\n"
-            }, self.command_channel),
+            'reporter' : Reporter(self.client, self.command_channel),
             'lyrics': Lyrics(self.command_channel),
             'queue' : MusicQueue(self.client, self.command_channel),
             'player' : ChatEmbed('player', {
