@@ -16,8 +16,13 @@ from src.music.element.Lyrics import Lyrics
 from src.constants import *
 from datetime import timedelta
 
-class Player:
-    def __init__(self, voice_channels, ffmpeg_path, messenger: Messenger) -> None:
+class Player(ChatEmbed):
+    def __init__(self, voice_channels, ffmpeg_path, messenger: Messenger, text_channel: discord.TextChannel) -> None:
+        embed = {
+               'title': 'Player',
+               'description': 'Nothing is playing. ' + USAGE_TEXT
+                }
+
         self.connected_client: discord.VoiceClient = None
         self.voice_channels = voice_channels
         self.messenger: Messenger = messenger
@@ -30,6 +35,9 @@ class Player:
             'raise_volume': Button(emoji='🔊', client = self.client, action=self.raise_volume),
             'toggle_description': Button(emoji='💬', client = self.client, action=self.toggle_description)
         }
+
+        super().__init__(name='Player',embed_dict= embed, text_channel= text_channel, actions=[])
+
         self.ChatEmbed : ChatEmbed = None
         self.cache = Cache()
 

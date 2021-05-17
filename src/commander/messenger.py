@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import src.music.player as player_class
 from src.music.element.Lyrics import Lyrics
 from src.music.element.MusicQueue import MusicQueue
 from src.reporter import Reporter
@@ -12,13 +13,14 @@ from src.commander.element.Button import Button
 from src.constants import *
 
 class Messenger:
-    def __init__(self, profile, default_channel, client, command_channel: discord.TextChannel = None) -> None:
+    def __init__(self, voice_channels, ffmpeg_path, default_channel, client, command_channel: discord.TextChannel = None) -> None:
         self.default_channel: discord.TextChannel = default_channel
         self.command_channel: discord.TextChannel = command_channel
+        self.voice_channels = voice_channels
+        self.ffmpeg_path = ffmpeg_path
         self.client: discord.Client = client
         self.user = client.user
         self.gui: Dict[str, ChatEmbed] = {}
-        self.profile = profile
     
     async def setup(self):
         self.set_gui()
@@ -30,10 +32,7 @@ class Messenger:
             'reporter' : Reporter(self.client, self.command_channel),
             'lyrics': Lyrics(self.command_channel),
             'queue' : MusicQueue(self.client, self.command_channel),
-            'player' : ChatEmbed('player', {
-                'title': 'Player',
-                'description': 'Nothing is playing. ' + USAGE_TEXT
-            }, self.command_channel)
+            'player' : player_class.Player(self.voice_channels, self.ffmpeg_path, self, self.command_channel)
         }
     
     def is_gui(self, message: discord.Message) -> bool:

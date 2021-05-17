@@ -17,8 +17,8 @@ class Profile:
     def __init__(self, guild: discord.Guild, client: discord.Client, command_channel: discord.TextChannel = None) -> None:
         self.guild = guild
         self.valid_channels = command_channel
-        self.messenger: Messenger = Messenger(guild.text_channels[0], self, client, self.valid_channels)
-        self.player = Player(guild.voice_channels, ffmpeg_path=FFMPEG_PATH, messenger=self.messenger)
+        self.messenger: Messenger = Messenger(guild.voice_channels, FFMPEG_PATH, guild.text_channels[0], client, self.valid_channels)
+        self.player = Player(voice_channels=guild.voice_channels, ffmpeg_path=FFMPEG_PATH, messenger=self.messenger, text_channel=guild.text_channels[0])
         self.reporter = Reporter(client=self.messenger.client, text_channel= self.valid_channels)
 
     async def setup(self):
