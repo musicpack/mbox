@@ -38,7 +38,6 @@ class Player(ChatEmbed):
 
         super().__init__(name='Player',embed_dict= embed, text_channel= text_channel, actions=[])
 
-        self.ChatEmbed : ChatEmbed = None
         self.cache = Cache()
 
         self.ffmpeg_path = ffmpeg_path
@@ -71,10 +70,9 @@ class Player(ChatEmbed):
             }
     
     async def setup(self):
-        self.ChatEmbed = self.messenger.gui['player']
-        self.ChatEmbed.actions = list(self.buttons.values())
-        self.ChatEmbed.embed.title = 'Not Playing'
-        await self.ChatEmbed.update()
+        self.actions = list(self.buttons.values())
+        self.embed.title = 'Not Playing'
+        await self.update()
 
         self.playlist = self.messenger.gui['queue']
         await self.playlist.setup()
@@ -93,7 +91,7 @@ class Player(ChatEmbed):
                     self.volume -= 10
                     self.connected_client.source.volume = self.volume/100
                     self.add_to_footer(volume=self.get_volume())
-                    await self.ChatEmbed.update()
+                    await self.update()
 
     async def raise_volume(self):
         if self.connected_client:
@@ -102,7 +100,7 @@ class Player(ChatEmbed):
                     self.volume += 10
                     self.connected_client.source.volume = self.volume/100
                     self.add_to_footer(volume=self.get_volume())
-                    await self.ChatEmbed.update()
+                    await self.update()
 
     def stop(self):
         if self.connected_client:
@@ -211,25 +209,25 @@ class Player(ChatEmbed):
         if self.description:
             if self.display:
                 list_description = self.description.splitlines()
-                self.ChatEmbed.embed.description = '\n'.join(list_description[0:3])
+                self.embed.description = '\n'.join(list_description[0:3])
                 self.display = False
                 self.update_footer_text()
-                await self.ChatEmbed.update()
+                await self.update()
             else:
                 # TODO: Make button toggle multipage instead of just 2 pages 
-                self.ChatEmbed.embed.description = self.description[0:2048]
+                self.embed.description = self.description[0:2048]
                 self.display = True
                 self.update_footer_text()
-                await self.ChatEmbed.update()
+                await self.update()
 
     async def play_pause(self):
         if self.connected_client:
             if self.connected_client.is_playing():
                 self.pause()
-                await self.ChatEmbed.update()
+                await self.update()
             elif self.connected_client.is_paused():
                 self.resume()
-                await self.ChatEmbed.update()
+                await self.update()
             else:
                 # client has not queued anything and tried to press play
                 pass
@@ -281,7 +279,7 @@ class Player(ChatEmbed):
                 self.footer['sponsorblock'] = None
                 self.ms_displayed = -1 # make negative to avoid line above assignment multiple times
             self.update_footer_text()
-            asyncio.run_coroutine_threadsafe(self.ChatEmbed.update(), self.connected_client.loop)
+            asyncio.run_coroutine_threadsafe(self.update(), self.connected_client.loop)
         pass
 
     async def play_youtube(self, link: str):
@@ -331,28 +329,28 @@ class Player(ChatEmbed):
             logging.error('Can\'t play_youtube() without connecting first')
 
     async def update_embed(self, *, title, title_url, description, author, author_url, author_thumbnail, thumbnail_url, footer, footer_thumbnail, truncate_description = True): 
-        if title: self.ChatEmbed.embed.title = title
-        if title_url: self.ChatEmbed.embed.url = title_url
+        if title: self.embed.title = title
+        if title_url: self.embed.url = title_url
 
         if description:
             if truncate_description:
                 list_description = description.splitlines()
-                self.ChatEmbed.embed.description = '\n'.join(list_description[0:3])
+                self.embed.description = '\n'.join(list_description[0:3])
                 self.display = False
             else:
-                self.ChatEmbed.embed.description = self.description[0:2048]
+                self.embed.description = self.description[0:2048]
                 self.display = True
         
-        if author: self.ChatEmbed.embed.set_author(name = author)
-        if author_url: self.ChatEmbed.embed.set_author(url = author_url)
-        if author_thumbnail: self.ChatEmbed.embed.set_author(icon_url = author_thumbnail)
+        if author: self.embed.set_author(name = author)
+        if author_url: self.embed.set_author(url = author_url)
+        if author_thumbnail: self.embed.set_author(icon_url = author_thumbnail)
         
-        if thumbnail_url: self.ChatEmbed.embed.set_thumbnail(url = thumbnail_url)
+        if thumbnail_url: self.embed.set_thumbnail(url = thumbnail_url)
 
-        if footer: self.ChatEmbed.embed.set_footer(text= footer)
-        if footer_thumbnail: self.ChatEmbed.embed.set_footer(icon_url=footer_thumbnail)
+        if footer: self.embed.set_footer(text= footer)
+        if footer_thumbnail: self.embed.set_footer(icon_url=footer_thumbnail)
 
-        await self.ChatEmbed.update()
+        await self.update()
 
     async def play_audio(self, audio: AudioSource):
         if self.connected_client.is_connected():
@@ -365,15 +363,15 @@ class Player(ChatEmbed):
         self.description = info['description']
         list_description = info['description'].splitlines()
 
-        self.ChatEmbed.embed.description = '\n'.join(list_description[0:3])
-        self.ChatEmbed.embed.title = info['title']
-        self.ChatEmbed.embed.url = info['webpage_url']
-        self.ChatEmbed.embed.set_author(name = info['uploader'], url = info['uploader_url'])
-        self.ChatEmbed.embed.set_thumbnail(url = info['thumbnail'])
+        self.embed.description = '\n'.join(list_description[0:3])
+        self.embed.title = info['title']
+        self.embed.url = info['webpage_url']
+        self.embed.set_author(name = info['uploader'], url = info['uploader_url'])
+        self.embed.set_thumbnail(url = info['thumbnail'])
         
         if footer:
             self.add_to_footer(source= footer, icon_url=YOUTUBE_ICON)
-        await self.ChatEmbed.update()
+        await self.update()
 
     ########### FOOTER ############
 
@@ -393,7 +391,7 @@ class Player(ChatEmbed):
         """Generates new text and updates the footer text in chatEmbed. Generates paused, volume, timeline states."""
         footer_text = self.generate_footer_text()
 
-        self.ChatEmbed.embed.set_footer(text= footer_text, icon_url=self.footer['icon_url'])
+        self.embed.set_footer(text= footer_text, icon_url=self.footer['icon_url'])
     
     def generate_footer_text(self):
         """Generates footer text based on current infomation. Generates paused, volume, timeline states."""
@@ -418,7 +416,7 @@ class Player(ChatEmbed):
             'timeline': self.get_timeline(),
             'sponsorblock': None
         }
-        self.ChatEmbed.embed.set_footer()
+        self.embed.set_footer()
     
     def get_volume(self):
         """Gets a string formated volume value. Primarly for footer text."""

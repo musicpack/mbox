@@ -18,8 +18,6 @@ class Profile:
         self.guild = guild
         self.valid_channels = command_channel
         self.messenger: Messenger = Messenger(guild.voice_channels, FFMPEG_PATH, guild.text_channels[0], client, self.valid_channels)
-        self.player = Player(voice_channels=guild.voice_channels, ffmpeg_path=FFMPEG_PATH, messenger=self.messenger, text_channel=guild.text_channels[0])
-        self.reporter = Reporter(client=self.messenger.client, text_channel= self.valid_channels)
 
     async def setup(self):
         if type(self.valid_channels) == discord.TextChannel:
@@ -29,6 +27,8 @@ class Profile:
 
             # Setup all nessasary runtime objects here
             await self.messenger.setup()
+            self.player = self.messenger.gui["player"]
+            self.reporter = self.messenger.gui["reporter"]
             await self.player.setup()
             await self.reporter.setup()
         
