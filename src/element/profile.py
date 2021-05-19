@@ -3,7 +3,8 @@ import discord
 from src.music.player import Player
 from src.commander.messenger import Messenger
 from src.reporter import Reporter
-from src.constants import *
+from src.constants import Mbox
+from config import FFMPEG_PATH
 
 class Profile:
     """Base class function representing one server. Creates a messenger, reporter, player object that manages the gui state of the command channel
@@ -24,7 +25,7 @@ class Profile:
     async def setup(self):
         if type(self.valid_channels) == discord.TextChannel:
             # Update topic if out of date or malformed
-            expected_topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(self.valid_channels))
+            expected_topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + Mbox.VERSION.value + ' ' + str(hash(self.valid_channels))
             if self.valid_channels.topic != expected_topic: await self.valid_channels.edit(topic = expected_topic) 
 
             # Setup all nessasary runtime objects here
@@ -39,12 +40,12 @@ class Profile:
             act_msg = 'Created the new text channel \'music-box\''
             
             async def action_failed(text_channel):
-                await text_channel.send('No reaction was sent. Leaving the server. Please add the bot again if you want to retry. ' + INVITE_LINK_FORMAT.format(self.messenger.client.user.id))
+                await text_channel.send('No reaction was sent. Leaving the server. Please add the bot again if you want to retry. ' + Mbox.INVITE_LINK_FORMAT.value.format(self.messenger.client.user.id))
                 await self.guild.leave()
 
             async def action_success(text_channel):
                 music_box = await self.guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + Mbox.VERSION.value + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.valid_channels = music_box
@@ -74,7 +75,7 @@ class Profile:
                     await channel.edit(topic='')
                 
                 music_box = await self.guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + Mbox.VERSION.value + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.valid_channels = music_box

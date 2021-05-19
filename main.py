@@ -1,4 +1,3 @@
-import config
 from src.element.context import Context
 from typing import List, Union
 import discord
@@ -12,6 +11,7 @@ from src.constants import *
 from discord_slash.utils.manage_commands import create_option
 from discord.ext import commands
 from discord_slash import SlashCommand
+from config import TOKEN
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
@@ -145,4 +145,4 @@ async def on_ready():
 
 bot.load_extension("cogs.music_controller")
 
-bot.run(config.token)
+bot.run(TOKEN)

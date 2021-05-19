@@ -55,7 +55,7 @@ class MusicQueue:
         """Update the queue ChatEmbed based on state."""
         title = 'Queue Empty'
         if self.at_end or self.index == None or not self.playlist:
-            self.ChatEmbed.embed.description = 'Your queue is empty. ' + USAGE_TEXT
+            self.ChatEmbed.embed.description = 'Your queue is empty. ' + Mbox.USAGE_TEXT.value
             self.ChatEmbed.embed.title = title
             await self.ChatEmbed.update()
             return

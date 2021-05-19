@@ -1,7 +1,7 @@
-import config
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
+from requests.models import guess_filename
 import src.preinitialization
 import src.parser
 import src.element.profile
@@ -9,16 +9,17 @@ from src.constants import *
 from src.element.context import Context
 import discord
 from main import profiles
+import os
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
-
+GUILD_ID = os.getenv("DISCORD_GUILD", "")
 
 class MusicController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @cog_ext.cog_slash(name="test",
-                       guild_ids=[config.guild_id],
+                       guild_ids=[GUILD_ID],
                        )
     async def _test(self, ctx: SlashContext):
         embed = discord.Embed(title="embed test")
@@ -42,7 +43,7 @@ class MusicController(commands.Cog):
         await ctx.send(content=f"{status}", hidden=True)
 
     @cog_ext.cog_slash(name="youtube",
-                       guild_ids=[config.guild_id],
+                       guild_ids=[GUILD_ID],
                        description='Add a youtube video to the queue.',
                        options=[
                            create_option(
@@ -56,20 +57,20 @@ class MusicController(commands.Cog):
         await self.process_slash_command(ctx, src.parser.message)
 
     @cog_ext.cog_slash(name="prev",
-                       guild_ids=[config.guild_id],
+                       guild_ids=[GUILD_ID],
                        description='Goes to the previous song.')
     async def _prev(self, ctx: SlashContext):
         await self.process_slash_command(ctx, src.parser.player_prev)
 
     @cog_ext.cog_slash(name="next",
-                       guild_ids=[config.guild_id],
+                       guild_ids=[GUILD_ID],
                        description='Goes to the next song.')
     async def _next(self, ctx: SlashContext):
         await self.process_slash_command(ctx, src.parser.player_next)
 
     @cog_ext.cog_slash(name="play",
                        description='Plays or resumes a song.',
-                       guild_ids=[config.guild_id],
+                       guild_ids=[GUILD_ID],
                        options=[
                            create_option(
                                name="song_name_or_link",
@@ -79,6 +80,7 @@ class MusicController(commands.Cog):
                            )
                        ])
     async def _play(self, ctx: SlashContext, song_name_or_link=None):
+        print("yes")
         if song_name_or_link:
             await self.process_slash_command(ctx, src.parser.message)
         else:
@@ -86,7 +88,7 @@ class MusicController(commands.Cog):
 
     @cog_ext.cog_slash(name="pause",
                        description='Pauses actively playing song',
-                       guild_ids=[config.guild_id],
+                       guild_ids=[GUILD_ID],
                        )
     async def _pause(self, ctx: SlashContext):
         await self.process_slash_command(ctx, src.parser.pause_player)

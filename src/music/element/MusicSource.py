@@ -4,11 +4,12 @@ from discord import ClientException
 import audioop
 import os
 import youtube_dl
-from src.constants import *
+from src.constants import Mbox
 import discord
 from src.music.element.cache import Cache
 import requests
 from datetime import timedelta
+from config import DOWNLOAD_PATH, TEMP_PATH, FFMPEG_PATH
 
 class MusicSource(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.
@@ -114,7 +115,7 @@ class MusicSource(AudioSource):
         """Finds non_music sections of the song if skip_non_music is true."""
         if self.skip_non_music:
             if not self.sponsor_segments:
-                r = requests.get(SPONSORBLOCK_MUSIC_API.format(self.info['id']))
+                r = requests.get(Mbox.SPONSORBLOCK_MUSIC_API.value.format(self.info['id']))
                 if 'json' in r.headers.get('Content-Type'):
                     self.sponsor_segments = r.json()
                 else:
