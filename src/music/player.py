@@ -15,7 +15,7 @@ from src.music.element.cache import Cache
 from src.music.element.Lyrics import Lyrics
 from src.constants import Mbox
 from datetime import timedelta
-from config import MAX_CACHESIZE
+from config import MAX_CACHESIZE, FFMPEG_PATH
 
 class Player:
     def __init__(self, voice_channels, ffmpeg_path, messenger: Messenger) -> None:

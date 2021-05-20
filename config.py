@@ -84,5 +84,5 @@ FFMPEG_PATH = set_ffmpeg_path()
 # TODO: Sanitize and check if values are valid
 DOWNLOAD_PATH = __config['Cache']['DOWNLOAD_PATH']
 TEMP_PATH = __config['Cache']['TEMP_PATH']
-MAX_CACHESIZE = __config['Cache']['MAX_CACHESIZE']
-MAX_FILESIZE = __config['Cache']['MAX_FILESIZE']
+MAX_CACHESIZE = int(__config['Cache']['MAX_CACHESIZE'])
+MAX_FILESIZE = int(__config['Cache']['MAX_FILESIZE'])

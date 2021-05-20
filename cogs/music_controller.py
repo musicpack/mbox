@@ -12,7 +12,7 @@ from main import profiles
 import os
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
-GUILD_ID = os.getenv("DISCORD_GUILD", "")
+GUILD_ID = 841153947032223805
 
 class MusicController(commands.Cog):
     def __init__(self, bot):
