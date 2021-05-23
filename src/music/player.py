@@ -13,7 +13,7 @@ from src.music.element.MusicSource import MusicSource
 from src.music.element.MusicQueue import MusicQueue
 from src.music.element.cache import Cache
 from src.music.element.Lyrics import Lyrics
-from src.constants import Mbox
+from src.constants import USAGE_TEXT, YOUTUBE_ICON
 from datetime import timedelta
 from config import MAX_CACHESIZE, FFMPEG_PATH
 
@@ -106,7 +106,7 @@ class Player:
         
         self.messenger.gui['player'].embed = discord.Embed.from_dict({
             'title': 'Not Playing',
-            'description': 'Nothing is playing. ' + Mbox.USAGE_TEXT.value
+            'description': 'Nothing is playing. ' + USAGE_TEXT
         })
         self.paused = True
         asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.client.loop)
@@ -317,7 +317,7 @@ class Player:
                             @audio.event
                             def on_resolve(info, path):
                                 if self.playlist.current() and self.playlist.current().info == info:
-                                    self.add_to_footer(source= 'Youtube 📁', icon_url=Mbox.YOUTUBE_ICON.value)
+                                    self.add_to_footer(source= 'Youtube 📁', icon_url=YOUTUBE_ICON)
                                     asyncio.run_coroutine_threadsafe(self.messenger.gui['player'].update(), self.connected_client.loop)
                             
         else:
@@ -365,7 +365,7 @@ class Player:
         self.ChatEmbed.embed.set_thumbnail(url = info['thumbnail'])
         
         if footer:
-            self.add_to_footer(source= footer, icon_url=Mbox.YOUTUBE_ICON.value)
+            self.add_to_footer(source= footer, icon_url=YOUTUBE_ICON)
         await self.ChatEmbed.update()
 
     ########### FOOTER ############

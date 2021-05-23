@@ -1,7 +1,7 @@
 from typing import List
 from src.commander.element.Button import Button
 from src.commander.element.ChatEmbed import ChatEmbed
-from src.constants import Mbox
+from src.constants import USAGE_TEXT
 import discord
 import logging
 from ytmusicapi import YTMusic
@@ -13,7 +13,7 @@ class Lyrics(ChatEmbed):
     def __init__(self, text_channel: discord.TextChannel) -> None:
         embed = {
                 'title': 'Lyrics',
-                'description': Mbox.USAGE_TEXT.value
+                'description': USAGE_TEXT
                 }
         super().__init__(name='lyrics',embed_dict= embed, text_channel=text_channel, actions=[])
 
@@ -83,7 +83,7 @@ class Lyrics(ChatEmbed):
 
     async def reset(self):
         """Removes all lyrics and resets to uninitiated state."""
-        self.lyrics = Mbox.USAGE_TEXT.value
+        self.lyrics = USAGE_TEXT
         self.source = None
 
         self.embed.description = self.lyrics

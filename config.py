@@ -10,7 +10,7 @@
 import os
 import shutil
 import configparser
-import glob 
+import glob
 
 #Config specific variables
 __config = configparser.ConfigParser()
@@ -86,3 +86,4 @@ DOWNLOAD_PATH = __config['Cache']['DOWNLOAD_PATH']
 TEMP_PATH = __config['Cache']['TEMP_PATH']
 MAX_CACHESIZE = int(__config['Cache']['MAX_CACHESIZE'])
 MAX_FILESIZE = int(__config['Cache']['MAX_FILESIZE'])
+

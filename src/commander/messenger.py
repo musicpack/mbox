@@ -7,7 +7,7 @@ from typing import List, Dict
 import logging
 from src.commander.element.ChatEmbed import ChatEmbed
 from src.commander.element.Button import Button
-from src.constants import Mbox
+from src.constants import VERSION, USAGE_TEXT
 
 class Messenger:
     def __init__(self, default_channel, client, command_channel: discord.TextChannel = None) -> None:
@@ -25,7 +25,7 @@ class Messenger:
     def set_gui(self) -> None:
         self.gui: Dict[str, ChatEmbed] = {
             'reporter' : ChatEmbed('lyrics', {
-                'title': 'Music Box ' + Mbox.VERSION.value,
+                'title': 'Music Box ' + VERSION,
                 'description': "\n**Please mute this channel to avoid notification spam!**" +
                 "\n**NEW!!** Try slash commands `/play`" +
                 "\n*Early Access, please report any bugs!*" +
@@ -34,11 +34,11 @@ class Messenger:
             'lyrics': Lyrics(self.command_channel),
             'queue' : ChatEmbed('queue', {
                 'title': 'Queue',
-                'description': 'Nothing is in your queue. ' + Mbox.USAGE_TEXT.value
+                'description': 'Nothing is in your queue. ' + USAGE_TEXT
             }, self.command_channel),
             'player' : ChatEmbed('player', {
                 'title': 'Player',
-                'description': 'Nothing is playing. ' + Mbox.USAGE_TEXT.value
+                'description': 'Nothing is playing. ' + USAGE_TEXT
             }, self.command_channel)
         }
     
@@ -85,7 +85,7 @@ class Messenger:
                 await self.command_channel.delete()
 
                 music_box = await guild.create_text_channel(name='music-box')
-                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + Mbox.VERSION.value + ' ' + str(hash(music_box))
+                topic = 'Music Box controlled channel. Chat in this channel will be deleted. Version ' + VERSION + ' ' + str(hash(music_box))
                 await music_box.edit(topic=topic)
 
                 self.command_channel = music_box
