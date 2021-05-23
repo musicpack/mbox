@@ -6,13 +6,14 @@ import src.preinitialization
 import src.parser
 import src.element.profile
 from src.constants import *
+from config import GUILD_ID
 from src.element.context import Context
 import discord
 from main import profiles
 import os
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
-GUILD_ID = 841153947032223805
+
 
 class MusicController(commands.Cog):
     def __init__(self, bot):
