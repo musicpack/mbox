@@ -3,60 +3,67 @@ import shutil
 import configparser
 import glob
 
-#Config specific variables
-__config = configparser.ConfigParser()
-_FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
+def gen_config() -> configparser.ConfigParser:
+    """Generates a default configeration file."""
+    generated_config = configparser.ConfigParser()
+
+    # [Default]
+    generated_config.add_section('Default')
+    generated_config['Default']['TOKEN'] = ''
+    generated_config['Default']['FFMPEG_PATH'] = ''
+    generated_config['Default']["GUILD_ID"] = ''
+
+    # [Cache]
+    generated_config.add_section('Cache')
+    generated_config['Cache']['DOWNLOAD_PATH'] = os.path.join('cache', 'youtube')
+    generated_config['Cache']['TEMP_PATH'] = os.path.join('cache', 'temp')
+    generated_config['Cache']['MAX_CACHESIZE'] = '0'
+    generated_config['Cache']['MAX_FILESIZE'] = '100000000'
+
+    return generated_config
 
 # config specific functions
-def make_config():
-    """Generates a default configeration file."""
-    __config.add_section('Default')
-    __config['Default']['TOKEN'] = ''
-    __config['Default']['FFMPEG_PATH'] = ''
-    __config['Default']["GUILD_ID"] = ''
-    __config.add_section('Cache')
-    __config['Cache']['DOWNLOAD_PATH'] = os.path.join('cache', 'youtube')
-    __config['Cache']['TEMP_PATH'] = os.path.join('cache', 'temp')
-    __config['Cache']['MAX_CACHESIZE'] = '0'
-    __config['Cache']['MAX_FILESIZE'] = '100000000'
+def write_config(config: configparser.ConfigParser) -> None:
     with open("config.ini", 'w') as f:
-        __config.write(f)
+        config.write(f)
 
-#sets the token dynamically
-def set_token():
-    config_token = __config['Default']['TOKEN']
+def set_token(config: configparser.ConfigParser):
+    """sets the token dynamically"""
+    config_token = config['Default']['TOKEN']
     envvar_token = os.environ.get('DiscordToken_mbox')
+    
     if config_token:
-        return  config_token
+        return config_token
     elif envvar_token:
         return envvar_token
     else:
-       return  input("No token in config file or in enviroment variable \'DiscordToken_mbox\'. Please generate a token and enter it below. ")
+       return input("No token in config file or in enviroment variable \'DiscordToken_mbox\'. Please generate a token and enter it below.")
 
-#sets the ffmpeg_path dynamically
-def set_ffmpeg_path():
+def set_ffmpeg_path(config: configparser.ConfigParser):
+    """sets the ffmpeg_path dynamically"""
     try:
-        if __config['Default']['FFMPEG_PATH']:
-            return __config['Default']['FFMPEG_PATH']
+        if config['Default']['FFMPEG_PATH']:
+            return config['Default']['FFMPEG_PATH']
         elif shutil.which('ffmpeg'):
             return 'ffmpeg'
         elif glob.glob('ffmpeg*'):
             return get_ffmpeg_path(glob.glob('ffmpeg*'))
     except:
-        raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
+        FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
+        raise ProcessLookupError(FFMPEG_ERROR_NOT_FOUND)
 
-def set_guild_id():
-    config_guild_id = __config['Default']['GUILD_ID']
+def set_guild_id(config: configparser.ConfigParser) -> list[int]:
+    """sets the ffmpeg_path dynamically"""
+    config_guild_id = config['Default']['GUILD_ID']
     envar_guild_id = os.getenv("DISCORD_GUILD", "")
     if config_guild_id:
-        return int(config_guild_id)
+        return [int(config_guild_id)]
     elif envar_guild_id:
-        return int(envar_guild_id)
+        return [int(envar_guild_id)]
     else:
-        return int(input("Please set your guild-id "))
+        return None
 
-
-def get_ffmpeg_path(ffmpeg_paths: str):
+def get_ffmpeg_path(ffmpeg_paths: str) -> str:
     for path in ffmpeg_paths:
         if os.path.isdir(path):
             try:
@@ -74,20 +81,41 @@ def get_ffmpeg_path(ffmpeg_paths: str):
             except:
                 raise FileNotFoundError
 
-# create and set the config
+# generate and set the config
+default_config = gen_config()
 if not os.path.isfile('config.ini'):
-    make_config()
-__config.read('config.ini')
+    write_config(default_config)
+else:
+    disk_config = configparser.ConfigParser()
+    disk_config.read('config.ini')
+
+    # find missing fields in disk config add them if missing
+    reference_dict: dict = default_config._sections
+    disk_dict: dict = disk_config._sections
+
+    section: str
+    section_dict: dict
+    for section, section_dict in reference_dict.items():
+        # check disk dictionary has the section
+        if not disk_dict[section]:
+            disk_config.add_section(section)
+
+        key: str
+        value: str
+        for key, value in section_dict.items():
+            # check disk dictionary have a key in the section
+            if key not in disk_dict[section]: 
+                disk_config[section][key] = default_config[section][key]
+                write_config(disk_config) # write changes to disk
 
 ###### USER CONFIG ######
-TOKEN = set_token()
-FFMPEG_PATH = set_ffmpeg_path()
-GUILD_ID= set_guild_id()
-
+TOKEN = set_token(disk_config)
+FFMPEG_PATH = set_ffmpeg_path(disk_config)
+GUILD_ID= set_guild_id(disk_config)
 
 # TODO: Sanitize and check if values are valid
-DOWNLOAD_PATH = __config['Cache']['DOWNLOAD_PATH']
-TEMP_PATH = __config['Cache']['TEMP_PATH']
-MAX_CACHESIZE = int(__config['Cache']['MAX_CACHESIZE'])
-MAX_FILESIZE = int(__config['Cache']['MAX_FILESIZE'])
+DOWNLOAD_PATH = disk_config['Cache']['DOWNLOAD_PATH']
+TEMP_PATH = disk_config['Cache']['TEMP_PATH']
+MAX_CACHESIZE = int(disk_config['Cache']['MAX_CACHESIZE'])
+MAX_FILESIZE = int(disk_config['Cache']['MAX_FILESIZE'])
 
