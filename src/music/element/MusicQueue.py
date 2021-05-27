@@ -5,7 +5,7 @@ from typing import List
 from src.music.element.MusicSource import MusicSource
 from src.commander.element.ChatEmbed import ChatEmbed
 from src.commander.element.Button import Button
-from src.constants import *
+from src.constants import USAGE_TEXT
 class MusicQueue:
     """Reperesents a Queue GUI object. Handles which MusicSource to play next and displays in the GUI.
     """
@@ -55,7 +55,7 @@ class MusicQueue:
         """Update the queue ChatEmbed based on state."""
         title = 'Queue Empty'
         if self.at_end or self.index == None or not self.playlist:
-            self.ChatEmbed.embed.description = 'Your queue is empty. ' + Mbox.USAGE_TEXT.value
+            self.ChatEmbed.embed.description = 'Your queue is empty. ' + USAGE_TEXT
             self.ChatEmbed.embed.title = title
             await self.ChatEmbed.update()
             return
