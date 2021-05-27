@@ -5,7 +5,7 @@ from typing import List
 from src.music.element.MusicSource import MusicSource
 from src.commander.element.ChatEmbed import ChatEmbed
 from src.commander.element.Button import Button
-from src.constants import *
+from src.constants import USAGE_TEXT
 class MusicQueue (ChatEmbed):
     """Reperesents a Queue GUI object. Handles which MusicSource to play next and displays in the GUI.
     """

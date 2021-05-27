@@ -13,8 +13,9 @@ from src.music.element.MusicSource import MusicSource
 from src.music.element.MusicQueue import MusicQueue
 from src.music.element.cache import Cache
 from src.music.element.Lyrics import Lyrics
-from src.constants import *
+from src.constants import USAGE_TEXT, YOUTUBE_ICON
 from datetime import timedelta
+from config import MAX_CACHESIZE, FFMPEG_PATH
 
 class Player(ChatEmbed):
     def __init__(self, voice_channels, ffmpeg_path, messenger: Messenger, text_channel: discord.TextChannel) -> None:

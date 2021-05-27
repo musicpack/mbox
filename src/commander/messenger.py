@@ -10,7 +10,7 @@ from typing import List, Dict
 import logging
 from src.commander.element.ChatEmbed import ChatEmbed
 from src.commander.element.Button import Button
-from src.constants import *
+from src.constants import VERSION, USAGE_TEXT
 
 class Messenger:
     def __init__(self, voice_channels, ffmpeg_path, default_channel, client, command_channel: discord.TextChannel = None) -> None:

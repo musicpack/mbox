@@ -3,7 +3,8 @@ import discord
 from src.music.player import Player
 from src.commander.messenger import Messenger
 from src.reporter import Reporter
-from src.constants import *
+from src.constants import VERSION, INVITE_LINK_FORMAT
+from config import FFMPEG_PATH
 
 class Profile:
     """Base class function representing one server. Creates a messenger, reporter, player object that manages the gui state of the command channel
