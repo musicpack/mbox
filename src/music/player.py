@@ -50,15 +50,19 @@ class Player(ChatEmbed):
             'format': 'bestaudio/worst'
         }
 
-        self.description = None
-        self.display = False
         self.playlist = None
-        self.volume = 50
         self.last_voice_channel = None
-        self.timeline = timedelta(seconds=0)
+        self.lyrics: Lyrics = None 
         self.paused = True
-        self.ms_displayed = 0
-        self.lyrics: Lyrics = None
+
+        # Player Chat Embed Body Variables
+        self.description = None # Holds the youtube description, up to 2048 char (discord embed limitation #13)
+        self.display = False # states if the full description is being displayed or not
+        self.volume = 50 # volume of the player, in multiples of 10 (range 0-200)
+
+        # Player Footer variables
+        self.timeline = timedelta(seconds=0) # Keeps track on where in the song we are playing at
+        self.ms_displayed = 0 # Keeps track on how many ms was displayed when showing ✔️Skipped Non Music on the footer
 
         self.footer = {
             'icon_url': None,
@@ -129,17 +133,24 @@ class Player(ChatEmbed):
         self.update_footer_text()
         return self.connected_client.resume()
     
-    async def play(self, audio: MusicSource, channel: discord.VoiceChannel = None):
-        if channel:
-            await self.connect(channel)
-        elif self.last_voice_channel:
-            await self.connect(self.last_voice_channel)
+    def play(self, audio: MusicSource):
+        if self.connected_client:
+            self.paused = False
+            # Make sure the MusicSource is back at 0:00 preventing us from playing a song from the middle.
+            audio.reset()
+            # Apply player volume to the audio source
+            audio.volume = self.volume/100
+
+            if self.connected_client.is_connected() and self.connected_client.is_playing():
+                self.connected_client.source = audio
+            else:
+                self.connected_client.play(source = audio, after=self.on_finished)
         else:
-            await self.connect(self.voice_channels[0])
-        await self.connected_client.play(source = audio, after=self.on_finished)
+            logging.error(f"Cannot play {audio.info['title']} without connecting first.")
+
     
     # TODO: Simplify the last, next, stop functions of the player to use the same function to update the gui's
-    def last(self) -> MusicSource:
+    def last(self):
         self.timeline = timedelta(seconds=0)
         self.footer['sponsorblock'] = None
         self.ms_displayed = -1
@@ -148,29 +159,12 @@ class Player(ChatEmbed):
         except IndexError:
             music_source = None
         if music_source:
-            asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
-            music_source.reset()
-            if music_source.resolved:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube 🗃️'), self.connected_client.loop)
-            else:
-                asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer='Youtube'), self.connected_client.loop)
-            
-            if self.connected_client:
-                if self.connected_client.is_connected():
-                    if self.connected_client.is_playing():
-                        self.connected_client.source = music_source
-                    else:
-                        self.connected_client.play(source = music_source, after=self.on_finished)
-                        
-                    return music_source
-                
-            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            return music_source
+            asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
+            self.play(music_source)
         else:
-            print('cant go back any further')
-            return None
+            logging.info('cant go back any further')
     
-    def next(self) -> MusicSource:
+    def next(self):
         self.timeline = timedelta(seconds=0)
         self.footer['sponsorblock'] = None
         self.ms_displayed = -1
@@ -180,31 +174,11 @@ class Player(ChatEmbed):
             music_source = None
 
         if music_source:
-            asyncio.run_coroutine_threadsafe(self.lyrics.update_lyrics(music_source.info['id']), self.client.loop)
-            music_source.reset()
-
-            footer_text = 'Youtube'
-            if music_source.resolved:
-                footer_text += ' 🗃️'
-            self.paused = False
-            self.update_footer_text()
-            asyncio.run_coroutine_threadsafe(self.update_embed_from_ytdict(music_source.info, footer=footer_text), self.connected_client.loop)
-            
-            if self.connected_client:
-                if self.connected_client.is_connected():
-                    if self.connected_client.is_playing():
-                        self.connected_client.source = music_source
-                    else:
-                        self.connected_client.play(source = music_source, after=self.on_finished)
-                else:
-                    asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            else:
-                asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            return music_source
+            asyncio.run_coroutine_threadsafe(self.update_embed_from_music_source(music_source=music_source), self.client.loop)
+            self.play(music_source)
         else:
             logging.info('No more music to play. Stopping...')
             self.stop()
-            return None
 
     async def toggle_description(self):
         if self.description:
@@ -328,37 +302,15 @@ class Player(ChatEmbed):
                             
         else:
             logging.error('Can\'t play_youtube() without connecting first')
+    
+    async def update_embed_from_music_source(self, music_source: MusicSource):
+        await self.lyrics.update_lyrics(music_source.info['id'])
 
-    async def update_embed(self, *, title, title_url, description, author, author_url, author_thumbnail, thumbnail_url, footer, footer_thumbnail, truncate_description = True): 
-        if title: self.embed.title = title
-        if title_url: self.embed.url = title_url
-
-        if description:
-            if truncate_description:
-                list_description = description.splitlines()
-                self.embed.description = '\n'.join(list_description[0:3])
-                self.display = False
-            else:
-                self.embed.description = self.description[0:2048]
-                self.display = True
-        
-        if author: self.embed.set_author(name = author)
-        if author_url: self.embed.set_author(url = author_url)
-        if author_thumbnail: self.embed.set_author(icon_url = author_thumbnail)
-        
-        if thumbnail_url: self.embed.set_thumbnail(url = thumbnail_url)
-
-        if footer: self.embed.set_footer(text= footer)
-        if footer_thumbnail: self.embed.set_footer(icon_url=footer_thumbnail)
-
-        await self.update()
-
-    async def play_audio(self, audio: AudioSource):
-        if self.connected_client.is_connected():
-            if self.connected_client.is_playing():
-                self.connected_client.source = MusicSource(audio)
-            else:
-                self.connected_client.play(source = MusicSource(audio), after=self.on_finished)
+        footer_text = 'Youtube'
+        if music_source.resolved:
+            footer_text += ' 🗃️'
+        self.update_footer_text()
+        await self.update_embed_from_ytdict(music_source.info, footer=footer_text)
 
     async def update_embed_from_ytdict(self, info: dict, footer = 'Youtube'):
         self.description = info['description']
@@ -408,6 +360,9 @@ class Player(ChatEmbed):
 
     def clear_footer(self):
         """Clears the footer text internally and in the ChatEmbed. Does not send the ChatEmbed"""
+        self.timeline = timedelta(seconds=0)
+        self.ms_displayed = -1
+
         self.footer = {
             'icon_url': None,
             'paused': None,
