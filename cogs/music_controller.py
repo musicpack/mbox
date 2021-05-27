@@ -19,7 +19,7 @@ class MusicController(commands.Cog):
         self.bot = bot
 
     @cog_ext.cog_slash(name="test",
-                       guild_ids=[GUILD_ID],
+                       guild_ids=GUILD_ID,
                        )
     async def _test(self, ctx: SlashContext):
         embed = discord.Embed(title="embed test")
@@ -43,7 +43,7 @@ class MusicController(commands.Cog):
         await ctx.send(content=f"{status}", hidden=True)
 
     @cog_ext.cog_slash(name="youtube",
-                       guild_ids=[GUILD_ID],
+                       guild_ids=GUILD_ID,
                        description='Add a youtube video to the queue.',
                        options=[
                            create_option(
@@ -57,20 +57,20 @@ class MusicController(commands.Cog):
         await self.process_slash_command(ctx, src.parser.message)
 
     @cog_ext.cog_slash(name="prev",
-                       guild_ids=[GUILD_ID],
+                       guild_ids=GUILD_ID,
                        description='Goes to the previous song.')
     async def _prev(self, ctx: SlashContext):
         await self.process_slash_command(ctx, src.parser.player_prev)
 
     @cog_ext.cog_slash(name="next",
-                       guild_ids=[GUILD_ID],
+                       guild_ids=GUILD_ID,
                        description='Goes to the next song.')
     async def _next(self, ctx: SlashContext):
         await self.process_slash_command(ctx, src.parser.player_next)
 
     @cog_ext.cog_slash(name="play",
                        description='Plays or resumes a song.',
-                       guild_ids=[GUILD_ID],
+                       guild_ids=GUILD_ID,
                        options=[
                            create_option(
                                name="song_name_or_link",
@@ -88,7 +88,7 @@ class MusicController(commands.Cog):
 
     @cog_ext.cog_slash(name="pause",
                        description='Pauses actively playing song',
-                       guild_ids=[GUILD_ID],
+                       guild_ids=GUILD_ID,
                        )
     async def _pause(self, ctx: SlashContext):
         await self.process_slash_command(ctx, src.parser.pause_player)
