@@ -1,20 +1,23 @@
 import rsa
-from src.element.context import Context
+import base64
+import time
+import os.path
+import datetime
 from typing import List, Union
 import discord
 import sys
 import logging
-
-import src.preinitialization
-import src.parser
-import src.element.profile
-from src.constants import INVITE_LINK_FORMAT, TIMESTAMP_TOLERANCE
-from discord_slash.utils.manage_commands import create_option
 from discord.ext import commands
 from discord_slash import SlashCommand
-from config import TOKEN
+
+import src.element.profile
 import src.auth
-import base64, time, os.path, datetime
+from src.command_handler import play_ytid
+from src.element.MusicBoxContext import MusicBoxContext
+from src.constants import INVITE_LINK_FORMAT, TIMESTAMP_TOLERANCE
+from src.parser import parse
+import src.preinitialization
+from config import TOKEN
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
@@ -38,9 +41,8 @@ logging.basicConfig(
 watching_channels = []
 profiles: List[src.element.profile.Profile] = []
 
-## Crypto variables
+# Crypto variables
 crypto = src.auth.Crypto()
-
 startup_epoch = int(time.time())
 spent_epoch = 0
 
@@ -58,7 +60,7 @@ else:
 @bot.event
 async def on_message(message: discord.Message):
     logging.debug('Message from {0.author}: {0.content}'.format(message))
-    
+
     # Any message created by the bot itself should be deleted outside of this function.
     if message.author == bot.user:
         return
@@ -68,16 +70,19 @@ async def on_message(message: discord.Message):
         logging.info('Received stop from {0.name}'.format(message.author))
         await bot.logout()
     # Top level command pubkey
-    if message.content == 'pubkey' and isinstance(message.channel, discord.DMChannel): # only accept this command in a dm.
-        logging.info('Received pubkey from {0.name} in a dm'.format(message.author))
+    # only accept this command in a dm.
+    if message.content == 'pubkey' and isinstance(message.channel, discord.DMChannel):
+        logging.info(
+            'Received pubkey from {0.name} in a dm'.format(message.author))
 
         # save public key in a base 64 encoded string
-        pubkey_64 = base64.b64encode(crypto.pubkey.save_pkcs1()).decode("utf-8")
+        pubkey_64 = base64.b64encode(
+            crypto.pubkey.save_pkcs1()).decode("utf-8")
         with open('mbox_public.key', 'r') as f:
-            await message.reply(content= pubkey_64, file=discord.File(f))
+            await message.reply(content=pubkey_64, file=discord.File(f))
             f.close()
         return
-    
+
     # Top level command genkey
     if 'genkey' in message.content and isinstance(message.channel, discord.DMChannel):
         argv = message.content.split()
@@ -108,7 +113,7 @@ async def on_message(message: discord.Message):
                     return
 
                 # Create a context
-                bot_ctx = Context(prefix='', profile=profile, name='', slash_context=None, message=message, args=[
+                bot_ctx = MusicBoxContext(prefix='', profile=profile, name='', slash_context=None, message=message, args=[
                     message.content], kwargs={'command': message.content})
 
                 # Top level command test
@@ -128,38 +133,43 @@ async def on_message(message: discord.Message):
                 if message.content == 'play':
                     logging.info(
                         'Received play from {0.name}'.format(message.author))
-                    await src.parser.play_ytid('JwmGruvGt_I', bot_ctx)
+                    await play_ytid('JwmGruvGt_I', bot_ctx)
                     break
 
-                await src.parser.message(bot_ctx)
+                await parse(bot_ctx)
                 break
 
             # Check if the message came from a admin channel
-            elif isinstance(message.channel, discord.TextChannel) and src.auth.Auth.is_admin_channel(message.channel,TOKEN,crypto):
-                
+            elif isinstance(message.channel, discord.TextChannel) and src.auth.Auth.is_admin_channel(message.channel, TOKEN, crypto):
+
                 # Check if the message is a webhook that has a embed that has a footer.
                 if message.webhook_id and message.embeds and message.embeds[0].footer.text:
                     # Check if embed has the correct certificate
                     message_dt = message.created_at
-                    message_timestamp = int(message_dt.replace(tzinfo=datetime.timezone.utc).timestamp())
+                    message_timestamp = int(message_dt.replace(
+                        tzinfo=datetime.timezone.utc).timestamp())
                     try:
-                        decrypt_token, timestamp = crypto.decrypt_token_x(message.embeds[0].footer.text)
+                        decrypt_token, timestamp = crypto.decrypt_token_x(
+                            message.embeds[0].footer.text)
                     except rsa.pkcs1.DecryptionError as e:
-                        logging.info(f'{str(e)} at [{message.channel.guild}]{message.channel}: {message.author} message id:{message.id}. Is the key invalid?')
+                        logging.info(
+                            f'{str(e)} at [{message.channel.guild}]{message.channel}: {message.author} message id:{message.id}. Is the key invalid?')
                         await message.reply(content="Validation failed")
                         return
-                    
+
                     global spent_epoch
                     # Validated that the embed has the correct certificate
-                    if TOKEN == decrypt_token and src.auth.Auth.validate_timestamp(decrypted_epoch=int(timestamp), message_epoch=message_timestamp, spent_epoch=spent_epoch, startup_epoch=startup_epoch, tolerance= TIMESTAMP_TOLERANCE):
+                    if TOKEN == decrypt_token and src.auth.Auth.validate_timestamp(decrypted_epoch=int(timestamp), message_epoch=message_timestamp, spent_epoch=spent_epoch, startup_epoch=startup_epoch, tolerance=TIMESTAMP_TOLERANCE):
                         spent_epoch = int(timestamp)
                         if message.embeds[0].title == "Stop Warning":
-                            logging.warning("Bot was warned that it will be stopping soon from webhook.")
+                            logging.warning(
+                                "Bot was warned that it will be stopping soon from webhook.")
                             # TODO: add cleanup code and warnings to all profiles playing a song now.
                             await message.reply(content="Acknowledged")
                             return
                         if message.embeds[0].title == "Stop Order":
-                            logging.warning("Bot is stopping now from webhook.")
+                            logging.warning(
+                                "Bot is stopping now from webhook.")
                             await message.reply(content="Approved")
                             await bot.logout()
                     else:
@@ -170,13 +180,15 @@ async def on_message(message: discord.Message):
                 # Top level admin command pubkey
                 # Returns the current public key the bot is using.
                 if message.content == 'pubkey':
-                    logging.info('Received pubkey from {0.name}'.format(message.author))
-                    pubkey_64 = base64.b64encode(crypto.pubkey.save_pkcs1()).decode("utf-8")
+                    logging.info(
+                        'Received pubkey from {0.name}'.format(message.author))
+                    pubkey_64 = base64.b64encode(
+                        crypto.pubkey.save_pkcs1()).decode("utf-8")
                     f = open('mbox_public.key', 'r')
-                    await message.reply(content= pubkey_64, file=discord.File(f))
+                    await message.reply(content=pubkey_64, file=discord.File(f))
                     f.close()
                     return
-                
+
                 if 'genkey' in message.content:
                     argv = message.content.split()
 
@@ -190,9 +202,11 @@ async def on_message(message: discord.Message):
                     await message.reply(content=crypto.encrypt_token_time(TOKEN))
                     return
 
+
 @bot.event
 async def on_typing(channel, user, when):
     logging.debug('Typing from {0.name}'.format(user))
+
 
 @bot.event
 async def on_guild_join(guild: discord.Guild):
@@ -210,6 +224,7 @@ async def on_guild_join(guild: discord.Guild):
             await owner_member.send(content=content)
         await guild.leave()
 
+
 @bot.event
 async def on_guild_remove(guild):
     logging.info('Removed from Server: {0.name}'.format(guild))
@@ -217,6 +232,7 @@ async def on_guild_remove(guild):
         if profile.guild == guild:
             await profile.messenger.unregister_all()
             profiles.remove(profile)
+
 
 @bot.event
 async def on_reaction_add(reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
@@ -234,12 +250,13 @@ async def on_voice_state_update(member, before, after):
                 if profile.guild == member.guild:
                     profile.player.stop()
 
+
 @bot.event
 async def on_ready():
     await src.preinitialization.generate_profiles(bot.guilds, bot, profiles)
     for profile in profiles:
         await profile.setup()
 
-bot.load_extension("cogs.music_controller")
+bot.load_extension("cogs.slash_commands")
 
 bot.run(TOKEN)
