@@ -29,9 +29,7 @@ class Profile:
             # Setup all nessasary runtime objects here
             await self.messenger.setup()
             self.player = self.messenger.gui["player"]
-            self.reporter = self.messenger.gui["reporter"]
             await self.player.setup()
-            await self.reporter.setup()
         
         elif self.valid_channels == None:
             logging.debug('Guild [{}] is not set up. Sending request to set up.'.format(self.guild))
