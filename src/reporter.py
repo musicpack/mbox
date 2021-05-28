@@ -24,9 +24,4 @@ class Reporter(ChatEmbed):
         }
         
     
-    async def setup(self):
-         """Reporter object does not need a setup. This function is depricated."""
-         logging.warn('Depricated: lyrics setup function called.')
-         pass
-
 
