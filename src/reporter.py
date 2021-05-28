@@ -18,17 +18,6 @@ class Reporter(ChatEmbed):
         self.client = client
 
         super().__init__(name='Reporter',embed_dict= embed, text_channel= text_channel, actions=[])
-        self.buttons = {
-            # 'refresh': Button(emoji='🔄', client = self.client, action=self.refresh),
-            # 'logout': Button(emoji='🟥', client = self.client, action=self.logout)
-        }
         
     
-    async def setup(self):
-         """Reporter object does not need a setup. This function is depricated."""
-         logging.warn('Depricated: lyrics setup function called.')
-         pass
-
-    async def logout(self):
-        await self.client.logout()
 
