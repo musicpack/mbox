@@ -9,21 +9,17 @@ from discord_slash.utils.manage_commands import create_option
 from discord.ext import commands
 from src.constants import INVITE_LINK_FORMAT
 
-
-
-watching_channels = []
-
-
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 watching_channels = []
 profiles: List[src.element.profile.Profile] = []
 
-class MusicControllerListeners(commands.Cog):
+
+class EventListener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self,message: discord.Message):
+    async def on_message(self, message: discord.Message):
         logging.debug('Message from {0.author}: {0.content}'.format(message))
 
         # Ignore message if it was from a bot
@@ -74,14 +70,12 @@ class MusicControllerListeners(commands.Cog):
                     await src.parser.message(bot_ctx)
                     break
 
-
     @commands.Cog.listener()
-    async def on_typing(self,channel, user, when):
+    async def on_typing(self, channel, user, when):
         logging.debug('Typing from {0.name}'.format(user))
 
-
     @commands.Cog.listener()
-    async def on_guild_join(self,guild: discord.Guild):
+    async def on_guild_join(self, guild: discord.Guild):
         logging.info(f'Joined Server: {guild.name}')
         try:
             await guild.text_channels[0].send('Thanks for adding Music Bot!')
@@ -96,25 +90,22 @@ class MusicControllerListeners(commands.Cog):
                 await owner_member.send(content=content)
             await guild.leave()
 
-
     @commands.Cog.listener()
-    async def on_guild_remove(self,guild):
+    async def on_guild_remove(self, guild):
         logging.info('Removed from Server: {0.name}'.format(guild))
         for profile in profiles:
             if profile.guild == guild:
                 await profile.messenger.unregister_all()
                 profiles.remove(profile)
 
-
     @commands.Cog.listener()
-    async def on_reaction_add(self,reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         if user != self.bot.user:
             if reaction.message.author == self.bot.user:
                 await reaction.message.remove_reaction(reaction, user)
 
-
     @commands.Cog.listener()
-    async def on_voice_state_update(self,member, before, after):
+    async def on_voice_state_update(self, member, before, after):
         # Makes sure the player stops playing the song if the bot was disconnected by force
         if member == self.bot.user:
             if before.channel and after.channel == None:
@@ -122,13 +113,12 @@ class MusicControllerListeners(commands.Cog):
                     if profile.guild == member.guild:
                         profile.player.stop()
 
-
     @commands.Cog.listener()
     async def on_ready(self):
         await src.preinitialization.generate_profiles(bot.guilds, self.bot, profiles)
         for profile in profiles:
             await profile.setup()
 
-def setup(bot):
-    bot.add_cog(MusicControllerListeners(bot))
 
+def setup(bot):
+    bot.add_cog(EventListener(bot))

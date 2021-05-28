@@ -2,15 +2,14 @@ from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 from requests.models import guess_filename
-import src.preinitialization 
+import src.preinitialization
 import src.parser
 import src.element.profile
 from src.constants import *
 from config import GUILD_ID
 from src.element.context import Context
 import discord
-from cogs.music_controller_listeners import profiles
-import os
+from cogs.event_listener import profiles
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 

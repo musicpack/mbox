@@ -3,11 +3,12 @@ import shutil
 import configparser
 import glob
 
-#Config specific variables
+# Config specific variables
 __config = configparser.ConfigParser()
 _FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
 
-# config specific functions
+
+# Config specific functions
 def make_config():
     """Generates a default configeration file."""
     __config.add_section('Default')
@@ -22,19 +23,21 @@ def make_config():
     with open("config.ini", 'w') as f:
         __config.write(f)
 
-#sets the token dynamically
+
 def set_token():
+    """Sets the token dynamically."""
     config_token = __config['Default']['TOKEN']
     envvar_token = os.environ.get('DiscordToken_mbox')
     if config_token:
-        return  config_token
+        return config_token
     elif envvar_token:
         return envvar_token
     else:
-       return  input("No token in config file or in enviroment variable \'DiscordToken_mbox\'. Please generate a token and enter it below. ")
+        return input("No token in config file or in enviroment variable \'DiscordToken_mbox\'. Please generate a token and enter it below. ")
 
-#sets the ffmpeg_path dynamically
+
 def set_ffmpeg_path():
+    """Sets the ffmpeg_path dynamically."""
     try:
         if __config['Default']['FFMPEG_PATH']:
             return __config['Default']['FFMPEG_PATH']
@@ -44,6 +47,7 @@ def set_ffmpeg_path():
             return get_ffmpeg_path(glob.glob('ffmpeg*'))
     except:
         raise ProcessLookupError(_FFMPEG_ERROR_NOT_FOUND)
+
 
 def set_guild_id():
     config_guild_id = __config['Default']['GUILD_ID']
@@ -61,9 +65,9 @@ def get_ffmpeg_path(ffmpeg_paths: str):
         if os.path.isdir(path):
             try:
                 if os.name == 'posix':
-                    return shutil.which(os.path.join(path,'ffmpeg'))
+                    return shutil.which(os.path.join(path, 'ffmpeg'))
                 elif os.name == 'nt':
-                    return shutil.which(os.path.join(path,'bin','ffmpeg.exe'))
+                    return shutil.which(os.path.join(path, 'bin', 'ffmpeg.exe'))
             except Exception:
                 raise FileNotFoundError
 
@@ -74,7 +78,8 @@ def get_ffmpeg_path(ffmpeg_paths: str):
             except:
                 raise FileNotFoundError
 
-# create and set the config
+
+# Create and set the config
 if not os.path.isfile('config.ini'):
     make_config()
 __config.read('config.ini')
@@ -82,7 +87,7 @@ __config.read('config.ini')
 ###### USER CONFIG ######
 TOKEN = set_token()
 FFMPEG_PATH = set_ffmpeg_path()
-GUILD_ID= set_guild_id()
+GUILD_ID = set_guild_id()
 
 
 # TODO: Sanitize and check if values are valid
@@ -90,4 +95,3 @@ DOWNLOAD_PATH = __config['Cache']['DOWNLOAD_PATH']
 TEMP_PATH = __config['Cache']['TEMP_PATH']
 MAX_CACHESIZE = int(__config['Cache']['MAX_CACHESIZE'])
 MAX_FILESIZE = int(__config['Cache']['MAX_FILESIZE'])
-
