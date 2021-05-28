@@ -29,6 +29,4 @@ class Reporter(ChatEmbed):
          logging.warn('Depricated: lyrics setup function called.')
          pass
 
-    async def logout(self):
-        await self.client.logout()
 
