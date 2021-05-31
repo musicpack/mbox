@@ -1,6 +1,9 @@
 import logging
 import src.commander.messenger
 import src.element.profile
+from typing import List
+
+
 
 def valid_channels(guild):
     verified_channels = 0
