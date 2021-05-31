@@ -1,2 +1,5 @@
 -r requirements.txt
 pytest>=6.2.3
+PyNaCl>=1.4.0
+python-dotenv==0.17.1
+autopep8==1.5.7

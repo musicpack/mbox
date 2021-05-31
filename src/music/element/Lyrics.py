@@ -1,7 +1,7 @@
 from typing import List
 from src.commander.element.Button import Button
 from src.commander.element.ChatEmbed import ChatEmbed
-from src.constants import *
+from src.constants import USAGE_TEXT
 import discord
 import logging
 from ytmusicapi import YTMusic
