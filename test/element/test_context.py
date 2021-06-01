@@ -1,4 +1,4 @@
 import pytest
-from src.element.context import Context
+from src.element.MusicBoxContext import MusicBoxContext
 
-ctx = Context(prefix='/',profile=None,name='c',slash_context=None,message=None,args=None,kwargs=None)
+ctx = MusicBoxContext(prefix='/',profile=None,name='c',slash_context=None,message=None,args=None,kwargs=None)
