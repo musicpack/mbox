@@ -3,7 +3,8 @@ from typing import Union, List
 import discord
 from main import bot, logging
 import src.preinitialization
-import src.parser
+from src.parser import parse
+from src.command_handler import play_ytid
 import src.element.profile
 from discord_slash.utils.manage_commands import create_option
 from discord.ext import commands
@@ -64,10 +65,10 @@ class EventListener(commands.Cog):
                     if message.content == 'play':
                         logging.info(
                             'Received play from {0.name}'.format(message.author))
-                        await src.parser.play_ytid('JwmGruvGt_I', bot_ctx)
+                        await play_ytid('JwmGruvGt_I', bot_ctx)
                         break
 
-                    await src.parser.message(bot_ctx)
+                    await parse(bot_ctx)
                     break
 
     @commands.Cog.listener()

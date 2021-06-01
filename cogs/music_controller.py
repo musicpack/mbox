@@ -3,7 +3,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 from requests.models import guess_filename
 import src.preinitialization
-import src.parser
+from src.parser import parse
+from src.command_handler import pause_player, resume_player, player_prev, player_next
 import src.element.profile
 from src.constants import *
 from config import GUILD_ID
@@ -54,19 +55,19 @@ class MusicController(commands.Cog):
                            )
                        ])
     async def _youtube(self, ctx: SlashContext, search):
-        await self.process_slash_command(ctx, src.parser.message)
+        await self.process_slash_command(ctx, parse)
 
     @cog_ext.cog_slash(name="prev",
                        guild_ids=GUILD_ID,
                        description='Goes to the previous song.')
     async def _prev(self, ctx: SlashContext):
-        await self.process_slash_command(ctx, src.parser.player_prev)
+        await self.process_slash_command(ctx, player_prev)
 
     @cog_ext.cog_slash(name="next",
                        guild_ids=GUILD_ID,
                        description='Goes to the next song.')
     async def _next(self, ctx: SlashContext):
-        await self.process_slash_command(ctx, src.parser.player_next)
+        await self.process_slash_command(ctx, player_next)
 
     @cog_ext.cog_slash(name="play",
                        description='Plays or resumes a song.',
@@ -82,16 +83,16 @@ class MusicController(commands.Cog):
     async def _play(self, ctx: SlashContext, song_name_or_link=None):
         print("yes")
         if song_name_or_link:
-            await self.process_slash_command(ctx, src.parser.message)
+            await self.process_slash_command(ctx, parse)
         else:
-            await self.process_slash_command(ctx, src.parser.resume_player)
+            await self.process_slash_command(ctx, resume_player)
 
     @cog_ext.cog_slash(name="pause",
                        description='Pauses actively playing song',
                        guild_ids=GUILD_ID,
                        )
     async def _pause(self, ctx: SlashContext):
-        await self.process_slash_command(ctx, src.parser.pause_player)
+        await self.process_slash_command(ctx, pause_player)
 
 
 def setup(bot):
