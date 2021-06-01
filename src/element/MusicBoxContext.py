@@ -1,11 +1,12 @@
 from discord_slash.context import SlashContext
+from discord.ext.commands.context import Context
 from src.element.profile import Profile
 from typing import List
 import discord
 import logging
 
-class Context:
-    r"""Closely mimics (but does not fully inherit) a discord context :class:`~discord.ext.commands.context` to 
+class MusicBoxContext(Context):
+    r"""Inherits a discord context :class:`~discord.ext.commands.context` to 
     include Music Box native elements and some SlashContext fields. 
 
     Represents the context in which a command is being invoked under.
@@ -15,28 +16,25 @@ class Context:
 
     ## New fields
 
-    prefix: :class:`str`
-        The prefix that was used to invoke the command. Defaults to empty string.
-        If context was a slash command, this should be '/'
     profile: :class:`.Profile`
         The profile matched to this context
-    name: :class:`str`
-        Name of the command
     slash_context: :class:`slash_context`
         ShashContext if context is a slash command. Defaults to none. Similar to prefix.
     
-
-    ## Mimiced fields
+    # Imported fields
 
     message: :class:`.Message`
         The message that triggered the command being executed.
     args: :class:`list`
         The list of transformed arguments that were passed into the command.
+        If this is accessed during the :func:`on_command_error` event
+        then this list could be incomplete.
     kwargs: :class:`dict`
         A dictionary of transformed arguments that were passed into the command.
-    
-    ## Removed fields
-
+        Similar to :attr:`args`\, if this is accessed in the
+        :func:`on_command_error` event then this dict could be incomplete.
+    prefix: :class:`str`
+        The prefix that was used to invoke the command.
     command: :class:`Command`
         The command that is being invoked currently.
     invoked_with: :class:`str`
@@ -57,17 +55,21 @@ class Context:
         The bot that contains the command being executed.
     """
     def __init__(self, **attrs):
-        """Closely mimics (but does not fully inherit) a discord context :class:`~discord.ext.commands.context` to include Music Box native elements and some SlashContext fields.
+        """Inherits a discord context :class:`~discord.ext.commands.context` to 
+        include Music Box native elements and some SlashContext fields.
+        
+        ## New fields
+
+        profile: :class:`.Profile`
+            The profile matched to this context
+        slash_context: :class:`slash_context`
+            ShashContext if context is a slash command. Defaults to none. Similar to prefix.
+
+        ## Essential attributes used in the MusicBox program
 
         prefix: :class:`str`
             The prefix that was used to invoke the command. Defaults to empty string.
             If context was a slash command, this should be '/'
-        profile: :class:`.Profile`
-            The profile matched to this context
-        name: :class:`str`
-            Name of the command
-        slash_context: :class:`slash_context`
-            ShashContext if context is a slash command. Defaults to none. Similar to prefix.
         message: :class:`.Message`
             The message that triggered the command being executed.
         args: :class:`list`
@@ -76,14 +78,23 @@ class Context:
             A dictionary of transformed arguments that were passed into the command.
             
         """
-        self.message: discord.Message = attrs.pop('message', None)
-        self.args: List[str] = attrs.pop('args', [])
-        self.kwargs: List[str] = attrs.pop('kwargs', {})
-        self.prefix: str = attrs.pop('prefix', '')
         self.profile: Profile = attrs.pop('profile', None)
         self.name: str = attrs.pop('name', '')
         self.slash_context: SlashContext = attrs.pop('slash_context', None)
         
+        # workaround: make _state object since super() expects one (regardless of message=null)
+        class FakeMessage(NotImplementedError):
+            pass
+        if attrs['message'] == None:
+            a = FakeMessage()
+            a._state = NotImplementedError
+            attrs['message'] = a
+
+        super().__init__(**attrs)
+
+        # fix self.message to not be a fake message
+        if isinstance(self.message, FakeMessage):
+            self.message = None
         self.verify_context()
     
     def get_str_full_input(self) -> str:

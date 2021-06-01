@@ -2,7 +2,7 @@ import logging
 import re
 
 from discord.voice_client import VoiceClient
-from src.element.context import Context
+from src.element.MusicBoxContext import MusicBoxContext
 import discord
 from typing import List
 from src.music.player import Player
@@ -13,7 +13,7 @@ from ytmusicapi import YTMusic
 YTRE = '(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})'
 YOUTUBE_ID_REGEX = re.compile(YTRE)
 # TODO make sure user input is sanitized
-async def message(context: Context):
+async def message(context: MusicBoxContext):
     """Parses finding youtube id command context"""
     logging.info('Parsing context [{0}]{1}: {2}'.format(context.get_guild(), context.get_author(), context.get_str_full_input()))
 
@@ -57,7 +57,7 @@ def search_ytmusic(phrase: str) -> str:
     # TODO: Notify user if youtube did not find any music in the command channel
     logging.error('Youtube Music did not find any music.')
 
-async def play_ytid(id: str, context: Context):
+async def play_ytid(id: str, context: MusicBoxContext):
     """Loads a youtube id to the player
 
     Args:
@@ -71,12 +71,12 @@ async def play_ytid(id: str, context: Context):
     if(voice_channel): await context.profile.player.connect(voice_channel)
     await context.profile.player.play_youtube(normalized_url)
 
-def get_player_client(context: Context) -> VoiceClient:
+def get_player_client(context: MusicBoxContext) -> VoiceClient:
     if context.profile.player.connected_client:
         if context.profile.player.connected_client.is_connected():
             return context.profile.player.connected_client
 
-async def player_prev(context: Context):
+async def player_prev(context: MusicBoxContext):
     if context.name == 'prev' or context.name == 'back':
         p_client = get_player_client(context)
         
@@ -90,7 +90,7 @@ async def player_prev(context: Context):
     else:
         logging.error('Context name prev/back does not match function.')
 
-async def player_next(context: Context):
+async def player_next(context: MusicBoxContext):
     if context.name == 'skip' or context.name == 'next':
         p_client = get_player_client(context)
         
@@ -104,7 +104,7 @@ async def player_next(context: Context):
     else:
         logging.error('Context name next/skip does not match function.')
 
-async def pause_player(context: Context) -> str:
+async def pause_player(context: MusicBoxContext) -> str:
     if context.name == 'pause':
         p_client = get_player_client(context)
         
@@ -118,7 +118,7 @@ async def pause_player(context: Context) -> str:
     else:
         logging.error('Context name is not pause. Cannot pause player')
 
-async def resume_player(context: Context) -> str:
+async def resume_player(context: MusicBoxContext) -> str:
     if context.name == 'play':
         p_client = get_player_client(context)
         

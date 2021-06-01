@@ -1,4 +1,4 @@
-from src.element.context import Context
+from src.element.MusicBoxContext import MusicBoxContext
 from typing import Union, List
 import discord
 from main import bot, logging
@@ -44,7 +44,7 @@ class EventListener(commands.Cog):
                     await message.delete()
 
                     # Create a context
-                    bot_ctx = Context(prefix='', profile=profile, name='', slash_context=None, message=message, args=[
+                    bot_ctx = MusicBoxContext(prefix='', profile=profile, name='', slash_context=None, message=message, args=[
                         message.content], kwargs={'command': message.content})
 
                     # Top level command test

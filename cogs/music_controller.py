@@ -7,7 +7,7 @@ import src.parser
 import src.element.profile
 from src.constants import *
 from config import GUILD_ID
-from src.element.context import Context
+from src.element.MusicBoxContext import MusicBoxContext
 import discord
 from cogs.event_listener import profiles
 
@@ -28,7 +28,7 @@ class MusicController(commands.Cog):
     async def process_slash_command(self, ctx: SlashContext, f):
         for profile in profiles:
             if profile.guild == ctx.guild:
-                mbox_ctx = Context(prefix='/', profile=profile, name=ctx.name,
+                mbox_ctx = MusicBoxContext(prefix='/', profile=profile, name=ctx.name,
                                    slash_context=ctx, message=ctx.message, args=ctx.args, kwargs=ctx.kwargs)
                 if ctx.channel == profile.messenger.command_channel:
                     await ctx.send(content=COMMAND_CHANNEL_WARNING)
