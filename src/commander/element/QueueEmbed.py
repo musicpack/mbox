@@ -16,29 +16,29 @@ class QueueEmbed (Embed):
 
 
         if self.queue and self.queue.index != None:
-            self.description = self.get_description()
+            self.description = self.set_description()
         else:
             self.description = f'Nothing is in your queue. {USAGE_TEXT}'
 
-    def get_description(self) -> str:
+    def set_description(self) -> str:
         """Update the queue Embed based on state."""
-        text_np = '**Now Playing**'
-        text_n = '**Next**'
-        description_np = ''
-        description_n = ''
+        text_now_playing = '**Now Playing**'
+        text_next = '**Next**'
+        description_now_playing = ''
+        description_next = ''
 
         for index in range(self.queue.index, len(self.queue.playlist)):
             if self.queue.index == index:
-                description_np += '\n> [' + self.queue.playlist[index].info['title'] + \
+                description_now_playing += '\n> [' + self.queue.playlist[index].info['title'] + \
                     '](' + self.queue.playlist[index].info['webpage_url'] + ')'
             else:
-                description_n += '\n> [' + self.queue.playlist[index].info['title'] + \
+                description_next += '\n> [' + self.queue.playlist[index].info['title'] + \
                     '](' + self.queue.playlist[index].info['webpage_url'] + ')'
 
-        if description_np:
-            description = text_np + description_np
-            if description_n:
-                description += '\n' + text_n + description_n
+        if description_now_playing:
+            description = text_now_playing + description_now_playing
+            if description_next:
+                description += '\n' + text_next + description_next
 
             return description
         
