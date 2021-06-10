@@ -1,7 +1,6 @@
 from discord_slash.context import SlashContext
 from discord.ext.commands.context import Context
 from src.element.profile import Profile
-from typing import List
 import discord
 import logging
 
@@ -125,7 +124,7 @@ class MusicBoxContext(Context):
         """Checks to make sure fields are consistant and valid. Returns true if valid, throws error if not."""
         if self.message:
             if self.profile:
-                if self.profile.messenger.command_channel != self.message.channel:
+                if self.profile.command_channel != self.message.channel:
                     raise Exception('Profiles do not match up with the message. You are cross matching between two different servers.')
         if bool(self.slash_context) != (self.prefix == '/'):
             raise Exception('slash_context and prefix values do not line up')
@@ -151,9 +150,6 @@ class MusicBoxContext(Context):
                 if self.profile.player.connected_client.is_connected():
                     return None
             
-            # Save for later check, last connected channel
-            last_connected_channel = self.profile.player.last_voice_channel
-
             # Save for later check, first voice channel
             if self.profile.guild.voice_channels:
                 first_voice_channel = self.profile.guild.voice_channels[0]

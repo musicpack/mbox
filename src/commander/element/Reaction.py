@@ -5,7 +5,7 @@ import inspect
 from types import FunctionType
 from typing import Dict
 
-class Button:
+class Reaction:
     """Base class for each reaction on a message.
 
     Handles on press events and actions for a button press.

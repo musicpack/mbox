@@ -6,7 +6,6 @@ import src.preinitialization
 from src.parser import parse
 from src.command_handler import play_ytid
 import src.element.profile
-from discord_slash.utils.manage_commands import create_option
 from discord.ext import commands
 from src.constants import INVITE_LINK_FORMAT
 
@@ -24,43 +23,26 @@ class EventListener(commands.Cog):
         logging.debug('Message from {0.author}: {0.content}'.format(message))
 
         # Ignore message if it was from a bot
-        if message.author.bot:
-            # Delete the message if its from another bot.
-            # Any message created by the bot itself should be handled outside of this function.
-            if message.author != self.bot.user:
-                await message.delete()
+        if message.author == bot.user:
             return
-
-        # Top level command stop
-        if message.content == 'stop':
-            logging.info('Received stop from {0.name}'.format(message.author))
-            await bot.logout()
 
         # Check which profile the message relates to
         for profile in profiles:
             if profile.guild == message.guild:
 
                 # Check if the message comes from a command channel
-                if profile.messenger.command_channel == message.channel:
+                if profile.command_channel == message.channel:
                     await message.delete()
+
+                    # Top level command stop
+                    if message.content == 'stop':
+                        logging.info('Received stop from {0.name}'.format(message.author))
+                        await bot.logout()
 
                     # Create a context
                     bot_ctx = MusicBoxContext(prefix='', profile=profile, name='', slash_context=None, message=message, args=[
                         message.content], kwargs={'command': message.content})
 
-                    # Top level command test
-                    if message.content == 'test':
-                        logging.info(
-                            'Received test from {0.name}'.format(message.author))
-                        await profile.messenger.gui['player'].update()
-                        break
-                    # Top level command rem
-                    if message.content == 'rem':
-                        logging.info(
-                            'Received rem from {0.name}'.format(message.author))
-                        for action in profile.messenger.gui['player'].actions:
-                            await action.remove_all()
-                        break
                     # Top level command play
                     if message.content == 'play':
                         logging.info(
@@ -96,7 +78,7 @@ class EventListener(commands.Cog):
         logging.info('Removed from Server: {0.name}'.format(guild))
         for profile in profiles:
             if profile.guild == guild:
-                await profile.messenger.unregister_all()
+                await profile.cleanup()
                 profiles.remove(profile)
 
     @commands.Cog.listener()

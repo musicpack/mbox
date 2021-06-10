@@ -6,7 +6,6 @@ import os
 import youtube_dl
 from src.constants import SPONSORBLOCK_MUSIC_API
 import discord
-from src.music.element.cache import Cache
 import requests
 from datetime import timedelta
 from config import DOWNLOAD_PATH, TEMP_PATH, FFMPEG_PATH

@@ -31,7 +31,7 @@ class MusicController(commands.Cog):
             if profile.guild == ctx.guild:
                 mbox_ctx = MusicBoxContext(prefix='/', profile=profile, name=ctx.name,
                                    slash_context=ctx, message=ctx.message, args=ctx.args, kwargs=ctx.kwargs)
-                if ctx.channel == profile.messenger.command_channel:
+                if ctx.channel == profile.command_channel:
                     await ctx.send(content=COMMAND_CHANNEL_WARNING)
                     await f(mbox_ctx)
                     await ctx.message.delete()
