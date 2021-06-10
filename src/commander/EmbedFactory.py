@@ -7,12 +7,12 @@ from src.commander.element.ReporterEmbed import ReporterEmbed
 
 
 class EmbedFactory:
-    def create_embed(type: str, **kwargs) -> Embed:
-        if type == 'reporter':
+    def create_embed(embed_type: str, **kwargs) -> Embed:
+        if embed_type == 'reporter':
             return ReporterEmbed(**kwargs)
-        elif type == 'lyrics':
+        elif embed_type == 'lyrics':
             return LyricsEmbed(**kwargs)
-        elif type == 'queue':
+        elif embed_type == 'queue':
             return QueueEmbed(**kwargs)
-        elif type == 'player':
+        elif embed_type == 'player':
             return PlayerEmbed(**kwargs)

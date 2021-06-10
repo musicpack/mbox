@@ -301,7 +301,7 @@ class Player:
         """Getter for reporter_embed from factory.
         Factory generates a up to date embed based on kwargs passed.
         """
-        return EmbedFactory.create_embed(type='reporter', **vars(self))
+        return EmbedFactory.create_embed(embed_type='reporter', **vars(self))
 
     async def update_reporter_embed(self) -> None:
         """Edits the reporter message (if registered) with a newly generated embed."""
@@ -318,7 +318,7 @@ class Player:
             'lyrics': self.lyrics,
             'lyrics_source': self.lyrics_source
         }
-        return EmbedFactory.create_embed(type='lyrics', **custom_kwargs)
+        return EmbedFactory.create_embed(embed_type='lyrics', **custom_kwargs)
 
     async def update_lyrics_embed(self) -> None:
         """Edits the lyrics message (if registered) with a newly generated embed."""
@@ -339,7 +339,7 @@ class Player:
         custom_kwargs = {
             'queue': self.queue
         }
-        return EmbedFactory.create_embed(type='queue', **custom_kwargs)
+        return EmbedFactory.create_embed(embed_type='queue', **custom_kwargs)
 
     async def update_queue_embed(self) -> None:
         """Edits the queues message (if registered) with a newly generated embed."""
@@ -357,7 +357,7 @@ class Player:
         Factory generates a up to date embed based on kwargs passed.
         """
         # NOTE: we send every self variable as kwargs to factory since PlayerEmbed requires most variables in this class
-        return EmbedFactory.create_embed(type='player', **vars(self))
+        return EmbedFactory.create_embed(embed_type='player', **vars(self))
 
     async def update_player_embed(self) -> None:
         """Edits the player message (if registered) with a newly generated embed."""
