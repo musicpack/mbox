@@ -13,4 +13,4 @@ def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
         result = ytmusic.get_lyrics(browse_id)
         return result['lyrics'], result['source']
 
-    return None
+    return None, None
