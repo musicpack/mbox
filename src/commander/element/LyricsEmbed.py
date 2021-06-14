@@ -23,40 +23,48 @@ class LyricsEmbed(Embed):
             lyric = ''
             lyric_text = ''
             lyric_list = self.lyrics.split('\r\n\r\n')
-            
+
             #Lyric with gaps
             if(len(lyric_list) > 1):
                 for lyric_line in lyric_list:
                     if(lyric_text == ''):
                         if(len(lyric) + len(lyric_line) < 2048 ):
                             lyric = lyric + '\r\n\r\n' + lyric_line
+                            if(lyric_list[-1] == lyric_line):
+                                self.description = lyric
                         else:
                             self.description = lyric
                             lyric_text = lyric_line
                     else:
                         if(len(lyric_text) + len(lyric_line) < 1024 ):
                             lyric_text = lyric_text + '\r\n\r\n' + lyric_line
+                            if(lyric_list[-1] == lyric_line):
+                                self.add_field(name='\u200B', value=lyric_text, inline=False)
                         else:
                             self.add_field(name='\u200B', value=lyric_text, inline=False)
                             lyric_text = lyric_line
 
             #Lyric without gap
             elif(len(lyric_list) == 1):
-                lyric_list = self.lyrics.split('\r\n')
-                for lyric_line in lyric_list:
+                new_lyric_list = lyric_list[0].split('\r\n')
+                for lyric_line in new_lyric_list:
                     if(lyric_text == ''):
                         if(len(lyric) + len(lyric_line) < 2048 ):
                             lyric = lyric + '\r\n' + lyric_line
+                            if(new_lyric_list[-1] == lyric_line):
+                                self.description = lyric
                         else:
                             self.description = lyric
                             lyric_text = lyric_line
-                    else:
+                    elif (lyric_text != ''):
                         if(len(lyric_text) + len(lyric_line) < 1024 ):
                             lyric_text = lyric_text + '\r\n' + lyric_line
+                            if(new_lyric_list[-1] == lyric_line):
+                                self.add_field(name='\u200B', value=lyric_text, inline=False)
                         else:
                             self.add_field(name='\u200B', value=lyric_text, inline=False)
                             lyric_text = lyric_line
-                    self.add_field(name='\u200B', value=lyric_text, inline=False)
+                        
                     
         if self.lyrics_source:
             self.set_footer(text=self.lyrics_source)
