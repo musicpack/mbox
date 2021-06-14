@@ -20,10 +20,23 @@ class LyricsEmbed(Embed):
             return
 
         if self.lyrics:
-            self.description = self.lyrics[:2048] # TODO Support lyrics that are longer then the embed text limit in discord. (Page pagination?)
-            if len(self.lyrics) > 2048:
-                self.lyrics_source += ' [Discord message limit reached. Lyrics truncated.]'
-
+            lyric = ''
+            lyric_text = ''
+            lyric_list = self.lyrics.split('\r\n\r\n')
+            for lyric_line in lyric_list:
+                if(lyric_text == ''):
+                    if(len(lyric) + len(lyric_line) < 2048 ):
+                        lyric = lyric + '\r\n\r\n' + lyric_line
+                    else:
+                        self.description = lyric
+                        lyric_text = lyric_line
+                else:
+                    if(len(lyric_text) + len(lyric_line) < 1024 ):
+                        lyric_text = lyric_text + '\r\n\r\n' + lyric_line
+                    else:
+                        self.add_field(name='\u200B', value=lyric_text, inline=False)
+                        lyric_text = lyric_line
+            self.add_field(name='\u200B', value=lyric_text, inline=False)
         if self.lyrics_source:
             self.set_footer(text=self.lyrics_source)
         else:
