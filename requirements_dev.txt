@@ -1,2 +1,3 @@
 -r requirements.txt
 pytest>=6.2.3
+pytest-xprocess>=0.17.1
