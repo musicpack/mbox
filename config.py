@@ -2,6 +2,7 @@ import os
 import shutil
 import configparser
 import glob
+from typing import List
 
 def gen_config() -> configparser.ConfigParser:
     """Generates a default configeration file."""
@@ -52,7 +53,7 @@ def set_ffmpeg_path(config: configparser.ConfigParser):
         FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
         raise ProcessLookupError(FFMPEG_ERROR_NOT_FOUND)
 
-def set_guild_id(config: configparser.ConfigParser) -> list[int]:
+def set_guild_id(config: configparser.ConfigParser) -> List[int]:
     """sets the ffmpeg_path dynamically"""
     config_guild_id = config['Default']['GUILD_ID']
     envar_guild_id = os.getenv("DISCORD_GUILD", "")
