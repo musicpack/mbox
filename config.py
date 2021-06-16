@@ -85,28 +85,28 @@ def get_ffmpeg_path(ffmpeg_paths: str) -> str:
 default_config = gen_config()
 if not os.path.isfile('config.ini'):
     write_config(default_config)
-else:
-    disk_config = configparser.ConfigParser()
-    disk_config.read('config.ini')
 
-    # find missing fields in disk config add them if missing
-    reference_dict: dict = default_config._sections
-    disk_dict: dict = disk_config._sections
+disk_config = configparser.ConfigParser()
+disk_config.read('config.ini')
 
-    section: str
-    section_dict: dict
-    for section, section_dict in reference_dict.items():
-        # check disk dictionary has the section
-        if not disk_dict[section]:
-            disk_config.add_section(section)
+# find missing fields in disk config add them if missing
+reference_dict: dict = default_config._sections
+disk_dict: dict = disk_config._sections
 
-        key: str
-        value: str
-        for key, value in section_dict.items():
-            # check disk dictionary have a key in the section
-            if key not in disk_dict[section]: 
-                disk_config[section][key] = default_config[section][key]
-                write_config(disk_config) # write changes to disk
+section: str
+section_dict: dict
+for section, section_dict in reference_dict.items():
+    # check disk dictionary has the section
+    if not disk_dict[section]:
+        disk_config.add_section(section)
+
+    key: str
+    value: str
+    for key, value in section_dict.items():
+        # check disk dictionary have a key in the section
+        if key not in disk_dict[section]: 
+            disk_config[section][key] = default_config[section][key]
+            write_config(disk_config) # write changes to disk
 
 ###### USER CONFIG ######
 TOKEN = set_token(disk_config)
