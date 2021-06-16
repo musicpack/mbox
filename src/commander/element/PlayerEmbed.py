@@ -1,5 +1,6 @@
 
 from datetime import timedelta
+from typing import Callable
 from discord.embeds import Embed, EmptyEmbed
 
 from src.music.element.Queue import Queue
@@ -11,12 +12,12 @@ class PlayerEmbed(Embed):
         # Call super first so that it doesn't overwrite custom variables in this class
         super().__init__(**kwargs)
 
-        self.on_last: function = kwargs.get('on_last', None)
-        self.on_play_pause: function = kwargs.get('on_play_pause', None)
-        self.on_next: function = kwargs.get('on_next', None)
-        self.on_lower_volume: function = kwargs.get('on_lower_volume', None)
-        self.on_raise_volume: function = kwargs.get('on_raise_volume', None)
-        self.on_toggle_description: function = kwargs.get('on_toggle_description', None)
+        self.on_last: Callable = kwargs.get('on_last', None)
+        self.on_play_pause: Callable = kwargs.get('on_play_pause', None)
+        self.on_next: Callable = kwargs.get('on_next', None)
+        self.on_lower_volume: Callable = kwargs.get('on_lower_volume', None)
+        self.on_raise_volume: Callable = kwargs.get('on_raise_volume', None)
+        self.on_toggle_description: Callable = kwargs.get('on_toggle_description', None)
         
         # Footer Variables
         self.icon_url: str = kwargs.get('icon_url', EmptyEmbed)
