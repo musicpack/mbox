@@ -23,7 +23,7 @@ class EventListener(commands.Cog):
         logging.debug('Message from {0.author}: {0.content}'.format(message))
 
         # Ignore message if it was from a bot
-        if message.author == bot.user:
+        if message.author.bot:
             return
 
         # Check which profile the message relates to
@@ -36,7 +36,8 @@ class EventListener(commands.Cog):
 
                     # Top level command stop
                     if message.content == 'stop':
-                        logging.info('Received stop from {0.name}'.format(message.author))
+                        logging.info(
+                            'Received stop from {0.name}'.format(message.author))
                         await bot.logout()
 
                     # Create a context

@@ -1,16 +1,15 @@
+from discord import webhook
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 from requests.models import guess_filename
-import src.preinitialization
 from src.parser import parse
 from src.command_handler import pause_player, resume_player, player_prev, player_next
-import src.element.profile
 from src.constants import *
 from config import GUILD_ID
 from src.element.MusicBoxContext import MusicBoxContext
-import discord
 from cogs.event_listener import profiles
+from src.lib import music_box_webhook
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 
@@ -19,18 +18,26 @@ class MusicController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(name="test",
+    @cog_ext.cog_slash(name="send",
                        guild_ids=GUILD_ID,
                        )
-    async def _test(self, ctx: SlashContext):
-        embed = discord.Embed(title="embed test")
-        await ctx.send(content="test", embeds=[embed])
+    async def send_webhook_message(self, ctx: SlashContext):
+        await music_box_webhook.send_message(ctx)
+        await ctx.send("Message sucessfully sent")
+
+    @cog_ext.cog_slash(name="edit",
+                       guild_ids=GUILD_ID,
+                       description='Edit webhook message'
+                       )
+    async def edit_webhook_message(self, ctx: SlashContext):
+        await music_box_webhook.edit_embed_message(guild_id=ctx.guild_id)
+        await ctx.send("Message successfully edited")
 
     async def process_slash_command(self, ctx: SlashContext, f):
         for profile in profiles:
             if profile.guild == ctx.guild:
                 mbox_ctx = MusicBoxContext(prefix='/', profile=profile, name=ctx.name,
-                                   slash_context=ctx, message=ctx.message, args=ctx.args, kwargs=ctx.kwargs)
+                                           slash_context=ctx, message=ctx.message, args=ctx.args, kwargs=ctx.kwargs)
                 if ctx.channel == profile.command_channel:
                     await ctx.send(content=COMMAND_CHANNEL_WARNING)
                     await f(mbox_ctx)
@@ -47,12 +54,12 @@ class MusicController(commands.Cog):
                        guild_ids=GUILD_ID,
                        description='Add a youtube video to the queue.',
                        options=[
-                           create_option(
-                               name="search",
-                               description="Name or link of a youtube video",
-                               option_type=3,
-                               required=True
-                           )
+                            create_option(
+                                name="search",
+                                description="Name or link of a youtube video",
+                                option_type=3,
+                                required=True
+                            )
                        ])
     async def _youtube(self, ctx: SlashContext, search):
         await self.process_slash_command(ctx, parse)
@@ -73,12 +80,12 @@ class MusicController(commands.Cog):
                        description='Plays or resumes a song.',
                        guild_ids=GUILD_ID,
                        options=[
-                           create_option(
-                               name="song_name_or_link",
-                               description="Adds this song to the queue.",
-                               option_type=3,
-                               required=False
-                           )
+                            create_option(
+                                name="song_name_or_link",
+                                description="Adds this song to the queue.",
+                                option_type=3,
+                                required=False
+                            )
                        ])
     async def _play(self, ctx: SlashContext, song_name_or_link=None):
         print("yes")

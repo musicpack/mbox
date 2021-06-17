@@ -27,7 +27,8 @@ logging.basicConfig(
     ]
 )
 
-initial_extensions = ['event_listener', 'music_controller']
+initial_extensions = ['event_listener',
+                      'music_controller']
 
 for filename in initial_extensions:
     bot.load_extension(f"cogs.{filename}")
