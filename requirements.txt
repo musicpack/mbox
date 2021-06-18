@@ -7,3 +7,4 @@ PyNaCl==1.4.0
 youtube-dl==2021.4.17
 python-dotenv==0.17.1
 autopep8==1.5.7
+rsa==4.7.2
