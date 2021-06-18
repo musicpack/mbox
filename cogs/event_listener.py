@@ -34,6 +34,10 @@ class EventListener(commands.Cog):
                 if profile.command_channel == message.channel:
                     await message.delete()
 
+                    # Ignore message if it came from a bot that was not from a webhook
+                    if message.author.bot and not message.webhook_id:
+                        return
+
                     # Top level command stop
                     if message.content == 'stop':
                         logging.info(
@@ -102,6 +106,7 @@ class EventListener(commands.Cog):
         await src.preinitialization.generate_profiles(bot.guilds, self.bot, profiles)
         for profile in profiles:
             await profile.setup()
+        logging.info('Music Box is all set up and ready to go!')
 
 
 def setup(bot):
