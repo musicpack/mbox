@@ -159,25 +159,3 @@ class Test_Crypto:
 
         assert decrypt_token == token
         assert int(decrypt_time) == pytest.approx(approximated_time, 10)
-
-class Test_Auth:
-    def test_validate_timestamp(self):
-        decrypt_time = int(time.time())
-        # test timestamp tolerence within 60 seconds of message
-        assert src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+1)
-
-        # test timestamp tolerence not within 60 seconds of message
-        assert not src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)-61)
-        assert not src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+61)
-
-        # test custom timestamp tolerence
-        assert not src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)-61, tolerance= 10)
-        assert src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+61, tolerance= 61)
-
-        # test replay attack canary, spent_epochsa
-        assert not src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+1, int(decrypt_time))
-
-        # test replay attack canary, startup_epoch
-        assert not src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+1, 0, int(decrypt_time))
-        assert not src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+1, 0, int(decrypt_time)+60)
-        assert src.auth.Auth.validate_timestamp(int(decrypt_time), int(decrypt_time)+1, 0, int(decrypt_time)+121)
