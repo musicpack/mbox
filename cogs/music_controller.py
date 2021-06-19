@@ -1,15 +1,13 @@
-from discord import webhook
+from src.lib.music_box_webhook import music_box_webhook
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
-from requests.models import guess_filename
 from src.parser import parse
 from src.command_handler import pause_player, resume_player, player_prev, player_next
 from src.constants import *
 from config import GUILD_ID
 from src.element.MusicBoxContext import MusicBoxContext
 from cogs.event_listener import profiles
-from src.lib import music_box_webhook
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 
@@ -88,7 +86,6 @@ class MusicController(commands.Cog):
                             )
                        ])
     async def _play(self, ctx: SlashContext, song_name_or_link=None):
-        print("yes")
         if song_name_or_link:
             await self.process_slash_command(ctx, parse)
         else:

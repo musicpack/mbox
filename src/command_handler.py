@@ -56,7 +56,7 @@ async def pause_player(context: MusicBoxContext) -> str:
         
         if p_client:
             if not p_client.is_paused():
-                await context.profile.player.play_pause()  
+                context.profile.player.pause()  
                 return 'Paused player'
             else:
                 return 'Player is already paused'
@@ -70,7 +70,7 @@ async def resume_player(context: MusicBoxContext) -> str:
         
         if p_client:
             if p_client.is_paused():
-                await context.profile.player.play_pause()  
+                context.profile.player.resume()  
                 return 'Resumed player'
             else:
                 return 'Player is already playing'
