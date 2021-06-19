@@ -16,7 +16,7 @@ def mbox_process(xprocess):
         pattern = "Music Box is all set up and ready to go!"
 
         # command to start process
-        args = [python_executable_full_path, main_path, 'debug']
+        args = [python_executable_full_path, main_path]
 
     # ensure process is running and return its logfile
     logfile = xprocess.ensure("mbox_process", Starter)
