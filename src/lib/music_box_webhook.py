@@ -10,7 +10,7 @@ import boto3
 
 class MusicBoxWebhook:
     def __init__(self):
-        dynamodb = boto3.resource('dynamodb')
+        dynamodb = boto3.resource(service_name='dynamodb', region_name="us-east-2")
         self.table = dynamodb.Table('music-box')
         self.avatar_url = "https://cdn.discordapp.com/avatars/758005098042622194/34205017807cce1c9f7bfcb2f4e3bcd7.webp?size=256"
 
