@@ -27,8 +27,10 @@ class MusicController(commands.Cog):
         await ctx.send(content="test", embeds=[embed])
 
     async def process_slash_command(self, ctx: SlashContext, f):
+        # TODO:  Get guild item from database
         for profile in profiles:
             if profile.guild == ctx.guild:
+                # Rename profile attribute to guild_item
                 mbox_ctx = MusicBoxContext(prefix='/', profile=profile, name=ctx.name,
                                    slash_context=ctx, message=ctx.message, args=ctx.args, kwargs=ctx.kwargs)
                 if ctx.channel == profile.command_channel:

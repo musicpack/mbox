@@ -27,9 +27,11 @@ class EventListener(commands.Cog):
             return
 
         # Check which profile the message relates to
+        # TODO: Retreve guild item from database using guild id
         for profile in profiles:
             if profile.guild == message.guild:
 
+                # TODO: Get command channel id from guild item
                 # Check if the message comes from a command channel
                 if profile.command_channel == message.channel:
                     await message.delete()
@@ -63,6 +65,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
+        # TODO: Adding guild item to database
         logging.info(f'Joined Server: {guild.name}')
         try:
             await guild.text_channels[0].send('Thanks for adding Music Bot!')
@@ -79,6 +82,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
+        # TODO: Remove guild item from database
         logging.info('Removed from Server: {0.name}'.format(guild))
         for profile in profiles:
             if profile.guild == guild:
@@ -93,6 +97,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        # TODO: Get guild from database
         # Makes sure the player stops playing the song if the bot was disconnected by force
         if member == self.bot.user:
             if before.channel and after.channel == None:
@@ -102,6 +107,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        # TODO: Remove this entire function. Goodbye!
         await src.preinitialization.generate_profiles(bot.guilds, self.bot, profiles)
         for profile in profiles:
             await profile.setup()
