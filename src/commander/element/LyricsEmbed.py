@@ -44,10 +44,12 @@ class LyricsEmbed(Embed):
                     embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
                     self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
 
-                else: embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
+                else: 
+                    embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
 
             else: description_lyric = description_lyric + '\r\n\r\n' + verse           
-                
+
+        self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
         return description_lyric
 
 
