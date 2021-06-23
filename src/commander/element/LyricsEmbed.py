@@ -20,8 +20,9 @@ class LyricsEmbed(Embed):
 
         if self.lyrics:
             self.max_description = 2048
-            self.max_textfield = 1024
-            self.get_lyric() # self.description = self.get_lyric() 
+            self.max_embed_field = 1024
+            self.description = self.get_lyric()
+
                              
         if self.lyrics_source:
             self.set_footer(text=self.lyrics_source)
@@ -29,64 +30,26 @@ class LyricsEmbed(Embed):
             self.set_footer(text=EmptyEmbed)
         
     
-    def get_lyric(self):
-        self.description_lyric = ''
-        self.embed_field_lyric = ''
+    def get_lyric(self) -> str:
+        if(len(self.lyrics) < self.max_description):
+            return self.lyrics
 
-        lyric_list_by_gap = self.get_split_lyric_by_gap()
-        lyric_list_by_line = self.get_split_lyric_by_line()
-        split_type = self.get_split_type(lyric_list_by_gap)
-        
-        if(self.has_gap(lyric_list_by_gap) == True):
-            self.split_lyric(lyric_list_by_gap, split_type)
-        else:
-            self.split_lyric(lyric_list_by_line, split_type)
-            
+        description_lyric = ''
+        embed_field_lyric = ''
 
-    def split_lyric(self, lyric_list, split_type):
-        for lyric_line in lyric_list:
-            if(self.embed_field_lyric == ''):
-                self.add_description_text(lyric_list, lyric_line, split_type)
-            else:
-                self.add_embed_field_text(lyric_list, lyric_line, split_type)
-        self.add_field(name='\u200B', value=self.embed_field_lyric, inline=False)
-        self.description = self.description_lyric
+        for verse in self.get_verses():
+            if(len(description_lyric) + len(verse) >= self.max_description ):
 
+                if(len(embed_field_lyric) + len(verse) >= self.max_embed_field ):
+                    embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
+                    self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
 
-    def add_description_text(self, lyric_list, lyric_line, split_type):
-        if(len(self.description_lyric) + len(lyric_line) < self.max_description ):
-            self.description_lyric = self.description_lyric + split_type + lyric_line
-        else:
-            self.description = self.description_lyric
-            self.embed_field_lyric = lyric_line
+                else: embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
 
-
-    def add_embed_field_text(self, lyric_list, lyric_line, split_type):
-        if(len(self.embed_field_lyric) + len(lyric_line) < self.max_textfield ):
-            self.embed_field_lyric = self.embed_field_lyric + split_type + lyric_line
+            else: description_lyric = description_lyric + '\r\n\r\n' + verse           
                 
-        else:
-            self.add_field(name='\u200B', value=self.embed_field_lyric, inline=False)
-            self.embed_field_lyric = lyric_line
+        return description_lyric
 
 
-    def get_split_type(self, lyric_list: list) -> str:
-        if(len(lyric_list) > 1):
-            return '\r\n\r\n'
-        elif(len(lyric_list) == 1):
-            return '\r\n'
-        
-
-    def has_gap(self, lyric_list: list) -> bool:
-        if(len(lyric_list) > 1):
-            return True
-        elif(len(lyric_list) == 1):
-            return False
-
-
-    def get_split_lyric_by_gap(self) -> list:
+    def get_verses(self) -> list:
         return self.lyrics.split('\r\n\r\n')
-
-
-    def get_split_lyric_by_line(self) -> list:
-        return self.lyrics[0].split('\r\n')
