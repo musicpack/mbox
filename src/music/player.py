@@ -1,4 +1,5 @@
 import threading
+from typing import Dict
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
 from discord.message import Message
@@ -424,7 +425,7 @@ class Player:
         self.queue_message    = await command_channel.send(embed=self.queue_embed)
         self.player_message   = await command_channel.send(embed=self.player_embed)
 
-    def metadata_youtube_dl(self, info: dict) -> dict[str,str]:
+    def metadata_youtube_dl(self, info: dict) -> Dict[str,str]:
         """Parses youtube_dl dictionary to standard mbox naming format.
 
         Args:
