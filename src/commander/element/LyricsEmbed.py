@@ -41,13 +41,14 @@ class LyricsEmbed(Embed):
             if(len(description_lyric) + len(verse) >= self.max_description ):
 
                 if(len(embed_field_lyric) + len(verse) >= self.max_embed_field ):
-                    embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
+                    embed_field_lyric = self.append_verse(embed_field_lyric, verse)
                     self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
 
                 else: 
-                    embed_field_lyric = embed_field_lyric + '\r\n\r\n' + verse
+                    embed_field_lyric = self.append_verse(embed_field_lyric, verse)
 
-            else: description_lyric = description_lyric + '\r\n\r\n' + verse           
+            else: 
+                description_lyric = self.append_verse(description_lyric, verse)           
 
         self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
         return description_lyric
@@ -55,3 +56,6 @@ class LyricsEmbed(Embed):
 
     def get_verses(self) -> list:
         return self.lyrics.split('\r\n\r\n')
+    
+    def append_verse(self, lyric, verse):
+        return lyric + '\r\n\r\n' + verse
