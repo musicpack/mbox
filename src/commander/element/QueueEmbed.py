@@ -27,12 +27,12 @@ class QueueEmbed (Embed):
         description_now_playing = ''
         description_next = ''
 
-        for index in range(self.queue.index, len(self.queue.playlist)):
-            if self.queue.index == index:
-                description_now_playing += '\n> [' + self.queue.playlist[index].info['title'] + \
+        for index in range(self.queue.pos, len(self.queue.playlist)):
+            if self.queue.pos == index:
+                description_now_playing += '\n> ' + str(index) + ". " + '[' + self.queue.playlist[index].info['title'] + \
                     '](' + self.queue.playlist[index].info['webpage_url'] + ')'
             else:
-                description_next += '\n> [' + self.queue.playlist[index].info['title'] + \
+                description_next += '\n> ' + str(index) + ". " + '[' + self.queue.playlist[index].info['title'] + \
                     '](' + self.queue.playlist[index].info['webpage_url'] + ')'
 
         if description_now_playing:

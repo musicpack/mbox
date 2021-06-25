@@ -94,6 +94,5 @@ class MusicController(commands.Cog):
     async def _pause(self, ctx: SlashContext):
         await self.process_slash_command(ctx, pause_player)
 
-
 def setup(bot):
     bot.add_cog(MusicController(bot))

@@ -249,8 +249,12 @@ class Player:
             await self.update_queue_embed()
 
             # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
+
             if not self.connected_client.is_playing() and not self.connected_client.is_paused():
-                self.next()
+                if len(self.queue.playlist) == 1:
+                    await self.play(self.queue.current())
+                else:
+                    self.next()
             
             @audio.event
             def on_read(ms, non_music):
