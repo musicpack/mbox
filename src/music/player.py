@@ -144,6 +144,19 @@ class Player:
             self.connected_client.resume()
     
     ########## Queue ##########
+
+    def get_by_index(self, index) -> MusicSource:
+        try:
+            music_source = self.queue.get_by_index(index)
+        except IndexError:
+            logging.info("Given index does not exist!")
+            return None
+        else:
+            music_source.reset()
+            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            return music_source
+
     def next(self) -> MusicSource:
         """Loads up the next song in the queue"""
         try:
@@ -157,6 +170,7 @@ class Player:
             asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
             asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
             return music_source
+
 
     def last(self) -> MusicSource:
         """Loads up the previous song in the queue."""

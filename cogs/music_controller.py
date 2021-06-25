@@ -4,7 +4,7 @@ from discord_slash.utils.manage_commands import create_option
 from requests.models import guess_filename
 import src.preinitialization
 from src.parser import parse
-from src.command_handler import pause_player, resume_player, player_prev, player_next
+from src.command_handler import pause_player, resume_player, player_prev, player_next, play_index
 import src.element.profile
 from src.constants import *
 from config import GUILD_ID
@@ -74,16 +74,17 @@ class MusicController(commands.Cog):
                        guild_ids=GUILD_ID,
                        options=[
                            create_option(
-                               name="song_name_or_link",
+                               name="song_name_or_link_or_index",
                                description="Adds this song to the queue.",
                                option_type=3,
                                required=False
                            )
                        ])
-    async def _play(self, ctx: SlashContext, song_name_or_link=None):
-        print("yes")
-        if song_name_or_link:
+    async def _play(self, ctx: SlashContext, song_name_or_link_or_index=None):
+        if not song_name_or_link_or_index.isnumeric() :
             await self.process_slash_command(ctx, parse)
+        elif song_name_or_link_or_index.isnumeric():
+            await self.process_slash_command(ctx, play_index)
         else:
             await self.process_slash_command(ctx, resume_player)
 
@@ -93,6 +94,8 @@ class MusicController(commands.Cog):
                        )
     async def _pause(self, ctx: SlashContext):
         await self.process_slash_command(ctx, pause_player)
+    
+    
 
 def setup(bot):
     bot.add_cog(MusicController(bot))

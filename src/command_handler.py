@@ -22,6 +22,20 @@ def get_player_client(context: MusicBoxContext) -> VoiceClient:
         if context.profile.player.connected_client.is_connected():
             return context.profile.player.connected_client
 
+async def play_index(context: MusicBoxContext):
+    if context.name == "play":
+        p_client = get_player_client(context)
+        index = context.args[0]
+
+        if p_client:
+            result = context.profile.player.get_by_index(int(index))
+            if result:
+                return "Playing the selected song from the queue."
+            else:
+                return "Given index doesn't exist"
+        else:
+            logging.error('Context name play does not match function.')
+
 async def player_prev(context: MusicBoxContext):
     if context.name == 'prev' or context.name == 'back':
         p_client = get_player_client(context)

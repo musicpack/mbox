@@ -34,6 +34,10 @@ class Queue:
     def current(self):
         """Get the currently playing MusicSource"""
         return self.playlist[self.pos]
+    
+    def get_by_index(self, index) -> MusicSource:
+        self.pos = index
+        return self.playlist[index]
         
 
     def next(self) -> MusicSource:
