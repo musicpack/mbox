@@ -10,7 +10,6 @@ class Queue:
         
         self.playlist = []
         self.pos = 0
-        self.index = 0
 
 
     def remove_index(self, index: int):
@@ -22,13 +21,11 @@ class Queue:
         for music in self.playlist:
             music.cleanup()  # TODO: Handle if the cleanup failes in error because the code below it will not run
         self.playlist = []
-        self.index = None
-        self.at_beginning = True
-        self.at_end = False
+        self.index = 0
 
     async def reset_next_playing(self):
         """Removes all but the current queued song from the list"""
-        self.playlist = self.playlist[:self.index+1]
+        self.playlist = self.playlist[:self.pos+1]
 
     def add(self, music) -> None:
         """Add a MusicSource to the music queue."""

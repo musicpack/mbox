@@ -15,7 +15,7 @@ class QueueEmbed (Embed):
         self.queue: Queue = kwargs.get('queue', None)
 
 
-        if self.queue and self.queue.index != None:
+        if self.queue and self.queue.pos != None:
             self.description = self.set_description()
         else:
             self.description = f'Nothing is in your queue. {USAGE_TEXT}'
