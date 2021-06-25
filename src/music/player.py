@@ -1,16 +1,18 @@
 import threading
-from typing import Dict
+from typing import Dict, List
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
 from discord.message import Message
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
 from datetime import timedelta
+from discord_components.button import Button
 import youtube_dl
 import logging
 import asyncio
 
 from src.commander.element.Reaction import Reaction
+from src.commander.element.EventWatcher import EventWatcher
 from src.commander.EmbedFactory import EmbedFactory
 from src.commander.element.ReporterEmbed import ReporterEmbed
 from src.commander.element.LyricsEmbed import LyricsEmbed
@@ -47,13 +49,15 @@ class Player:
         # Footer Metadata
         self.volume: int= 50
 
+        self.button_events = EventWatcher(self.client)
+
         self.player_reactions = [
             Reaction(emoji='⏮️', client=self.client, action=self.last),
             Reaction(emoji='⏯️', client=self.client, action=self.on_play_pause),
             Reaction(emoji='⏭️', client=self.client, action=self.next),
             Reaction(emoji='🔉', client=self.client, action=self.lower_volume),
             Reaction(emoji='🔊', client=self.client, action=self.raise_volume),
-            Reaction(emoji='💬', client=self.client, action=self.toggle_display_description)
+            # Reaction(emoji='💬', client=self.client, action=self.toggle_display_description)
         ]
 
         # Front End Registration Objects
@@ -353,6 +357,15 @@ class Player:
     
     ########## Player ##########
     @property
+    def player_buttons(self) -> List[Button]:
+        button_format: list = []
+        for reaction in self.player_reactions:
+            if reaction.emoji in self.button_events.coro:
+                button_format.append(Button(emoji=reaction.emoji))
+        
+        return [button_format] if button_format else []
+
+    @property
     def player_embed(self) -> PlayerEmbed:
         """Getter for player_embed from factory.
         Factory generates a up to date embed based on kwargs passed.
@@ -363,7 +376,7 @@ class Player:
     async def update_player_embed(self) -> None:
         """Edits the player message (if registered) with a newly generated embed."""
         if self.player_message:
-            await self.player_message.edit(embed = self.player_embed)
+            await self.player_message.edit(embed = self.player_embed, components=self.player_buttons)
     
     def default_player_metadata(self) -> None:
         """Sets the player metadata variables to default values.
@@ -391,16 +404,13 @@ class Player:
     
     ########## Reaction Functions ##########
     async def register_player_reactions(self, message: Message):
-        """Register all the reactions in this class"""
-        if self.player_reactions:
-            for reactions in self.player_reactions:
-                await reactions.register(message)
+        for reaction in self.player_reactions:
+            await self.button_events.watch_button_click(emoji=reaction.emoji, action= reaction.action)
 
     async def remove_player_reactions(self):
         """Removes all the reactions in this class"""
-        if self.player_reactions:
-            for reactions in self.player_reactions:
-                await reactions.remove_all()
+        await self.button_events.remove_all()
+        await self.update_player_embed()
 
     async def toggle_display_description(self):
         """Intake function for 💬 emoji reaction on_press event"""
