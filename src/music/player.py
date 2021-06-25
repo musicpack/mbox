@@ -9,6 +9,7 @@ from datetime import timedelta
 import youtube_dl
 import logging
 import asyncio
+import random
 
 from src.commander.element.Reaction import Reaction
 from src.commander.EmbedFactory import EmbedFactory
@@ -142,7 +143,8 @@ class Player:
         self.paused = False
         if self.connected_client:
             self.connected_client.resume()
-    
+                
+
     ########## Queue ##########
 
     def get_by_index(self, index) -> MusicSource:
@@ -433,6 +435,18 @@ class Player:
             elif self.connected_client.is_paused():
                 self.resume()
             await self.update_player_embed()
+
+    async def shuffle(self):
+        if self.connected_client:
+            playlist = self.queue.playlist
+            pos = self.queue.pos
+            next_songs =  playlist[pos+1:]
+            if self.queue.pos < len(self.queue.playlist)-1:
+                random.shuffle(next_songs)
+                self.queue.playlist = playlist[:pos] + [playlist[pos]] + next_songs
+                await self.update_queue_embed()
+            else:
+                raise IndexError("No more songs in the queue to shuffle")
 
     ########## General Helper Functions ##########
     async def register_command_channel(self, command_channel: TextChannel):

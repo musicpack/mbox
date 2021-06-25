@@ -29,10 +29,10 @@ class QueueEmbed (Embed):
 
         for index in range(self.queue.pos, len(self.queue.playlist)):
             if self.queue.pos == index:
-                description_now_playing += '\n> ' + str(index) + ". " + '[' + self.queue.playlist[index].info['title'] + \
+                description_now_playing += '\n> ' + str(index+1) + ". " + '[' + self.queue.playlist[index].info['title'] + \
                     '](' + self.queue.playlist[index].info['webpage_url'] + ')'
             else:
-                description_next += '\n> ' + str(index) + ". " + '[' + self.queue.playlist[index].info['title'] + \
+                description_next += '\n> ' + str(index+1) + ". " + '[' + self.queue.playlist[index].info['title'] + \
                     '](' + self.queue.playlist[index].info['webpage_url'] + ')'
 
         if description_now_playing:

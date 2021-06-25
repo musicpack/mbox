@@ -28,13 +28,14 @@ async def play_index(context: MusicBoxContext):
         index = context.args[0]
 
         if p_client:
-            result = context.profile.player.get_by_index(int(index))
+            result = context.profile.player.get_by_index(int(index)-1)
             if result:
                 return "Playing the selected song from the queue."
             else:
                 return "Given index doesn't exist"
-        else:
-            logging.error('Context name play does not match function.')
+        return 'Player not connected.'
+    else:
+        logging.error('Context name play does not match function.')
 
 async def player_prev(context: MusicBoxContext):
     if context.name == 'prev' or context.name == 'back':
@@ -91,3 +92,14 @@ async def resume_player(context: MusicBoxContext) -> str:
         return 'Player not connected'
     else:
         logging.error('Context name is not play. Cannot resume player')
+    
+async def shuffle_player(context: MusicBoxContext) -> str:
+    if context.name == "shuffle":
+        p_client = get_player_client(context)
+
+        if p_client: 
+            await context.profile.player.shuffle()
+            return "Shuffled Player"
+        return 'Player is not connected'
+    else:
+        logging.error('Context name is not shuffle. Cannot shuffle player')
