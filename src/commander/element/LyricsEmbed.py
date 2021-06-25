@@ -54,30 +54,35 @@ class LyricsEmbed(Embed):
 
 
     def split_verse(self, lyrics: str, max_description: int, max_embed_field: int) -> list[str]:
-        
         return_verses = []
         verses = self.get_verses(lyrics)
         if(len(verses[0]) < max_description):
             return_verses.append(verses[0])
             del verses[0]
         else:
-            #need to find the max_description
-            return_verses.append(verses[0][0:max_description])
-            verses[0] = verses[max_description:-1]
+            count = self.find_end_line(verses[0], max_description)
+            return_verses.append(verses[0][0:max_description - count])
+            verses[0] = verses[max_description - count:]
 
         for index in range(len(verses)):
             if(len(verses[index]) < max_embed_field):
                 return_verses.append(verses[index])
             else:
                 while(len(verses[index]) > max_embed_field):
-                    print(verses[index][0:max_embed_field])
-                    return_verses.append(verses[index][0:max_embed_field])
-                    verses[index] = verses[index][max_embed_field:]
+                    count = self.find_end_line(verses[index], max_embed_field)
+                    return_verses.append(verses[index][0:max_embed_field - count])
+                    verses[index] = verses[index][max_embed_field - count:]
                 return_verses.append(verses[index])
         return return_verses
 
-    def get_verses(self, lyrics) -> list:
+    def find_end_line(self, verse, position) -> int:
+        count = 0
+        while(verse[position - count] != '\r'):
+            count += 1
+        return count
+
+    def get_verses(self, lyrics: str) -> list[str]:
         return lyrics.split('\r\n\r\n')
     
-    def append_verse(self, lyric, verse):
+    def append_verse(self, lyric: str, verse: str) -> str:
         return lyric + '\r\n\r\n' + verse
