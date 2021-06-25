@@ -79,6 +79,9 @@ class Player:
             self.paused = False
             self.ms_displayed = -1
 
+            # Apply player volume to the audio source
+            audio.volume = self.volume/100
+
             if self.connected_client.is_connected() and self.connected_client.is_playing():
                 self.connected_client.source = audio
             else:
