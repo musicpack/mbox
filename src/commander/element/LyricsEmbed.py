@@ -34,52 +34,101 @@ class LyricsEmbed(Embed):
         if(len(lyrics) < max_description):
             return lyrics
 
-        split_verse_list = self.split_verse(lyrics, max_description, max_embed_field)
-        embed_verses = ''
+        splited_verses_list:list[str] = self.split_verse_if_over_limit(lyrics, max_description, max_embed_field)
+
+        embed_field_verses = ''
         description_verses = ''
-        count = 0
-        for index in range(len(split_verse_list)):
-            if(len(split_verse_list[index]) + len(description_verses) < max_description):
-                description_verses = description_verses + '\r\n\r\n' + split_verse_list[index]
-                count += 1
+
+        index_value = 0
+        for index in range(len(splited_verses_list)):
+            if(len(splited_verses_list[index]) + len(description_verses) < max_description):
+                description_verses = description_verses + '\r\n\r\n' + splited_verses_list[index]
+                index_value += 1
             else:
                 break
-        for index in range(count,len(split_verse_list)):
-            if(len(split_verse_list[index]) + len(embed_verses) <= max_embed_field):
-                embed_verses = embed_verses + '\r\n\r\n' + split_verse_list[index]
+
+        for index in range(index_value,len(splited_verses_list)):
+            if(len(splited_verses_list[index]) + len(embed_field_verses) <= max_embed_field):
+                embed_field_verses = embed_field_verses + '\r\n\r\n' + splited_verses_list[index]
             else:
-                self.add_field(name='\u200B', value=embed_verses, inline=False)
-                embed_verses = split_verse_list[index]
+                self.generate_embed_field(embed_field_verses)
+                embed_field_verses = splited_verses_list[index]
+
         return description_verses          
 
 
-    def split_verse(self, lyrics: str, max_description: int, max_embed_field: int) -> list[str]:
-        return_verses = []
-        verses = self.get_verses(lyrics)
+    def split_verse_if_over_limit(self, lyrics: str, max_description: int, max_embed_field: int) -> list[str]:
+        """
+        return the splitted verses where we split verses if...
+            if characters inside description is over 2048 and
+            if characters inside embed field is over 1024.
+        
+        parameters
+            lyrics: str           =>  music lyric
+            max_description: int  =>  2048
+            max_embed_field: int  =>  1024
+        """
+        
+        splited_verses_list = []
+        verses:list[str] = self.get_verses(lyrics)
+
         if(len(verses[0]) < max_description):
-            return_verses.append(verses[0])
+            splited_verses_list.append(verses[0])
             del verses[0]
+
         else:
-            count = self.find_end_line(verses[0], max_description)
-            return_verses.append(verses[0][0:max_description - count])
-            verses[0] = verses[max_description - count:]
+            move_left = self.find_starting_line_to_break(verses[0], max_description)
+            splited_verses_list.append(verses[0][0:max_description - move_left])
+            verses[0] = verses[max_description - move_left:]
 
         for index in range(len(verses)):
             if(len(verses[index]) < max_embed_field):
-                return_verses.append(verses[index])
+                splited_verses_list.append(verses[index])
+
             else:
                 while(len(verses[index]) > max_embed_field):
-                    count = self.find_end_line(verses[index], max_embed_field)
-                    return_verses.append(verses[index][0:max_embed_field - count])
-                    verses[index] = verses[index][max_embed_field - count:]
-                return_verses.append(verses[index])
-        return return_verses
+                    move_left:int = self.find_starting_line_to_break(verses[index], max_embed_field)
+                    splited_verses_list.append(verses[index][0:max_embed_field - move_left])
+                    verses[index] = verses[index][max_embed_field - move_left:]
+                splited_verses_list.append(verses[index])
 
-    def find_end_line(self, verse, position) -> int:
-        count = 0
-        while(verse[position - count] != '\r'):
-            count += 1
-        return count
+        return splited_verses_list
+
+    def find_starting_line_to_break(self, verse, position) -> int:
+        '''
+        return the value where we cut off between the line
+
+        ex) I will destory this world and nobody will survive
+            But I will be the one who will live in this world
+
+        breaks into 
+
+            I will destory this world and nobody will survive
+            But I will be the one wh
+            
+            o will live in this world
+        
+        count length btw "But I will be the one wh" to break the line which looks like...
+
+            I will destory this world and nobody will survive
+            
+            But I will be the one who will live in this world
+
+        Parameter:
+            verse: str      =>  verse inside the song
+            position: int   =>  position to cut off verse (1024 or 2048)
+
+        '''
+        move_left = 0
+        while(verse[position - move_left] != '\n'):
+            move_left += 1
+        return move_left
+
+    def generate_embed_field(self, embed_field_verses: str) -> None:
+        '''
+        create the embed_textfield under description
+        '''
+        self.add_field(name='\u200B', value=embed_field_verses, inline=False)
 
     def get_verses(self, lyrics: str) -> list[str]:
         return lyrics.split('\r\n\r\n')
