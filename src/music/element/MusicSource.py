@@ -139,6 +139,8 @@ class MusicSource(AudioSource):
                 os.remove(self.file_path)
             except PermissionError:
                 logging.warn('Premission Error when removing {0}. Maybe the file is being used in other sessions?'.format(self.file_path))
+            except FileNotFoundError as e:
+                self.temp = False
             except Exception as e:
                 logging.error(e)
 
