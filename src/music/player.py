@@ -108,6 +108,11 @@ class Player:
 
             if self.connected_client.is_connected():
                 asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
+            
+            # Cleanly shut down ffmpeg instances and delete temporary files from the Queue
+            for audio in self.queue.playlist:
+                audio.cleanup()
+                audio.remove_temp_file()
         
             # Lyrics metadata
             self.default_lyrics_metadata()
