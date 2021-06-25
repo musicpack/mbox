@@ -24,6 +24,7 @@ def test_lyrics_bob():
 def check_field_requirements(embed: LyricsEmbed) -> bool:
     for field in embed.fields:
         assert len(field.value) <= 1024
+    return True
 
 def check_description_requirements(embed: LyricsEmbed) -> bool:
-    return embed.description <= 2048
+    return len(embed.description) <= 2048
