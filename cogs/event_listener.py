@@ -8,15 +8,18 @@ from src.command_handler import play_ytid
 import src.element.profile
 from discord.ext import commands
 from src.constants import INVITE_LINK_FORMAT
+from src.lib import dynamodb
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 watching_channels = []
 profiles: List[src.element.profile.Profile] = []
+dynamoDB = dynamodb.Dynamodb()
 
 
 class EventListener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.guild_id = []
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -27,6 +30,16 @@ class EventListener(commands.Cog):
             return
 
         # Check which profile the message relates to
+<<<<<<< Updated upstream
+=======
+        
+        # Retreve guild item from database using guild id
+        if(not self.guild_id):
+            get_response: dict = dynamoDB.retrieve_guild_id_info(message.guild.id)
+            self.guild_id.append(get_response['guildId'])
+            logging.info(f'printing get response from dynamo: {get_response}')
+
+>>>>>>> Stashed changes
         for profile in profiles:
             if profile.guild == message.guild:
 
@@ -63,27 +76,24 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
+<<<<<<< Updated upstream
+=======
+        # Adding guild item to database first time bot joins server
+        put_response: dict = dynamoDB.store_guild_id_info(guild.id)
+        logging.info(f'Printing response from Dynamo: {put_response}')
+>>>>>>> Stashed changes
         logging.info(f'Joined Server: {guild.name}')
-        try:
-            await guild.text_channels[0].send('Thanks for adding Music Bot!')
-            await src.preinitialization.generate_profile(guild, self.bot, profiles)
-            for profile in profiles:
-                await profile.setup()
-        except discord.errors.Forbidden:
-            owner_member: discord.Member = guild.owner
-            if owner_member:
-                content = f"You or a member in server {guild.name} added me without the right permissions. Try adding me again with the link: " + \
-                    INVITE_LINK_FORMAT.format(self.bot.user.id)
-                await owner_member.send(content=content)
-            await guild.leave()
+        await guild.text_channels[0].send('Thanks for adding Music Bot!')
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
+<<<<<<< Updated upstream
+=======
+        #Remove guild item from database
+        delete_response: dict = dynamoDB.delete_guild_id_info(guild.id)
+        logging.info(f'Printing response from Dynamo: {delete_response}')
+>>>>>>> Stashed changes
         logging.info('Removed from Server: {0.name}'.format(guild))
-        for profile in profiles:
-            if profile.guild == guild:
-                await profile.cleanup()
-                profiles.remove(profile)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
