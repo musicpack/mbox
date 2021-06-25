@@ -21,7 +21,7 @@ class LyricsEmbed(Embed):
         if self.lyrics:
             self.max_description = 2048
             self.max_embed_field = 1024
-            self.description = self.get_lyric()
+            self.description = self.get_description(self.lyrics, self.max_description, self.max_embed_field)
 
                              
         if self.lyrics_source:
@@ -30,32 +30,54 @@ class LyricsEmbed(Embed):
             self.set_footer(text=EmptyEmbed)
         
     
-    def get_lyric(self) -> str:
-        if(len(self.lyrics) < self.max_description):
-            return self.lyrics
+    def get_description(self, lyrics: str, max_description: int, max_embed_field: int) -> str:
+        if(len(lyrics) < max_description):
+            return lyrics
 
-        description_lyric = ''
-        embed_field_lyric = ''
+        split_verse_list = self.split_verse(lyrics, max_description, max_embed_field)
+        embed_verses = ''
+        description_verses = ''
+        count = 0
+        for index in range(len(split_verse_list)):
+            if(len(split_verse_list[index]) + len(description_verses) < max_description):
+                description_verses = description_verses + '\r\n\r\n' + split_verse_list[index]
+                count += 1
+            else:
+                break
+        for index in range(count,len(split_verse_list)):
+            if(len(split_verse_list[index]) + len(embed_verses) <= max_embed_field):
+                embed_verses = embed_verses + '\r\n\r\n' + split_verse_list[index]
+            else:
+                self.add_field(name='\u200B', value=embed_verses, inline=False)
+                embed_verses = split_verse_list[index]
+        return description_verses          
 
-        for verse in self.get_verses():
-            if(len(description_lyric) + len(verse) >= self.max_description ):
 
-                if(len(embed_field_lyric) + len(verse) >= self.max_embed_field ):
-                    embed_field_lyric = self.append_verse(embed_field_lyric, verse)
-                    self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
+    def split_verse(self, lyrics: str, max_description: int, max_embed_field: int) -> list[str]:
+        
+        return_verses = []
+        verses = self.get_verses(lyrics)
+        if(len(verses[0]) < max_description):
+            return_verses.append(verses[0])
+            del verses[0]
+        else:
+            #need to find the max_description
+            return_verses.append(verses[0][0:max_description])
+            verses[0] = verses[max_description:-1]
 
-                else: 
-                    embed_field_lyric = self.append_verse(embed_field_lyric, verse)
+        for index in range(len(verses)):
+            if(len(verses[index]) < max_embed_field):
+                return_verses.append(verses[index])
+            else:
+                while(len(verses[index]) > max_embed_field):
+                    print(verses[index][0:max_embed_field])
+                    return_verses.append(verses[index][0:max_embed_field])
+                    verses[index] = verses[index][max_embed_field:]
+                return_verses.append(verses[index])
+        return return_verses
 
-            else: 
-                description_lyric = self.append_verse(description_lyric, verse)           
-
-        self.add_field(name='\u200B', value=embed_field_lyric, inline=False)
-        return description_lyric
-
-
-    def get_verses(self) -> list:
-        return self.lyrics.split('\r\n\r\n')
+    def get_verses(self, lyrics) -> list:
+        return lyrics.split('\r\n\r\n')
     
     def append_verse(self, lyric, verse):
         return lyric + '\r\n\r\n' + verse
