@@ -47,10 +47,12 @@ jobs:
       env:
         DiscordToken_mbox: ${{ secrets.DiscordToken_mbox }}
       run: |
+        source .venv/bin/activate
         python -m pytest tests/unit
     - name: Integration test with pytest
       env:
         DiscordToken_mbox: ${{ secrets.DiscordToken_mbox }}
       run: |
+        source .venv/bin/activate
         python -m pytest tests/integration
 
