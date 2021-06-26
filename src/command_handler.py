@@ -33,8 +33,8 @@ async def play_index(context: MusicBoxContext):
                 return "Playing the selected song from the queue."
             return "Given index doesn't exist"
         return 'Player not connected.'
-    else:
-        logging.error('Context name play does not match function.')
+    
+    logging.error('Context name play does not match function.')
 
 async def player_prev(context: MusicBoxContext):
     if context.name == 'prev' or context.name == 'back':
@@ -46,8 +46,8 @@ async def player_prev(context: MusicBoxContext):
                 return 'Playing previous song.'
             return 'No more songs to go back.'
         return 'Player not connected.'
-    else:
-        logging.error('Context name prev/back does not match function.')
+    
+    logging.error('Context name prev/back does not match function.')
 
 async def player_next(context: MusicBoxContext):
     if context.name == 'skip' or context.name == 'next':
@@ -59,8 +59,8 @@ async def player_next(context: MusicBoxContext):
                 return 'Playing next song.'
             return 'Skipped. No more music to play.'
         return 'Player not connected.'
-    else:
-        logging.error('Context name next/skip does not match function.')
+    
+    logging.error('Context name next/skip does not match function.')
 
 async def pause_player(context: MusicBoxContext) -> str:
     if context.name == 'pause':
@@ -72,8 +72,8 @@ async def pause_player(context: MusicBoxContext) -> str:
                 return 'Paused player'
             return 'Player is already paused'
         return 'Player not connected'
-    else:
-        logging.error('Context name is not pause. Cannot pause player')
+    
+    logging.error('Context name is not pause. Cannot pause player')
 
 async def resume_player(context: MusicBoxContext) -> str:
     if context.name == 'play':
@@ -85,8 +85,8 @@ async def resume_player(context: MusicBoxContext) -> str:
                 return 'Resumed player'
             return 'Player is already playing'
         return 'Player not connected'
-    else:
-        logging.error('Context name is not play. Cannot resume player')
+    
+    logging.error('Context name is not play. Cannot resume player')
     
 async def shuffle_player(context: MusicBoxContext) -> str:
     if context.name == "shuffle":
@@ -96,5 +96,5 @@ async def shuffle_player(context: MusicBoxContext) -> str:
             await context.profile.player.shuffle()
             return "Shuffled Player"
         return 'Player is not connected'
-    else:
-        logging.error('Context name is not shuffle. Cannot shuffle player')
+    
+    logging.error('Context name is not shuffle. Cannot shuffle player')

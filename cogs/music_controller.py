@@ -100,6 +100,6 @@ class MusicController(commands.Cog):
                        description='Randomizes the order of songs in the queue.')
     async def _shuffle(self, ctx: SlashContext):
         await self.process_slash_command(ctx, handle.shuffle_player)
-    
+        
 def setup(bot):
     bot.add_cog(MusicController(bot))

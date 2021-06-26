@@ -1,4 +1,6 @@
 import threading
+import random
+
 from typing import Dict
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
@@ -9,7 +11,6 @@ from datetime import timedelta
 import youtube_dl
 import logging
 import asyncio
-import random
 
 from src.commander.element.Reaction import Reaction
 from src.commander.EmbedFactory import EmbedFactory

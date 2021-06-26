@@ -7,7 +7,6 @@ from src.constants import *
 class Queue:
     """Reperesents a Queue GUI object. Handles which MusicSource to play next."""
     def __init__(self) -> None:
-        
         self.playlist = []
         self.pos = 0
 
@@ -20,7 +19,7 @@ class Queue:
         for music in self.playlist:
             music.cleanup()  # TODO: Handle if the cleanup failes in error because the code below it will not run
         self.playlist = []
-        self.index = 0
+        self.pos = 0
 
     async def reset_next_playing(self):
         """Removes all but the current queued song from the list"""
@@ -42,7 +41,7 @@ class Queue:
         """Get the next MusicSource and change the head to the next MusicSource."""
         if len(self.playlist) == 0:
             raise IndexError('MusicQueue list empty')
-        elif self.pos + 1 < len(self.playlist):
+        if self.pos + 1 < len(self.playlist):
             self.pos +=1
             return self.playlist[self.pos]
         raise IndexError('At the end')
@@ -53,4 +52,3 @@ class Queue:
             self.pos -= 1
             return self.playlist[self.pos]
         raise IndexError('Index out of range')
-
