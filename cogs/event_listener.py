@@ -7,6 +7,7 @@ from src.parser import parse
 from src.command_handler import play_ytid
 import src.element.profile
 from discord.ext import commands
+from discord_components import DiscordComponents
 from src.constants import INVITE_LINK_FORMAT
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
@@ -102,6 +103,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        DiscordComponents(self.bot)
         await src.preinitialization.generate_profiles(bot.guilds, self.bot, profiles)
         for profile in profiles:
             await profile.setup()
