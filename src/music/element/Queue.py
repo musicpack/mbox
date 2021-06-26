@@ -34,8 +34,10 @@ class Queue:
         return self.playlist[self.pos]
     
     def get_by_index(self, index) -> MusicSource:
-        self.pos = index
-        return self.playlist[index]
+        if index >= 0:
+            self.pos = index
+            return self.playlist[index]
+        raise IndexError("Index out of bound")
 
     def next(self) -> MusicSource:
         """Get the next MusicSource and change the head to the next MusicSource."""
