@@ -29,17 +29,12 @@ class EventListener(commands.Cog):
         if message.author == bot.user:
             return
 
-        # Check which profile the message relates to
-<<<<<<< Updated upstream
-=======
-        
         # Retreve guild item from database using guild id
         if(not self.guild_id):
             get_response: dict = dynamoDB.retrieve_guild_id_info(message.guild.id)
             self.guild_id.append(get_response['guildId'])
             logging.info(f'printing get response from dynamo: {get_response}')
 
->>>>>>> Stashed changes
         for profile in profiles:
             if profile.guild == message.guild:
 
@@ -76,23 +71,19 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
-<<<<<<< Updated upstream
-=======
+
         # Adding guild item to database first time bot joins server
         put_response: dict = dynamoDB.store_guild_id_info(guild.id)
         logging.info(f'Printing response from Dynamo: {put_response}')
->>>>>>> Stashed changes
         logging.info(f'Joined Server: {guild.name}')
         await guild.text_channels[0].send('Thanks for adding Music Bot!')
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-<<<<<<< Updated upstream
-=======
+
         #Remove guild item from database
         delete_response: dict = dynamoDB.delete_guild_id_info(guild.id)
         logging.info(f'Printing response from Dynamo: {delete_response}')
->>>>>>> Stashed changes
         logging.info('Removed from Server: {0.name}'.format(guild))
 
     @commands.Cog.listener()

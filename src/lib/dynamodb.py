@@ -67,6 +67,6 @@ class Dynamodb:
             )
 
         except ClientError as e:
-            raise
+            raise e
         else:
             return response
