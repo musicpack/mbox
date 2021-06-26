@@ -66,14 +66,6 @@ class MusicSource(AudioSource):
     def cleanup(self):
         """Calls the original cleanup function and removes the downloaded file if it is marked as a temporary file"""
         self.original.cleanup()
-        if self.temp:
-            try:
-                logging.debug('Removing temp file {0}'.format(self.file_path))
-                os.remove(self.file_path)
-            except PermissionError:
-                logging.warn('Premission Error when removing {0}. Maybe the file is being used in other sessions?'.format(self.file_path))
-            except Exception as e:
-                logging.error(e)
 
     def read(self):
 
@@ -139,6 +131,18 @@ class MusicSource(AudioSource):
         custom_opts['outtmpl'] = os.path.join(path, '%(title)s-%(id)s.%(ext)s')
         with youtube_dl.YoutubeDL(custom_opts) as ydl:
             ydl.process_ie_result(self.info, download=True)
+    
+    def remove_temp_file(self) -> None:
+        if self.temp:
+            try:
+                logging.debug('Removing temp file {0}'.format(self.file_path))
+                os.remove(self.file_path)
+            except PermissionError:
+                logging.warn('Premission Error when removing {0}. Maybe the file is being used in other sessions?'.format(self.file_path))
+            except FileNotFoundError as e:
+                self.temp = False
+            except Exception as e:
+                logging.error(e)
 
     def on_download_state(self, d):
         if d['status'] == 'finished':

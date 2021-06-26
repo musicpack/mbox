@@ -79,6 +79,11 @@ class Player:
             self.paused = False
             self.ms_displayed = -1
 
+            # Make sure the MusicSource is back at 0:00 preventing us from playing a song from the middle.
+            audio.reset()
+            # Apply player volume to the audio source
+            audio.volume = self.volume/100
+
             if self.connected_client.is_connected() and self.connected_client.is_playing():
                 self.connected_client.source = audio
             else:
@@ -103,6 +108,11 @@ class Player:
 
             if self.connected_client.is_connected():
                 asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
+            
+            # Cleanly shut down ffmpeg instances and delete temporary files from the Queue
+            for audio in self.queue.playlist:
+                audio.cleanup()
+                audio.remove_temp_file()
         
             # Lyrics metadata
             self.default_lyrics_metadata()
@@ -153,7 +163,6 @@ class Player:
             self.stop()
             return None
         else:
-            music_source.reset()
             asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
             asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
             return music_source
@@ -166,7 +175,6 @@ class Player:
             logging.info('Queue cant go back any further')
             return None
         else:
-            music_source.reset()
             asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
             asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
             return music_source
