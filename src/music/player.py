@@ -1,16 +1,19 @@
 import threading
-from typing import Dict
+import random
+from typing import Dict, List
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
 from discord.message import Message
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
 from datetime import timedelta
+from discord_components.button import Button
 import youtube_dl
 import logging
 import asyncio
 
 from src.commander.element.Reaction import Reaction
+from src.commander.element.EventWatcher import EventWatcher
 from src.commander.EmbedFactory import EmbedFactory
 from src.commander.element.ReporterEmbed import ReporterEmbed
 from src.commander.element.LyricsEmbed import LyricsEmbed
@@ -47,13 +50,15 @@ class Player:
         # Footer Metadata
         self.volume: int= 50
 
+        self.button_events = EventWatcher(self.client)
+
         self.player_reactions = [
             Reaction(emoji='⏮️', client=self.client, action=self.last),
             Reaction(emoji='⏯️', client=self.client, action=self.on_play_pause),
             Reaction(emoji='⏭️', client=self.client, action=self.next),
             Reaction(emoji='🔉', client=self.client, action=self.lower_volume),
             Reaction(emoji='🔊', client=self.client, action=self.raise_volume),
-            Reaction(emoji='💬', client=self.client, action=self.toggle_display_description)
+            # Reaction(emoji='💬', client=self.client, action=self.toggle_display_description)
         ]
 
         # Front End Registration Objects
@@ -79,6 +84,11 @@ class Player:
             self.paused = False
             self.ms_displayed = -1
 
+            # Make sure the MusicSource is back at 0:00 preventing us from playing a song from the middle.
+            audio.reset()
+            # Apply player volume to the audio source
+            audio.volume = self.volume/100
+
             if self.connected_client.is_connected() and self.connected_client.is_playing():
                 self.connected_client.source = audio
             else:
@@ -103,6 +113,11 @@ class Player:
 
             if self.connected_client.is_connected():
                 asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
+            
+            # Cleanly shut down ffmpeg instances and delete temporary files from the Queue
+            for audio in self.queue.playlist:
+                audio.cleanup()
+                audio.remove_temp_file()
         
             # Lyrics metadata
             self.default_lyrics_metadata()
@@ -141,9 +156,21 @@ class Player:
         """Resumes the currenly set song."""
         self.paused = False
         if self.connected_client:
-            self.connected_client.resume()
-    
+            self.connected_client.resume()   
+
     ########## Queue ##########
+    def get_by_index(self, index) -> MusicSource:
+        try:
+            music_source = self.queue.get_by_index(index)
+        except IndexError:
+            logging.info("Given index does not exist!")
+            return None
+        else:
+            music_source.reset()
+            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            return music_source
+
     def next(self) -> MusicSource:
         """Loads up the next song in the queue"""
         try:
@@ -153,10 +180,10 @@ class Player:
             self.stop()
             return None
         else:
-            music_source.reset()
             asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
             asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
             return music_source
+
 
     def last(self) -> MusicSource:
         """Loads up the previous song in the queue."""
@@ -166,7 +193,6 @@ class Player:
             logging.info('Queue cant go back any further')
             return None
         else:
-            music_source.reset()
             asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
             asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
             return music_source
@@ -183,11 +209,8 @@ class Player:
         self.default_queue_metadata()
         self.default_player_metadata()
 
-        # Function is ran in async (using run_coroutine_threadsafe as opposed to being awaited)
-        # so that buttons can register while the player is free to do other things.
-        # Be aware that this might mask errors in that function
         if self.player_message:
-            asyncio.run_coroutine_threadsafe(self.register_player_reactions(self.player_message), self.client.loop)
+            await self.register_player_reactions(self.player_message)
 
     async def disconnect(self):
         """Disconnects the player to a voicechannel"""
@@ -203,11 +226,8 @@ class Player:
         self.default_queue_metadata()
         self.default_player_metadata()
 
-        # Function is ran in async (using run_coroutine_threadsafe as opposed to being awaited)
-        # so that buttons can register while the player is free to do other things.
-        # Be aware that this might mask errors in that function
         if self.player_message:
-            asyncio.run_coroutine_threadsafe(self.remove_player_reactions(), self.client.loop)
+            await self.remove_player_reactions()
 
     ########## MusicSource Event Handlers ##########
     def on_finished(self, error):
@@ -250,7 +270,10 @@ class Player:
 
             # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
             if not self.connected_client.is_playing() and not self.connected_client.is_paused():
-                self.next()
+                if len(self.queue.playlist) == 1:
+                    await self.play(self.queue.current())
+                else:
+                    self.next()
             
             @audio.event
             def on_read(ms, non_music):
@@ -353,6 +376,15 @@ class Player:
     
     ########## Player ##########
     @property
+    def player_buttons(self) -> List[Button]:
+        button_format: list = []
+        for reaction in self.player_reactions:
+            if reaction.emoji in self.button_events.coro:
+                button_format.append(Button(emoji=reaction.emoji))
+        
+        return [button_format] if button_format else []
+
+    @property
     def player_embed(self) -> PlayerEmbed:
         """Getter for player_embed from factory.
         Factory generates a up to date embed based on kwargs passed.
@@ -363,7 +395,7 @@ class Player:
     async def update_player_embed(self) -> None:
         """Edits the player message (if registered) with a newly generated embed."""
         if self.player_message:
-            await self.player_message.edit(embed = self.player_embed)
+            await self.player_message.edit(embed = self.player_embed, components=self.player_buttons)
     
     def default_player_metadata(self) -> None:
         """Sets the player metadata variables to default values.
@@ -391,16 +423,13 @@ class Player:
     
     ########## Reaction Functions ##########
     async def register_player_reactions(self, message: Message):
-        """Register all the reactions in this class"""
-        if self.player_reactions:
-            for reactions in self.player_reactions:
-                await reactions.register(message)
+        for reaction in self.player_reactions:
+            await self.button_events.watch_button_click(emoji=reaction.emoji, action= reaction.action)
 
     async def remove_player_reactions(self):
         """Removes all the reactions in this class"""
-        if self.player_reactions:
-            for reactions in self.player_reactions:
-                await reactions.remove_all()
+        await self.button_events.remove_all()
+        await self.update_player_embed()
 
     async def toggle_display_description(self):
         """Intake function for 💬 emoji reaction on_press event"""
@@ -415,6 +444,18 @@ class Player:
             elif self.connected_client.is_paused():
                 self.resume()
             await self.update_player_embed()
+
+    async def shuffle(self):
+        if self.connected_client:
+            playlist = self.queue.playlist
+            pos = self.queue.pos
+            next_songs =  playlist[pos+1:]
+            if self.queue.pos < len(self.queue.playlist)-1:
+                random.shuffle(next_songs)
+                self.queue.playlist = playlist[:pos] + [playlist[pos]] + next_songs
+                await self.update_queue_embed()
+            else:
+                raise IndexError("No more songs in the queue to shuffle")
 
     ########## General Helper Functions ##########
     async def register_command_channel(self, command_channel: TextChannel):
