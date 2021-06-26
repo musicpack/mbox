@@ -32,11 +32,12 @@ jobs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: |
         poetry install --no-interaction --no-root
-        pip install flake8 pytest pytest-xprocess
     - name: Install ffmpeg
       run: |
         sudo apt-get update
         sudo apt-get install ffmpeg
+    - name: Install flake8 and pytest
+      run: pip install flake8 pytest pytest-xprocess
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
