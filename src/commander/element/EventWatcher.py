@@ -16,27 +16,27 @@ class EventWatcher:
         self.coro: Dict[str, asyncio.Task] = {}
     
     async def watch_button_click(self, emoji: str, timeout = None, action: FunctionType = None, action_timeout: FunctionType = None):
-        if emoji not in self.coro:
+        if emoji in self.coro:
+            logging.warn(f'button_click: {emoji} event is already registered. Overwriting event and registering again.')
+            self.remove(emoji=emoji)
+            
+        async def refresh():
+            def check(interaction: Interaction):
+                return interaction.component.emoji.name == emoji
 
-            async def refresh():
-                def check(interaction: Interaction):
-                    return interaction.component.emoji.name == emoji
+            try:
+                interaction: Interaction = await self.client.wait_for('button_click', timeout=timeout, check=check)
+            except asyncio.TimeoutError:
+                logging.info(emoji + ' button_click event timed out')
+                await self.exec_and_await(action_timeout)
+            else:
+                logging.debug(emoji + ' button_click event pressed')
+                self.coro[emoji] = asyncio.create_task(refresh())
+                await self.exec_and_await(action)
+                await interaction.respond(type=6)
+    
+        self.coro[emoji] = asyncio.create_task(refresh())
 
-                try:
-                    interaction: Interaction = await self.client.wait_for('button_click', timeout=timeout, check=check)
-                except asyncio.TimeoutError:
-                    logging.info(emoji + ' button_click event timed out')
-                    await self.exec_and_await(action_timeout)
-                else:
-                    logging.debug(emoji + ' button_click event pressed')
-                    self.coro[emoji] = asyncio.create_task(refresh())
-                    await self.exec_and_await(action)
-                    await interaction.respond(type=6)
-        
-            self.coro[emoji] = asyncio.create_task(refresh())
-
-        else:
-            logging.error(f'button_click: {emoji} event is already registered.')
     
     async def exec_and_await(self, function):
         res = function()
