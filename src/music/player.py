@@ -1,4 +1,5 @@
 import threading
+import random
 from typing import Dict, List
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
@@ -155,9 +156,21 @@ class Player:
         """Resumes the currenly set song."""
         self.paused = False
         if self.connected_client:
-            self.connected_client.resume()
-    
+            self.connected_client.resume()   
+
     ########## Queue ##########
+    def get_by_index(self, index) -> MusicSource:
+        try:
+            music_source = self.queue.get_by_index(index)
+        except IndexError:
+            logging.info("Given index does not exist!")
+            return None
+        else:
+            music_source.reset()
+            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            return music_source
+
     def next(self) -> MusicSource:
         """Loads up the next song in the queue"""
         try:
@@ -170,6 +183,7 @@ class Player:
             asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
             asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
             return music_source
+
 
     def last(self) -> MusicSource:
         """Loads up the previous song in the queue."""
@@ -256,7 +270,10 @@ class Player:
 
             # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
             if not self.connected_client.is_playing() and not self.connected_client.is_paused():
-                self.next()
+                if len(self.queue.playlist) == 1:
+                    await self.play(self.queue.current())
+                else:
+                    self.next()
             
             @audio.event
             def on_read(ms, non_music):
@@ -427,6 +444,18 @@ class Player:
             elif self.connected_client.is_paused():
                 self.resume()
             await self.update_player_embed()
+
+    async def shuffle(self):
+        if self.connected_client:
+            playlist = self.queue.playlist
+            pos = self.queue.pos
+            next_songs =  playlist[pos+1:]
+            if self.queue.pos < len(self.queue.playlist)-1:
+                random.shuffle(next_songs)
+                self.queue.playlist = playlist[:pos] + [playlist[pos]] + next_songs
+                await self.update_queue_embed()
+            else:
+                raise IndexError("No more songs in the queue to shuffle")
 
     ########## General Helper Functions ##########
     async def register_command_channel(self, command_channel: TextChannel):
