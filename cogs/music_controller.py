@@ -2,7 +2,6 @@ from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 from requests.models import guess_filename
-import src.preinitialization
 from src.parser import parse
 from src.command_handler import pause_player, resume_player, player_prev, player_next
 import src.element.profile
