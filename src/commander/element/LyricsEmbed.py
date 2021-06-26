@@ -39,21 +39,19 @@ class LyricsEmbed(Embed):
         embed_field_verses = ''
         description_verses = ''
 
-        index_value = 0
-        for index in range(len(splited_verses_list)):
-            if(len(splited_verses_list[index]) + len(description_verses) < max_description):
-                description_verses = description_verses + '\r\n\r\n' + splited_verses_list[index]
-                index_value += 1
+        for verse in splited_verses_list:
+            if(embed_field_verses == ''):
+                if(len(verse) + len(description_verses) < max_description):
+                    description_verses = description_verses + '\r\n\r\n' + verse
+                else:
+                    embed_field_verses = verse
             else:
-                break
-
-        for index in range(index_value,len(splited_verses_list)):
-            if(len(splited_verses_list[index]) + len(embed_field_verses) <= max_embed_field):
-                embed_field_verses = embed_field_verses + '\r\n\r\n' + splited_verses_list[index]
-            else:
-                self.generate_embed_field(embed_field_verses)
-                embed_field_verses = splited_verses_list[index]
-
+                if(len(verse) + len(embed_field_verses) < max_embed_field):
+                    embed_field_verses = embed_field_verses + '\r\n\r\n' + verse
+                else:
+                    self.generate_embed_field(embed_field_verses)
+                    embed_field_verses = verse
+        
         return description_verses          
 
 
@@ -81,18 +79,19 @@ class LyricsEmbed(Embed):
             splited_verses_list.append(verses[0][0:max_description - move_left])
             verses[0] = verses[max_description - move_left:]
 
-        for index in range(len(verses)):
-            if(len(verses[index]) < max_embed_field):
-                splited_verses_list.append(verses[index])
+        for verse in verses:
+            if(len(verse) < max_embed_field):
+                splited_verses_list.append(verse)
 
             else:
-                while(len(verses[index]) > max_embed_field):
-                    move_left:int = self.find_starting_line_to_break(verses[index], max_embed_field)
-                    splited_verses_list.append(verses[index][0:max_embed_field - move_left])
-                    verses[index] = verses[index][max_embed_field - move_left:]
-                splited_verses_list.append(verses[index])
+                while(len(verse) > max_embed_field):
+                    move_left:int = self.find_starting_line_to_break(verse, max_embed_field)
+                    splited_verses_list.append(verse[0:max_embed_field - move_left])
+                    verse = verse[max_embed_field - move_left:]
+                splited_verses_list.append(verse)
 
         return splited_verses_list
+
 
     def find_starting_line_to_break(self, verse, position) -> int:
         '''
@@ -124,14 +123,17 @@ class LyricsEmbed(Embed):
             move_left += 1
         return move_left
 
+
     def generate_embed_field(self, embed_field_verses: str) -> None:
         '''
         create the embed_textfield under description
         '''
         self.add_field(name='\u200B', value=embed_field_verses, inline=False)
 
+
     def get_verses(self, lyrics: str) -> list[str]:
         return lyrics.split('\r\n\r\n')
+    
     
     def append_verse(self, lyric: str, verse: str) -> str:
         return lyric + '\r\n\r\n' + verse
