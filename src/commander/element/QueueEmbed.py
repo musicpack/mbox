@@ -15,31 +15,31 @@ class QueueEmbed (Embed):
         self.queue: Queue = kwargs.get('queue', None)
 
 
-        if self.queue and self.queue.index != None:
+        if self.queue and len(self.queue.playlist) != 0:
             self.description = self.set_description()
         else:
             self.description = f'Nothing is in your queue. {USAGE_TEXT}'
 
     def set_description(self) -> str:
         """Update the queue Embed based on state."""
-        text_now_playing = '**Now Playing**'
-        text_next = '**Next**'
         description_now_playing = ''
         description_next = ''
 
-        for index in range(self.queue.index, len(self.queue.playlist)):
-            if self.queue.index == index:
-                description_now_playing += '\n> [' + self.queue.playlist[index].info['title'] + \
-                    '](' + self.queue.playlist[index].info['webpage_url'] + ')'
+        for index in range(self.queue.pos, len(self.queue.playlist)):
+            title = self.queue.playlist[index].info['title']
+            webpage_url = self.queue.playlist[index].info['webpage_url']
+            embed =  f'\n> {str(index+1)}. [{title}]({webpage_url})'
+            if self.queue.pos == index:
+                description_now_playing += embed
             else:
-                description_next += '\n> [' + self.queue.playlist[index].info['title'] + \
-                    '](' + self.queue.playlist[index].info['webpage_url'] + ')'
+                description_next += embed
 
         if description_now_playing:
-            description = text_now_playing + description_now_playing
+            description = '**Now Playing**' + description_now_playing
             if description_next:
-                description += '\n' + text_next + description_next
+                description += '\n' + '**Next**' + description_next
 
             return description
         
         return ''
+        

@@ -6,7 +6,6 @@ from discord.embeds import Embed, EmptyEmbed
 from src.music.element.Queue import Queue
 from src.constants import USAGE_TEXT
 
-
 class PlayerEmbed(Embed):
     def __init__(self, **kwargs) -> None:
         # Call super first so that it doesn't overwrite custom variables in this class
