@@ -42,16 +42,16 @@ class LyricsEmbed(Embed):
         for verse in splited_verses_list:
             if(embed_field_verses == ''):
                 if(len(verse) + len(description_verses) < max_description):
-                    description_verses = description_verses + '\r\n\r\n' + verse
+                    description_verses = self.append_verse(description_verses, verse)
                 else:
                     embed_field_verses = verse
             else:
                 if(len(verse) + len(embed_field_verses) < max_embed_field):
-                    embed_field_verses = embed_field_verses + '\r\n\r\n' + verse
+                    embed_field_verses = self.append_verse(embed_field_verses, verse)
                 else:
                     self.generate_embed_field(embed_field_verses)
                     embed_field_verses = verse
-        
+        self.generate_embed_field(embed_field_verses)
         return description_verses          
 
 
@@ -75,25 +75,38 @@ class LyricsEmbed(Embed):
             del verses[0]
 
         else:
-            move_left = self.find_starting_line_to_break(verses[0], max_description)
-            splited_verses_list.append(verses[0][0:max_description - move_left])
-            verses[0] = verses[max_description - move_left:]
+            splited_verses_list, verses[0] = self.split_verse(verses[0], splited_verses_list, max_description, max_embed_field, position=max_description)
 
         for verse in verses:
             if(len(verse) < max_embed_field):
                 splited_verses_list.append(verse)
 
             else:
-                while(len(verse) > max_embed_field):
-                    move_left:int = self.find_starting_line_to_break(verse, max_embed_field)
-                    splited_verses_list.append(verse[0:max_embed_field - move_left])
-                    verse = verse[max_embed_field - move_left:]
-                splited_verses_list.append(verse)
+                splited_verses_list = self.split_verse(verse, splited_verses_list, max_description, max_embed_field, position=max_embed_field)
 
         return splited_verses_list
 
 
-    def find_starting_line_to_break(self, verse, position) -> int:
+    def split_verse(self, verse:str, splited_verses_list:list[str], max_description:int , max_embed_field:int , position:int) -> str or list[str] :
+        if(position == max_embed_field):
+            
+            while(len(verse) > position):
+                move_left:int = self.find_starting_line_to_break(verse, position)
+                splited_verses_list.append(verse[0:position - move_left])
+                verse = verse[position - move_left:]
+            splited_verses_list.append(verse)
+            
+            return splited_verses_list
+        
+        elif(position == max_description):
+            move_left = self.find_starting_line_to_break(verse, position)
+            splited_verses_list.append(verse[0:position - move_left])
+            verse = verse[position - move_left:]
+
+            return [splited_verses_list, verse]
+        
+
+    def find_starting_line_to_break(self, verse:str, position:int) -> int:
         '''
         return the value where we cut off between the line
 
