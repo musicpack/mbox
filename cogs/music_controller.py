@@ -101,6 +101,5 @@ class MusicController(commands.Cog):
     async def _shuffle(self, ctx: SlashContext):
         await self.process_slash_command(ctx, handle.shuffle_player)
     
-
 def setup(bot):
     bot.add_cog(MusicController(bot))

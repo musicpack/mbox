@@ -31,8 +31,7 @@ async def play_index(context: MusicBoxContext):
             result = context.profile.player.get_by_index(int(index)-1)
             if result:
                 return "Playing the selected song from the queue."
-            else:
-                return "Given index doesn't exist"
+            return "Given index doesn't exist"
         return 'Player not connected.'
     else:
         logging.error('Context name play does not match function.')
@@ -45,8 +44,7 @@ async def player_prev(context: MusicBoxContext):
             result = context.profile.player.last()
             if result:
                 return 'Playing previous song.'
-            else:
-                return 'No more songs to go back.'
+            return 'No more songs to go back.'
         return 'Player not connected.'
     else:
         logging.error('Context name prev/back does not match function.')
@@ -59,8 +57,7 @@ async def player_next(context: MusicBoxContext):
             result = context.profile.player.next()
             if result:
                 return 'Playing next song.'
-            else:
-                return 'Skipped. No more music to play.'
+            return 'Skipped. No more music to play.'
         return 'Player not connected.'
     else:
         logging.error('Context name next/skip does not match function.')
@@ -73,8 +70,7 @@ async def pause_player(context: MusicBoxContext) -> str:
             if not p_client.is_paused():
                 await context.profile.player.play_pause()  
                 return 'Paused player'
-            else:
-                return 'Player is already paused'
+            return 'Player is already paused'
         return 'Player not connected'
     else:
         logging.error('Context name is not pause. Cannot pause player')
@@ -87,8 +83,7 @@ async def resume_player(context: MusicBoxContext) -> str:
             if p_client.is_paused():
                 await context.profile.player.play_pause()  
                 return 'Resumed player'
-            else:
-                return 'Player is already playing'
+            return 'Player is already playing'
         return 'Player not connected'
     else:
         logging.error('Context name is not play. Cannot resume player')

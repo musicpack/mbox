@@ -42,3 +42,4 @@ class QueueEmbed (Embed):
             return description
         
         return ''
+        

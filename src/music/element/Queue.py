@@ -11,7 +11,6 @@ class Queue:
         self.playlist = []
         self.pos = 0
 
-
     def remove_index(self, index: int):
         """Removes a song from a list."""
         return self.playlist.pop(index)
@@ -38,7 +37,6 @@ class Queue:
     def get_by_index(self, index) -> MusicSource:
         self.pos = index
         return self.playlist[index]
-        
 
     def next(self) -> MusicSource:
         """Get the next MusicSource and change the head to the next MusicSource."""
@@ -47,15 +45,12 @@ class Queue:
         elif self.pos + 1 < len(self.playlist):
             self.pos +=1
             return self.playlist[self.pos]
-        else:
-            raise IndexError('At the end')
-
+        raise IndexError('At the end')
 
     def prev(self) -> MusicSource:
         """Get the previous MusicSource and changes the head to the previous MusicSource. Updates the Embed."""
         if self.pos - 1 >= 0:
             self.pos -= 1
             return self.playlist[self.pos]
-        else:
-            raise IndexError('Index out of range')
+        raise IndexError('Index out of range')
 
