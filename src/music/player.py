@@ -187,11 +187,8 @@ class Player:
         self.default_queue_metadata()
         self.default_player_metadata()
 
-        # Function is ran in async (using run_coroutine_threadsafe as opposed to being awaited)
-        # so that buttons can register while the player is free to do other things.
-        # Be aware that this might mask errors in that function
         if self.player_message:
-            asyncio.run_coroutine_threadsafe(self.register_player_reactions(self.player_message), self.client.loop)
+            await self.register_player_reactions(self.player_message)
 
     async def disconnect(self):
         """Disconnects the player to a voicechannel"""
@@ -207,11 +204,8 @@ class Player:
         self.default_queue_metadata()
         self.default_player_metadata()
 
-        # Function is ran in async (using run_coroutine_threadsafe as opposed to being awaited)
-        # so that buttons can register while the player is free to do other things.
-        # Be aware that this might mask errors in that function
         if self.player_message:
-            asyncio.run_coroutine_threadsafe(self.remove_player_reactions(), self.client.loop)
+            await self.remove_player_reactions()
 
     ########## MusicSource Event Handlers ##########
     def on_finished(self, error):
