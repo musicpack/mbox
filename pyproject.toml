@@ -17,6 +17,7 @@ youtube_dl = "2021.4.17"
 python-dotenv = "0.17.1"
 autopep8 = "1.5.7"
 discord-components = "0.5.3"
+rsa = "4.7.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
