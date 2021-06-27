@@ -80,10 +80,11 @@ class MusicController(commands.Cog):
                            )
                        ])
     async def _play(self, ctx: SlashContext, song_name_or_link_or_index=None):
-        if not song_name_or_link_or_index.isnumeric() :
-            await self.process_slash_command(ctx, parse)
-        elif song_name_or_link_or_index.isnumeric():
-            await self.process_slash_command(ctx, handle.play_index)
+        if song_name_or_link_or_index:
+            if not song_name_or_link_or_index.isnumeric() :
+                await self.process_slash_command(ctx, parse)
+            elif song_name_or_link_or_index.isnumeric():
+                await self.process_slash_command(ctx, handle.play_index)
         else:
             await self.process_slash_command(ctx, handle.resume_player)
 
