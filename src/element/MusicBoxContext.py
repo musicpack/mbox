@@ -1,3 +1,4 @@
+from src.auth import Crypto
 from discord_slash.context import SlashContext
 from discord.ext.commands.context import Context
 from src.element.profile import Profile
@@ -80,6 +81,7 @@ class MusicBoxContext(Context):
         self.profile: Profile = attrs.pop('profile', None)
         self.name: str = attrs.pop('name', '')
         self.slash_context: SlashContext = attrs.pop('slash_context', None)
+        self.crypto: Crypto = attrs.pop('crypto', None)
         
         # workaround: make _state object since super() expects one (regardless of message=null)
         class FakeMessage(NotImplementedError):
@@ -122,10 +124,6 @@ class MusicBoxContext(Context):
 
     def verify_context(self) -> bool:
         """Checks to make sure fields are consistant and valid. Returns true if valid, throws error if not."""
-        if self.message:
-            if self.profile:
-                if self.profile.command_channel != self.message.channel:
-                    raise Exception('Profiles do not match up with the message. You are cross matching between two different servers.')
         if bool(self.slash_context) != (self.prefix == '/'):
             raise Exception('slash_context and prefix values do not line up')
         return True
