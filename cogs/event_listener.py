@@ -9,6 +9,10 @@ import src.element.profile
 from discord.ext import commands
 from discord_components import DiscordComponents
 from src.constants import INVITE_LINK_FORMAT
+from config import TOKEN
+from src.auth import Auth, Crypto
+import os
+
 
 COMMAND_CHANNEL_WARNING = 'Accepted command.'
 watching_channels = []
@@ -19,6 +23,21 @@ class EventListener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        # Generate a rsa keychain 
+        self.crypto = Crypto()
+
+        # Check if a public/private keychain exists already
+        public_key_path = 'mbox_public.key'
+        private_key_path = 'mbox_private.key'
+
+        if self.crypto.both_exist(os.path.isfile(public_key_path), os.path.isfile(private_key_path)):
+            logging.info('Loaded public and private keys from file.')
+            self.crypto.load_keys(public_key_path, private_key_path)
+        else:
+            logging.info('Generated new public and private keys.')
+            self.crypto.generate_keys()
+            self.crypto.save_keys()
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         logging.debug('Message from {0.author}: {0.content}'.format(message))
@@ -26,6 +45,21 @@ class EventListener(commands.Cog):
         # Ignore message if it was from a bot
         if message.author == bot.user:
             return
+
+        # Check if the message came from a DM
+        if isinstance(message.channel, discord.DMChannel):
+            argv = message.content.split()
+            # Create a context
+            bot_ctx = MusicBoxContext(prefix='',
+                                      name='dm',
+                                      slash_context=None,
+                                      message=message, 
+                                      args= argv,
+                                      kwargs={'command': message.content},
+                                      bot= self.bot,
+                                      crypto= self.crypto)
+            
+            await parse(bot_ctx)
 
         # Check which profile the message relates to
         for profile in profiles:
@@ -55,6 +89,23 @@ class EventListener(commands.Cog):
                         await play_ytid('JwmGruvGt_I', bot_ctx)
                         break
 
+                    await parse(bot_ctx)
+                    break
+                
+                # Check if the message came from a admin channel
+                elif Auth.is_admin_channel(channel= message.channel, token= TOKEN, crypto= self.crypto):
+                    argv = message.content.split()
+                    # Create a context
+                    bot_ctx = MusicBoxContext(prefix='',
+                                              profile=profile,
+                                              name='admin',
+                                              slash_context=None,
+                                              message=message, 
+                                              args= argv,
+                                              kwargs={'command': message.content},
+                                              bot= self.bot,
+                                              crypto= self.crypto)
+                    
                     await parse(bot_ctx)
                     break
 

@@ -1,5 +1,7 @@
 
 import logging
+import discord
+from base64 import b64encode
 from discord.voice_client import VoiceClient
 from src.element.MusicBoxContext import MusicBoxContext
 
@@ -85,6 +87,31 @@ async def resume_player(context: MusicBoxContext) -> str:
                 return 'Resumed player'
             return 'Player is already playing'
         return 'Player not connected'
+    else:
+        logging.error('Context name is not play. Cannot resume player')
+
+async def pubkey(context: MusicBoxContext) -> str:
+    logging.info('Received pubkey from {0.name}'.format(context.message.author))
+
+    # save public key in a base 64 encoded string
+    pubkey_64 = b64encode(context.crypto.pubkey.save_pkcs1()).decode("utf-8")
+    with open('mbox_public.key', 'r') as f:
+        await context.message.reply(content= pubkey_64, file=discord.File(f))
+        f.close()
+    return
+
+async def genkey(context: MusicBoxContext) -> None:
+    if len(context.args) > 2:
+        try:
+            b64_encrypted_str = context.crypto.encrypt_token_x(context.args[1], context.args[2])
+            await context.message.reply(content=b64_encrypted_str)
+        except Exception as e:
+            await context.message.reply(content=str(e))
+        return
+
+async def logout(context: MusicBoxContext) -> None:
+    # TODO: add cleanup code and warnings to all profiles playing a song now.
+    await context.bot.logout()
     
     logging.error('Context name is not play. Cannot resume player')
     
