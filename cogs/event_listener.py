@@ -67,7 +67,7 @@ class EventListener(commands.Cog):
         logging.info(f'Joined Server: {guild.name}')
         try:
             await guild.text_channels[0].send('Thanks for adding Music Bot!')
-            await src.preinitialization.generate_profile(guild, self.bot, profiles)
+            await src.preinitialization.generate_profiles([guild], self.bot, profiles)
             for profile in profiles:
                 await profile.setup()
         except discord.errors.Forbidden:
