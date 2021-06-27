@@ -1,29 +1,30 @@
-import threading
+import asyncio
+import logging
 import random
+import threading
+from datetime import timedelta
 from typing import Dict, List
+
+import youtube_dl
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
 from discord.message import Message
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
-from datetime import timedelta
 from discord_components.button import Button
-import youtube_dl
-import logging
-import asyncio
 
-from src.commander.element.Reaction import Reaction
+from config import FFMPEG_PATH, MAX_CACHESIZE
 from src.commander.element.EventWatcher import EventWatcher
-from src.commander.EmbedFactory import EmbedFactory
-from src.commander.element.ReporterEmbed import ReporterEmbed
 from src.commander.element.LyricsEmbed import LyricsEmbed
-from src.commander.element.QueueEmbed import QueueEmbed
 from src.commander.element.PlayerEmbed import PlayerEmbed
-from src.music.element.Queue import Queue
-from src.music.element.MusicSource import MusicSource
-from src.music.lyrics import youtube_lyrics
+from src.commander.element.QueueEmbed import QueueEmbed
+from src.commander.element.Reaction import Reaction
+from src.commander.element.ReporterEmbed import ReporterEmbed
+from src.commander.EmbedFactory import EmbedFactory
 from src.constants import YOUTUBE_ICON
-from config import MAX_CACHESIZE, FFMPEG_PATH
+from src.music.element.MusicSource import MusicSource
+from src.music.element.Queue import Queue
+from src.music.lyrics import youtube_lyrics
 
 
 class Player:

@@ -2,10 +2,11 @@ import logging
 from datetime import datetime
 from typing import List
 
-from discord import TextChannel, Guild, Message, ClientException
+from discord import ClientException, Guild, Message, TextChannel
 from discord.client import Client
-from src.element.profile import Profile
+
 from src.constants import VERSION
+from src.element.profile import Profile
 
 
 def valid_channels(guild: Guild):

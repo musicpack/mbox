@@ -1,7 +1,7 @@
-import requests
-
-import sys
 import os
+import sys
+
+import requests
 
 url = os.environ.get("webhook_url")
 Event_Name = os.environ.get("GITHUB_EVENT_NAME")

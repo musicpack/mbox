@@ -1,8 +1,8 @@
 from discord.embeds import Embed
 
+from src.commander.element.LyricsEmbed import LyricsEmbed
 from src.commander.element.PlayerEmbed import PlayerEmbed
 from src.commander.element.QueueEmbed import QueueEmbed
-from src.commander.element.LyricsEmbed import LyricsEmbed
 from src.commander.element.ReporterEmbed import ReporterEmbed
 
 

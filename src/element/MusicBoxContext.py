@@ -1,9 +1,11 @@
-from src.auth import Crypto
-from discord_slash.context import SlashContext
-from discord.ext.commands.context import Context
-from src.element.profile import Profile
-import discord
 import logging
+
+import discord
+from discord.ext.commands.context import Context
+from discord_slash.context import SlashContext
+
+from src.auth import Crypto
+from src.element.profile import Profile
 
 
 class MusicBoxContext(Context):

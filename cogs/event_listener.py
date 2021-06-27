@@ -1,18 +1,19 @@
-from src.element.MusicBoxContext import MusicBoxContext
-from typing import Union, List
+import os
+from typing import List, Union
+
 import discord
-from main import bot, logging
-import src.preinitialization
-from src.parser import parse
-from src.command_handler import play_ytid
-import src.element.profile
 from discord.ext import commands
 from discord_components import DiscordComponents
-from src.constants import INVITE_LINK_FORMAT
-from config import TOKEN
-from src.auth import Auth, Crypto
-import os
 
+import src.element.profile
+import src.preinitialization
+from config import TOKEN
+from main import bot, logging
+from src.auth import Auth, Crypto
+from src.command_handler import play_ytid
+from src.constants import INVITE_LINK_FORMAT
+from src.element.MusicBoxContext import MusicBoxContext
+from src.parser import parse
 
 COMMAND_CHANNEL_WARNING = "Accepted command."
 watching_channels = []

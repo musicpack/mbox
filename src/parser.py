@@ -1,9 +1,9 @@
 import logging
 import re
 
-from src.search import youtube, youtube_music
-from src.command_handler import play_ytid, logout, pubkey, genkey
+from src.command_handler import genkey, logout, play_ytid, pubkey
 from src.element.MusicBoxContext import MusicBoxContext
+from src.search import youtube, youtube_music
 
 YTRE = "(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})"
 YOUTUBE_ID_REGEX = re.compile(YTRE)

@@ -1,7 +1,9 @@
 import logging
-import discord
 from base64 import b64encode
+
+import discord
 from discord.voice_client import VoiceClient
+
 from src.element.MusicBoxContext import MusicBoxContext
 
 

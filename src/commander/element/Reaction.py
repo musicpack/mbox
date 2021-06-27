@@ -1,9 +1,10 @@
-import discord
 import asyncio
-import logging
 import inspect
+import logging
 from types import FunctionType
 from typing import Dict
+
+import discord
 
 
 class Reaction:

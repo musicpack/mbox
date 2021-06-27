@@ -1,7 +1,7 @@
 from discord.embeds import Embed
 
-from src.music.element.Queue import Queue
 from src.constants import USAGE_TEXT
+from src.music.element.Queue import Queue
 
 
 class QueueEmbed(Embed):

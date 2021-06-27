@@ -1,8 +1,10 @@
-import src.auth
-import pytest
-import rsa
 import os
 import time
+
+import pytest
+import rsa
+
+import src.auth
 
 
 class Test_Crypto:

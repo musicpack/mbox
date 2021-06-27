@@ -1,9 +1,10 @@
-import logging
-from typing import Tuple
-from discord.channel import TextChannel
-import rsa
-import time
 import base64
+import logging
+import time
+from typing import Tuple
+
+import rsa
+from discord.channel import TextChannel
 
 
 class Crypto:

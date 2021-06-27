@@ -1,7 +1,7 @@
-import os
-import shutil
 import configparser
 import glob
+import os
+import shutil
 from typing import List
 
 

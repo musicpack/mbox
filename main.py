@@ -1,9 +1,11 @@
-import discord
-import sys
 import logging
-from config import TOKEN
-from discord_slash import SlashCommand
+import sys
+
+import discord
 from discord.ext import commands
+from discord_slash import SlashCommand
+
+from config import TOKEN
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)

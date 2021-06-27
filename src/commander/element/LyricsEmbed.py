@@ -1,5 +1,7 @@
 from typing import List
+
 from discord.embeds import Embed, EmptyEmbed
+
 from src.constants import USAGE_TEXT
 
 

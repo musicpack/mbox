@@ -1,4 +1,5 @@
 from typing import Tuple
+
 from ytmusicapi import YTMusic
 
 

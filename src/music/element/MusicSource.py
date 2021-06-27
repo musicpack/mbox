@@ -1,14 +1,15 @@
-import logging
-from discord import AudioSource
-from discord import ClientException
 import audioop
+import logging
 import os
-import youtube_dl
-from src.constants import SPONSORBLOCK_MUSIC_API
+from datetime import timedelta
+
 import discord
 import requests
-from datetime import timedelta
-from config import DOWNLOAD_PATH, TEMP_PATH, FFMPEG_PATH
+import youtube_dl
+from discord import AudioSource, ClientException
+
+from config import DOWNLOAD_PATH, FFMPEG_PATH, TEMP_PATH
+from src.constants import SPONSORBLOCK_MUSIC_API
 
 
 class MusicSource(AudioSource):
