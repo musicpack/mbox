@@ -5,9 +5,10 @@ from src.element.profile import Profile
 import discord
 import logging
 
+
 class MusicBoxContext(Context):
-    r"""Inherits a discord context :class:`~discord.ext.commands.context` to 
-    include Music Box native elements and some SlashContext fields. 
+    r"""Inherits a discord context :class:`~discord.ext.commands.context` to
+    include Music Box native elements and some SlashContext fields.
 
     Represents the context in which a command is being invoked under.
 
@@ -20,7 +21,7 @@ class MusicBoxContext(Context):
         The profile matched to this context
     slash_context: :class:`slash_context`
         ShashContext if context is a slash command. Defaults to none. Similar to prefix.
-    
+
     # Imported fields
 
     message: :class:`.Message`
@@ -54,10 +55,11 @@ class MusicBoxContext(Context):
     bot: :class:`.Bot`
         The bot that contains the command being executed.
     """
+
     def __init__(self, **attrs):
-        """Inherits a discord context :class:`~discord.ext.commands.context` to 
+        """Inherits a discord context :class:`~discord.ext.commands.context` to
         include Music Box native elements and some SlashContext fields.
-        
+
         ## New fields
 
         profile: :class:`.Profile`
@@ -76,20 +78,21 @@ class MusicBoxContext(Context):
             The list of transformed arguments that were passed into the command.
         kwargs: :class:`dict`
             A dictionary of transformed arguments that were passed into the command.
-            
+
         """
-        self.profile: Profile = attrs.pop('profile', None)
-        self.name: str = attrs.pop('name', '')
-        self.slash_context: SlashContext = attrs.pop('slash_context', None)
-        self.crypto: Crypto = attrs.pop('crypto', None)
-        
+        self.profile: Profile = attrs.pop("profile", None)
+        self.name: str = attrs.pop("name", "")
+        self.slash_context: SlashContext = attrs.pop("slash_context", None)
+        self.crypto: Crypto = attrs.pop("crypto", None)
+
         # workaround: make _state object since super() expects one (regardless of message=null)
         class FakeMessage(NotImplementedError):
             pass
-        if attrs['message'] == None:
+
+        if attrs["message"] == None:
             a = FakeMessage()
             a._state = NotImplementedError
-            attrs['message'] = a
+            attrs["message"] = a
 
         super().__init__(**attrs)
 
@@ -97,13 +100,13 @@ class MusicBoxContext(Context):
         if isinstance(self.message, FakeMessage):
             self.message = None
         self.verify_context()
-    
+
     def get_str_full_input(self) -> str:
         if self.message:
             return self.message.content
-        elif self.prefix == '/':
-            return self.prefix + self.name + ' ' + ' '.join(self.args)
-    
+        elif self.prefix == "/":
+            return self.prefix + self.name + " " + " ".join(self.args)
+
     def get_author(self) -> discord.Member:
         if self.message:
             return self.message.author
@@ -116,16 +119,16 @@ class MusicBoxContext(Context):
     def get_guild(self) -> discord.Guild:
         if self.profile:
             return self.profile.guild
-        elif self.prefix == '/':
+        elif self.prefix == "/":
             if self.slash_context.guild:
                 return self.slash_context.guild
-        
+
         return None
 
     def verify_context(self) -> bool:
         """Checks to make sure fields are consistant and valid. Returns true if valid, throws error if not."""
-        if bool(self.slash_context) != (self.prefix == '/'):
-            raise Exception('slash_context and prefix values do not line up')
+        if bool(self.slash_context) != (self.prefix == "/"):
+            raise Exception("slash_context and prefix values do not line up")
         return True
 
     def determine_voice_channel(self) -> discord.VoiceChannel:
@@ -144,14 +147,14 @@ class MusicBoxContext(Context):
         if self.profile.player:
 
             # CheckStateTrue: determine no voice channel if player already connected
-            if(self.profile.player.connected_client):
+            if self.profile.player.connected_client:
                 if self.profile.player.connected_client.is_connected():
                     return None
-            
+
             # Save for later check, first voice channel
             if self.profile.guild.voice_channels:
                 first_voice_channel = self.profile.guild.voice_channels[0]
-        
+
         # Check slash_context exists
         if self.slash_context:
 
@@ -159,27 +162,34 @@ class MusicBoxContext(Context):
             if self.slash_context.author:
                 if self.profile:
                     for voice_channel in self.profile.guild.voice_channels:
-                        if self.slash_context.author.id in voice_channel.voice_states.keys(): # this will get raw uncached voice states
+                        if (
+                            self.slash_context.author.id
+                            in voice_channel.voice_states.keys()
+                        ):  # this will get raw uncached voice states
                             return voice_channel
 
         # Check message exists
         if self.message:
-            voice_channel : discord.VoiceChannel
+            voice_channel: discord.VoiceChannel
 
             # CheckStateTrue: join message authors voice_channel if author in voice channel
             for voice_channel in self.message.guild.voice_channels:
                 if self.message.author.id in voice_channel.voice_states.keys():
                     return voice_channel
-        
+
         # CheckStateTrue: join last_connected_channel if exists
         if last_connected_channel:
-            logging.warn(f'Determined last connected channel for guild {self.profile.guild.name}')
+            logging.warn(
+                f"Determined last connected channel for guild {self.profile.guild.name}"
+            )
             return last_connected_channel
-        
+
         # CheckStateTrue: join first available voice channel if exists
         if first_voice_channel:
-            logging.warn(f'Determined first available voice channel for guild {self.profile.guild.name}')
+            logging.warn(
+                f"Determined first available voice channel for guild {self.profile.guild.name}"
+            )
             return first_voice_channel
-        
-        logging.error('Determined no possible voice channel to join.')
+
+        logging.error("Determined no possible voice channel to join.")
         return None

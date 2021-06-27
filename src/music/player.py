@@ -25,6 +25,7 @@ from src.music.lyrics import youtube_lyrics
 from src.constants import YOUTUBE_ICON
 from config import MAX_CACHESIZE, FFMPEG_PATH
 
+
 class Player:
     def __init__(self, ffmpeg_path, client: Client) -> None:
         self.connected_client: VoiceClient = None
@@ -32,12 +33,10 @@ class Player:
 
         self.ffmpeg_path = ffmpeg_path
         self.FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
-            ,'options': '-vn'
+            "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+            "options": "-vn",
         }
-        self.ydl_opts = {
-            'format': 'bestaudio/worst'
-        }
+        self.ydl_opts = {"format": "bestaudio/worst"}
 
         # Lyrics Metadata
         self.default_lyrics_metadata()
@@ -48,16 +47,18 @@ class Player:
         # Player Metadata & Footer Metadata
         self.default_player_metadata()
         # Footer Metadata
-        self.volume: int= 50
+        self.volume: int = 50
 
         self.button_events = EventWatcher(self.client)
 
         self.player_reactions = [
-            Reaction(emoji='⏮️', client=self.client, action=self.last),
-            Reaction(emoji='⏯️', client=self.client, action=self.on_play_pause),
-            Reaction(emoji='⏭️', client=self.client, action=self.next),
-            Reaction(emoji='🔉', client=self.client, action=self.lower_volume),
-            Reaction(emoji='🔊', client=self.client, action=self.raise_volume),
+            Reaction(emoji="⏮️", client=self.client, action=self.last),
+            Reaction(
+                emoji="⏯️", client=self.client, action=self.on_play_pause
+            ),
+            Reaction(emoji="⏭️", client=self.client, action=self.next),
+            Reaction(emoji="🔉", client=self.client, action=self.lower_volume),
+            Reaction(emoji="🔊", client=self.client, action=self.raise_volume),
             # Reaction(emoji='💬', client=self.client, action=self.toggle_display_description)
         ]
 
@@ -68,14 +69,14 @@ class Player:
         self.player_message: Message = None
 
         self.ms_displayed = 0
-    
+
     #  ██████╗ ██████╗ ██████╗ ███████╗
     # ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    # ██║     ██║   ██║██████╔╝█████╗  
-    # ██║     ██║   ██║██╔══██╗██╔══╝  
+    # ██║     ██║   ██║██████╔╝█████╗
+    # ██║     ██║   ██║██╔══██╗██╔══╝
     # ╚██████╗╚██████╔╝██║  ██║███████╗
     #  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-    #                                  
+    #
 
     async def play(self, audio: MusicSource) -> None:
         """Plays the given MusicSource. Updates embeds if exists. Connect to the voicechannel before running function."""
@@ -87,54 +88,67 @@ class Player:
             # Make sure the MusicSource is back at 0:00 preventing us from playing a song from the middle.
             audio.reset()
             # Apply player volume to the audio source
-            audio.volume = self.volume/100
+            audio.volume = self.volume / 100
 
-            if self.connected_client.is_connected() and self.connected_client.is_playing():
+            if (
+                self.connected_client.is_connected()
+                and self.connected_client.is_playing()
+            ):
                 self.connected_client.source = audio
             else:
-                self.connected_client.play(source = audio, after=self.on_finished)
+                self.connected_client.play(
+                    source=audio, after=self.on_finished
+                )
 
             # Lyrics metadata
-            self.lyrics, self.lyrics_source = youtube_lyrics(audio.info['id'])
+            self.lyrics, self.lyrics_source = youtube_lyrics(audio.info["id"])
             await self.update_lyrics_embed()
             # Player metadata
             self.playhead = timedelta(seconds=0)
             self.display_description = False
             self.resolved = audio.resolved
-            self.from_file = False # file is from_file but this variable is meant for a file just downloaded to disk
+            self.from_file = False  # file is from_file but this variable is meant for a file just downloaded to disk
             self.sponsorblock: bool = None
             self.set_metadata(audio.info)
             await self.update_player_embed()
-    
+
     def stop(self) -> None:
         """Stops song and disconnects from the voicechannel."""
         if self.connected_client:
             self.connected_client.stop()
 
             if self.connected_client.is_connected():
-                asyncio.run_coroutine_threadsafe(self.disconnect(), self.client.loop)
-            
+                asyncio.run_coroutine_threadsafe(
+                    self.disconnect(), self.client.loop
+                )
+
             # Cleanly shut down ffmpeg instances and delete temporary files from the Queue
             for audio in self.queue.playlist:
                 audio.cleanup()
                 audio.remove_temp_file()
-        
+
             # Lyrics metadata
             self.default_lyrics_metadata()
-            asyncio.run_coroutine_threadsafe(self.update_lyrics_embed(), self.client.loop)
+            asyncio.run_coroutine_threadsafe(
+                self.update_lyrics_embed(), self.client.loop
+            )
             # Queue metadata
             self.default_queue_metadata()
-            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            asyncio.run_coroutine_threadsafe(
+                self.update_queue_embed(), self.client.loop
+            )
             # Player metadata
             self.default_player_metadata()
-            asyncio.run_coroutine_threadsafe(self.update_player_embed(), self.client.loop)
-    
+            asyncio.run_coroutine_threadsafe(
+                self.update_player_embed(), self.client.loop
+            )
+
     async def raise_volume(self):
         """Increases the volume by 10 if the volume is not >=200."""
         if self.connected_client and self.connected_client.is_connected():
             if not self.volume >= 200:
                 self.volume += 10
-                self.connected_client.source.volume = self.volume/100
+                self.connected_client.source.volume = self.volume / 100
                 await self.update_player_embed()
 
     async def lower_volume(self):
@@ -142,7 +156,7 @@ class Player:
         if self.connected_client and self.connected_client.is_connected():
             if not self.volume <= 0:
                 self.volume -= 10
-                self.connected_client.source.volume = self.volume/100
+                self.connected_client.source.volume = self.volume / 100
 
                 await self.update_player_embed()
 
@@ -156,7 +170,7 @@ class Player:
         """Resumes the currenly set song."""
         self.paused = False
         if self.connected_client:
-            self.connected_client.resume()   
+            self.connected_client.resume()
 
     ########## Queue ##########
     def get_by_index(self, index) -> MusicSource:
@@ -167,8 +181,12 @@ class Player:
             return None
         else:
             music_source.reset()
-            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            asyncio.run_coroutine_threadsafe(
+                self.play(music_source), self.client.loop
+            )
+            asyncio.run_coroutine_threadsafe(
+                self.update_queue_embed(), self.client.loop
+            )
             return music_source
 
     def next(self) -> MusicSource:
@@ -176,31 +194,42 @@ class Player:
         try:
             music_source = self.queue.next()
         except IndexError:
-            logging.info('No more music to play. Stopping...')
+            logging.info("No more music to play. Stopping...")
             self.stop()
             return None
         else:
-            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            asyncio.run_coroutine_threadsafe(
+                self.play(music_source), self.client.loop
+            )
+            asyncio.run_coroutine_threadsafe(
+                self.update_queue_embed(), self.client.loop
+            )
             return music_source
-
 
     def last(self) -> MusicSource:
         """Loads up the previous song in the queue."""
         try:
             music_source = self.queue.prev()
         except IndexError:
-            logging.info('Queue cant go back any further')
+            logging.info("Queue cant go back any further")
             return None
         else:
-            asyncio.run_coroutine_threadsafe(self.play(music_source), self.client.loop)
-            asyncio.run_coroutine_threadsafe(self.update_queue_embed(), self.client.loop)
+            asyncio.run_coroutine_threadsafe(
+                self.play(music_source), self.client.loop
+            )
+            asyncio.run_coroutine_threadsafe(
+                self.update_queue_embed(), self.client.loop
+            )
             return music_source
 
     async def connect(self, channel: VoiceChannel):
         """Connects the player to a voicechannel"""
         if self.connected_client and self.connected_client.is_connected():
-            logging.warn('Player is already connected to channel {0.name}'.format(self.connected_client.channel))
+            logging.warn(
+                "Player is already connected to channel {0.name}".format(
+                    self.connected_client.channel
+                )
+            )
             return
         self.connected_client = await channel.connect()
 
@@ -214,8 +243,13 @@ class Player:
 
     async def disconnect(self):
         """Disconnects the player to a voicechannel"""
-        if self.connected_client == None or not self.connected_client.is_connected():
-            logging.warn('Player is not connected. Was it disconnected forcefully?')
+        if (
+            self.connected_client == None
+            or not self.connected_client.is_connected()
+        ):
+            logging.warn(
+                "Player is not connected. Was it disconnected forcefully?"
+            )
             return
         await self.connected_client.disconnect()
 
@@ -232,10 +266,10 @@ class Player:
     ########## MusicSource Event Handlers ##########
     def on_finished(self, error):
         if error:
-            logging.exception('Error when finished playing: ',exc_info=error)
+            logging.exception("Error when finished playing: ", exc_info=error)
             self.stop()
         else:
-            logging.debug('Finished playing song')
+            logging.debug("Finished playing song")
             try:
                 # TODO change race condiiton for main look to check if on_finished exec because of disconnect or next song
                 self.next()
@@ -249,11 +283,17 @@ class Player:
             self.ms_displayed = 14000
         if self.ms_displayed > 0:
             self.ms_displayed -= 20
-        if (ms % 14000 == 0 and not non_music) or self.ms_displayed == 13960: # 13960 represents the point where ms_displayed starts decrementing
+        if (
+            ms % 14000 == 0 and not non_music
+        ) or self.ms_displayed == 13960:  # 13960 represents the point where ms_displayed starts decrementing
             if self.ms_displayed == 0:
                 self.sponsorblock = False
-                self.ms_displayed = -1 # make negative to avoid line above assignment multiple times
-            asyncio.run_coroutine_threadsafe(self.update_player_embed(), self.connected_client.loop)
+                self.ms_displayed = (
+                    -1
+                )  # make negative to avoid line above assignment multiple times
+            asyncio.run_coroutine_threadsafe(
+                self.update_player_embed(), self.connected_client.loop
+            )
 
     ########## High Level Helper Functions ##########
     async def play_youtube(self, link: str):
@@ -261,48 +301,74 @@ class Player:
             # if not grab info to add for streaming queue
             ydl = youtube_dl.YoutubeDL(self.ydl_opts)
             video_info: dict = ydl.extract_info(link, download=False)
-            source: str = video_info['formats'][0]['url'] # take the first result given from youtube
-            raw_audio_source = FFmpegPCMAudio(executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS)
-            audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume/100)
+            source: str = video_info["formats"][0][
+                "url"
+            ]  # take the first result given from youtube
+            raw_audio_source = FFmpegPCMAudio(
+                executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS
+            )
+            audio = MusicSource(
+                raw_audio_source, info=video_info, volume=self.volume / 100
+            )
 
             self.queue.add(audio)
             await self.update_queue_embed()
 
             # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
-            if not self.connected_client.is_playing() and not self.connected_client.is_paused():
+            if (
+                not self.connected_client.is_playing()
+                and not self.connected_client.is_paused()
+            ):
                 if len(self.queue.playlist) == 1:
                     await self.play(self.queue.current())
                 else:
                     self.next()
-            
+
             @audio.event
             def on_read(ms, non_music):
                 self.on_read(ms, non_music)
-            
+
             # Determine if video is cacheable
-            if not video_info['is_live']: # TODO Player should show that the video is live in the GUI
-                if video_info['filesize']: # TODO add handling when video_info['filesize'] is not found/supported by youtube_dl
-                    do_cache = True if video_info['filesize'] <= MAX_CACHESIZE else False
+            if not video_info[
+                "is_live"
+            ]:  # TODO Player should show that the video is live in the GUI
+                if video_info[
+                    "filesize"
+                ]:  # TODO add handling when video_info['filesize'] is not found/supported by youtube_dl
+                    do_cache = (
+                        True
+                        if video_info["filesize"] <= MAX_CACHESIZE
+                        else False
+                    )
 
                     # Using threading library in order to prevent youtube_dl from blocking asyncio loops
-                    threading.Thread(target=lambda: audio.resolve(cache=do_cache)).start()
+                    threading.Thread(
+                        target=lambda: audio.resolve(cache=do_cache)
+                    ).start()
 
                 @audio.event
                 def on_resolve(info, path):
                     if self.player_message:
-                        if self.queue.current() and self.queue.current().info == info:
+                        if (
+                            self.queue.current()
+                            and self.queue.current().info == info
+                        ):
                             self.from_file = True
-                            self.resolved = False # Resolved is false to display the special status 'from_file'
-                            asyncio.run_coroutine_threadsafe(self.update_player_embed(), self.connected_client.loop)
+                            self.resolved = False  # Resolved is false to display the special status 'from_file'
+                            asyncio.run_coroutine_threadsafe(
+                                self.update_player_embed(),
+                                self.connected_client.loop,
+                            )
+
         else:
-            logging.error('Can\'t play_youtube() without connecting first')
-    
+            logging.error("Can't play_youtube() without connecting first")
+
     async def cleanup(self):
         """Used when this player instance is about to be deleted.
-            Tasks:
-            - Disconnect from voice.
-            - Clean up audio sources from queue
-            - Unregister reaction instances
+        Tasks:
+        - Disconnect from voice.
+        - Clean up audio sources from queue
+        - Unregister reaction instances
         """
         await self.disconnect()
 
@@ -311,13 +377,13 @@ class Player:
         if self.player_message:
             await self.remove_player_reactions()
 
-    # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗ 
+    # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗
     # ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
     # ██╔████╔██║█████╗     ██║   ███████║██║  ██║███████║   ██║   ███████║
     # ██║╚██╔╝██║██╔══╝     ██║   ██╔══██║██║  ██║██╔══██║   ██║   ██╔══██║
     # ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║██████╔╝██║  ██║   ██║   ██║  ██║
     # ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
-    #                                                                                                                                                 
+    #
 
     ########## Reporter ##########
     @property
@@ -325,12 +391,12 @@ class Player:
         """Getter for reporter_embed from factory.
         Factory generates a up to date embed based on kwargs passed.
         """
-        return EmbedFactory.create_embed(embed_type='reporter', **vars(self))
+        return EmbedFactory.create_embed(embed_type="reporter", **vars(self))
 
     async def update_reporter_embed(self) -> None:
         """Edits the reporter message (if registered) with a newly generated embed."""
         if self.reporter_message:
-            await self.reporter_message.edit(embed = self.reporter_embed)
+            await self.reporter_message.edit(embed=self.reporter_embed)
 
     ########## Lyrics ##########
     @property
@@ -339,41 +405,39 @@ class Player:
         Factory generates a up to date embed based on kwargs passed.
         """
         custom_kwargs = {
-            'lyrics': self.lyrics,
-            'lyrics_source': self.lyrics_source
+            "lyrics": self.lyrics,
+            "lyrics_source": self.lyrics_source,
         }
-        return EmbedFactory.create_embed(embed_type='lyrics', **custom_kwargs)
+        return EmbedFactory.create_embed(embed_type="lyrics", **custom_kwargs)
 
     async def update_lyrics_embed(self) -> None:
         """Edits the lyrics message (if registered) with a newly generated embed."""
         if self.lyrics_message:
-            await self.lyrics_message.edit(embed = self.lyrics_embed)
-    
+            await self.lyrics_message.edit(embed=self.lyrics_embed)
+
     def default_lyrics_metadata(self) -> None:
         """Sets the lyrics metadata variables to default values"""
         self.lyrics = None
         self.lyrics_source: str = None
-    
+
     ########## Queue ##########
     @property
     def queue_embed(self) -> QueueEmbed:
         """Getter for queue_embed from factory.
         Factory generates a up to date embed based on kwargs passed.
         """
-        custom_kwargs = {
-            'queue': self.queue
-        }
-        return EmbedFactory.create_embed(embed_type='queue', **custom_kwargs)
+        custom_kwargs = {"queue": self.queue}
+        return EmbedFactory.create_embed(embed_type="queue", **custom_kwargs)
 
     async def update_queue_embed(self) -> None:
         """Edits the queues message (if registered) with a newly generated embed."""
         if self.queue_message:
-            await self.queue_message.edit(embed = self.queue_embed)
-    
+            await self.queue_message.edit(embed=self.queue_embed)
+
     def default_queue_metadata(self) -> None:
         """Sets the queue metadata variables to default values"""
         self.queue = Queue()
-    
+
     ########## Player ##########
     @property
     def player_buttons(self) -> List[Button]:
@@ -381,7 +445,7 @@ class Player:
         for reaction in self.player_reactions:
             if reaction.emoji in self.button_events.coro:
                 button_format.append(Button(emoji=reaction.emoji))
-        
+
         return [button_format] if button_format else []
 
     @property
@@ -390,13 +454,15 @@ class Player:
         Factory generates a up to date embed based on kwargs passed.
         """
         # NOTE: we send every self variable as kwargs to factory since PlayerEmbed requires most variables in this class
-        return EmbedFactory.create_embed(embed_type='player', **vars(self))
+        return EmbedFactory.create_embed(embed_type="player", **vars(self))
 
     async def update_player_embed(self) -> None:
         """Edits the player message (if registered) with a newly generated embed."""
         if self.player_message:
-            await self.player_message.edit(embed = self.player_embed, components=self.player_buttons)
-    
+            await self.player_message.edit(
+                embed=self.player_embed, components=self.player_buttons
+            )
+
     def default_player_metadata(self) -> None:
         """Sets the player metadata variables to default values.
         Note: Since footer is part of player, it will be reset as well."""
@@ -420,11 +486,13 @@ class Player:
         self.playhead: timedelta = None
         self.duration: timedelta = None
         self.sponsorblock: bool = None
-    
+
     ########## Reaction Functions ##########
     async def register_player_reactions(self, message: Message):
         for reaction in self.player_reactions:
-            await self.button_events.watch_button_click(emoji=reaction.emoji, action= reaction.action)
+            await self.button_events.watch_button_click(
+                emoji=reaction.emoji, action=reaction.action
+            )
 
     async def remove_player_reactions(self):
         """Removes all the reactions in this class"""
@@ -449,10 +517,12 @@ class Player:
         if self.connected_client:
             playlist = self.queue.playlist
             pos = self.queue.pos
-            next_songs =  playlist[pos+1:]
-            if self.queue.pos < len(self.queue.playlist)-1:
+            next_songs = playlist[(pos + 1) :]
+            if self.queue.pos < len(self.queue.playlist) - 1:
                 random.shuffle(next_songs)
-                self.queue.playlist = playlist[:pos] + [playlist[pos]] + next_songs
+                self.queue.playlist = (
+                    playlist[:pos] + [playlist[pos]] + next_songs
+                )
                 await self.update_queue_embed()
             else:
                 raise IndexError("No more songs in the queue to shuffle")
@@ -461,12 +531,18 @@ class Player:
     async def register_command_channel(self, command_channel: TextChannel):
         """Sends and registers all embeds that this player implements to the command channel"""
 
-        self.reporter_message = await command_channel.send(embed=self.reporter_embed)
-        self.lyrics_message   = await command_channel.send(embed=self.lyrics_embed)
-        self.queue_message    = await command_channel.send(embed=self.queue_embed)
-        self.player_message   = await command_channel.send(embed=self.player_embed)
+        self.reporter_message = await command_channel.send(
+            embed=self.reporter_embed
+        )
+        self.lyrics_message = await command_channel.send(
+            embed=self.lyrics_embed
+        )
+        self.queue_message = await command_channel.send(embed=self.queue_embed)
+        self.player_message = await command_channel.send(
+            embed=self.player_embed
+        )
 
-    def metadata_youtube_dl(self, info: dict) -> Dict[str,str]:
+    def metadata_youtube_dl(self, info: dict) -> Dict[str, str]:
         """Parses youtube_dl dictionary to standard mbox naming format.
 
         Args:
@@ -486,15 +562,15 @@ class Player:
         """
 
         return {
-            'video_title': info['title'],
-            'video_url': info['webpage_url'],
-            'video_description':info['description'],
-            'video_uploader': info['uploader'],
-            'video_uploader_url': info['uploader_url'],
-            'video_thumbnail': info['thumbnail'],
-            'icon_url': YOUTUBE_ICON,
-            'video_source': 'Youtube',
-            'duration': timedelta(seconds=info['duration'])
+            "video_title": info["title"],
+            "video_url": info["webpage_url"],
+            "video_description": info["description"],
+            "video_uploader": info["uploader"],
+            "video_uploader_url": info["uploader_url"],
+            "video_thumbnail": info["thumbnail"],
+            "icon_url": YOUTUBE_ICON,
+            "video_source": "Youtube",
+            "duration": timedelta(seconds=info["duration"]),
         }
 
     def set_metadata(self, info: dict) -> None:

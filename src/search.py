@@ -14,8 +14,8 @@ def youtube(phrase: str) -> str:
     """
     results = YoutubeSearch(phrase, max_results=1).to_dict()
     if results:
-        return results[0]['id']
-    logging.error('Youtube did not find any video.')
+        return results[0]["id"]
+    logging.error("Youtube did not find any video.")
 
 
 def youtube_music(phrase: str) -> str:
@@ -30,7 +30,7 @@ def youtube_music(phrase: str) -> str:
     ytmusic = YTMusic()
     results = ytmusic.search(query=phrase)
     for result in results:
-        if result['resultType'] == 'video' or result['resultType'] == 'song':
-            return result['videoId']
+        if result["resultType"] == "video" or result["resultType"] == "song":
+            return result["videoId"]
     # TODO: Notify user if youtube did not find any music in the command channel
-    logging.error('Youtube Music did not find any music.')
+    logging.error("Youtube Music did not find any music.")
