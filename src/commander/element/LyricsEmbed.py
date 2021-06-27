@@ -1,3 +1,4 @@
+from typing import List
 from discord.embeds import Embed, EmptyEmbed
 from src.constants import USAGE_TEXT
 
@@ -34,7 +35,7 @@ class LyricsEmbed(Embed):
         if(len(lyrics) < max_description):
             return lyrics
 
-        splited_verses_list:list[str] = self.split_verse_if_over_limit(lyrics, max_description, max_embed_field)
+        splited_verses_list:List[str] = self.split_verse_if_over_limit(lyrics, max_description, max_embed_field)
 
         embed_field_verses = ''
         description_verses = ''
@@ -55,7 +56,7 @@ class LyricsEmbed(Embed):
         return description_verses          
 
 
-    def split_verse_if_over_limit(self, lyrics: str, max_description: int, max_embed_field: int) -> list[str]:
+    def split_verse_if_over_limit(self, lyrics: str, max_description: int, max_embed_field: int) -> List[str]:
         """
         return the splitted verses where we split verses if...
             if characters inside description is over 2048 and
@@ -68,7 +69,7 @@ class LyricsEmbed(Embed):
         """
         
         splited_verses_list = []
-        verses:list[str] = self.get_verses(lyrics)
+        verses:List[str] = self.get_verses(lyrics)
 
         if(len(verses[0]) < max_description):
             splited_verses_list.append(verses[0])
@@ -87,7 +88,7 @@ class LyricsEmbed(Embed):
         return splited_verses_list
 
 
-    def split_verse(self, verse:str, splited_verses_list:list[str], max_description:int , max_embed_field:int , position:int) -> str or list[str] :
+    def split_verse(self, verse:str, splited_verses_list:List[str], max_description:int , max_embed_field:int , position:int) -> str or List[str] :
         if(position == max_embed_field):
             
             while(len(verse) > position):
@@ -144,7 +145,7 @@ class LyricsEmbed(Embed):
         self.add_field(name='\u200B', value=embed_field_verses, inline=False)
 
 
-    def get_verses(self, lyrics: str) -> list[str]:
+    def get_verses(self, lyrics: str) -> List[str]:
         return lyrics.split('\r\n\r\n')
     
     
