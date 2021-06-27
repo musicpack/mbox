@@ -89,7 +89,7 @@ class MusicBoxContext(Context):
         class FakeMessage(NotImplementedError):
             pass
 
-        if attrs["message"] == None:
+        if attrs["message"] is None:
             a = FakeMessage()
             a._state = NotImplementedError
             attrs["message"] = a

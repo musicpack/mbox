@@ -2,7 +2,6 @@ import src.auth
 import pytest
 import rsa
 import os
-import base64
 import time
 
 

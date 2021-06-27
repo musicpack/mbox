@@ -150,7 +150,7 @@ class PlayerEmbed(Embed):
 
     def get_timeline(self) -> str:
         # TODO: Fix so that playhead and duration generates strings independent of each other
-        if self.playhead != None and self.duration != None:
+        if self.playhead is not None and self.duration is not None:
             current = str(self.playhead)[:7]
             total = str(self.duration)[:7]
             if total[:2] == "0:":

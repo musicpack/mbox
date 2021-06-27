@@ -172,6 +172,7 @@ class MusicSource(AudioSource):
                     )
                 )
             except FileNotFoundError as e:
+                logging.log("Cannot find file", e)
                 self.temp = False
             except Exception as e:
                 logging.error(e)
@@ -179,8 +180,8 @@ class MusicSource(AudioSource):
     def on_download_state(self, d):
         if d["status"] == "finished":
             path = os.path.abspath(d["filename"])
-            filepath, file_extension = os.path.splitext(path)
-            file_ytid = os.path.split(filepath)[-1].split("-")[-1]
+            _, file_extension = os.path.splitext(path)
+            # file_ytid = os.path.split(filepath)[-1].split("-")[-1]
 
             if file_extension == ".webm" or file_extension == ".m4a":
                 custom_options = {

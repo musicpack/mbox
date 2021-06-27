@@ -177,7 +177,7 @@ class EventListener(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         # Makes sure the player stops playing the song if the bot was disconnected by force
         if member == self.bot.user:
-            if before.channel and after.channel == None:
+            if before.channel and after.channel is None:
                 for profile in profiles:
                     if profile.guild == member.guild:
                         profile.player.stop()

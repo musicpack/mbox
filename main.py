@@ -4,7 +4,6 @@ import logging
 from config import TOKEN
 from discord_slash import SlashCommand
 from discord.ext import commands
-from src.constants import *
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)

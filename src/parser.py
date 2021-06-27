@@ -7,6 +7,8 @@ from src.element.MusicBoxContext import MusicBoxContext
 
 YTRE = "(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})"
 YOUTUBE_ID_REGEX = re.compile(YTRE)
+
+
 # TODO make sure user input is sanitized
 async def parse(context: MusicBoxContext) -> str:
     """Generic parse function. Takes in a context from a user input and does actions based on it.

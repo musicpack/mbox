@@ -1,7 +1,4 @@
-from typing import List
-
 from src.music.element.MusicSource import MusicSource
-from src.constants import *
 
 
 class Queue:

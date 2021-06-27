@@ -1,4 +1,3 @@
-import pytest
 from src.commander.element.LyricsEmbed import LyricsEmbed
 
 

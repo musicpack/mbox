@@ -1,8 +1,6 @@
-import datetime
 import logging
 from typing import Tuple
 from discord.channel import TextChannel
-from discord.message import Message
 import rsa
 import time
 import base64

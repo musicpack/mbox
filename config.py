@@ -57,7 +57,7 @@ def set_ffmpeg_path(config: configparser.ConfigParser):
             return "ffmpeg"
         elif glob.glob("ffmpeg*"):
             return get_ffmpeg_path(glob.glob("ffmpeg*"))
-    except:
+    except Exception:
         FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
         raise ProcessLookupError(FFMPEG_ERROR_NOT_FOUND)
 
@@ -91,7 +91,7 @@ def get_ffmpeg_path(ffmpeg_paths: str) -> str:
         elif os.path.isfile(path) and os.name == "posix":
             try:
                 return shutil.which("./ffmpeg")
-            except:
+            except Exception:
                 raise FileNotFoundError
 
 

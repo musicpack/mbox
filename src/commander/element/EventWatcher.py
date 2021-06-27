@@ -4,7 +4,6 @@ import logging
 import inspect
 from types import FunctionType
 from typing import Dict
-from discord import emoji
 from discord_components import Interaction
 
 

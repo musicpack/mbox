@@ -244,7 +244,7 @@ class Player:
     async def disconnect(self):
         """Disconnects the player to a voicechannel"""
         if (
-            self.connected_client == None
+            self.connected_client is None
             or not self.connected_client.is_connected()
         ):
             logging.warn(

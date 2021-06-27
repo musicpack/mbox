@@ -1,4 +1,3 @@
-import pytest
 from src.search import youtube, youtube_music
 
 

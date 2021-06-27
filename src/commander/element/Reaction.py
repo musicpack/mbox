@@ -19,7 +19,7 @@ class Reaction:
         *,
         timeout=None,
         action: FunctionType = None,
-        action_timeout: FunctionType = None
+        action_timeout: FunctionType = None,
     ):
         self.emoji = emoji
         self.client = client
@@ -85,9 +85,7 @@ class Reaction:
                 )
         else:
             logging.error(
-                "Registering button "
-                + self.emoji
-                + "failed. You must provide a discord Message object."
+                f"Registering button {self.emoji} failed. You must provide a discord Message object."
             )
 
     async def remove(self, message: discord.Message):
