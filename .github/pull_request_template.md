@@ -1,5 +1,3 @@
-
-
 ## Status
 **READY/IN DEVELOPMENT/HOLD**
  - [ ] Ready
