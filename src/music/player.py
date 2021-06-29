@@ -119,20 +119,23 @@ class Player:
     
     async def raise_volume(self):
         """Increases the volume by 10 if the volume is not >=200."""
+        if not self.volume >= 200:
+            self.volume += 10
+            await self.update_player_embed()
+
         if self.connected_client and self.connected_client.is_connected():
-            if not self.volume >= 200:
-                self.volume += 10
-                self.connected_client.source.volume = self.volume/100
-                await self.update_player_embed()
+            self.connected_client.source.volume = self.volume/100
+        
 
     async def lower_volume(self):
         """Decreases the volume by 10 if the volume is not <=0."""
-        if self.connected_client and self.connected_client.is_connected():
-            if not self.volume <= 0:
-                self.volume -= 10
-                self.connected_client.source.volume = self.volume/100
+        if not self.volume <= 0:
+            self.volume -= 10
+            await self.update_player_embed()
 
-                await self.update_player_embed()
+        if self.connected_client and self.connected_client.is_connected():
+            self.connected_client.source.volume = self.volume/100
+
 
     def pause(self):
         """Pauses the song"""
