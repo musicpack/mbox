@@ -2,6 +2,12 @@
 
 ## Status
 **READY/IN DEVELOPMENT/HOLD**
+ 
+ [ ] Ready
+
+ [ ] In developmenrt
+ 
+ [ ] Hold
 
 
 
@@ -49,4 +55,6 @@ python mbox/main.py
 ```
   
 ## Screenshots
+Add any screenshots as needed
+
 ## Other comments
