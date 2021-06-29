@@ -7,13 +7,12 @@ from discord.message import Message
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
 from datetime import timedelta
-from discord_components.button import Button
 import youtube_dl
 import logging
 import asyncio
+from discord_slash.utils import manage_components
+from discord_slash.model import ButtonStyle
 
-from src.commander.element.Reaction import Reaction
-from src.commander.element.EventWatcher import EventWatcher
 from src.commander.EmbedFactory import EmbedFactory
 from src.commander.element.ReporterEmbed import ReporterEmbed
 from src.commander.element.LyricsEmbed import LyricsEmbed
@@ -49,17 +48,6 @@ class Player:
         self.default_player_metadata()
         # Footer Metadata
         self.volume: int= 50
-
-        self.button_events = EventWatcher(self.client)
-
-        self.player_reactions = [
-            Reaction(emoji='⏮️', client=self.client, action=self.last),
-            Reaction(emoji='⏯️', client=self.client, action=self.on_play_pause),
-            Reaction(emoji='⏭️', client=self.client, action=self.next),
-            Reaction(emoji='🔉', client=self.client, action=self.lower_volume),
-            Reaction(emoji='🔊', client=self.client, action=self.raise_volume),
-            # Reaction(emoji='💬', client=self.client, action=self.toggle_display_description)
-        ]
 
         # Front End Registration Objects
         self.reporter_message: Message = None
@@ -209,9 +197,6 @@ class Player:
         self.default_queue_metadata()
         self.default_player_metadata()
 
-        if self.player_message:
-            await self.register_player_reactions(self.player_message)
-
     async def disconnect(self):
         """Disconnects the player to a voicechannel"""
         if self.connected_client == None or not self.connected_client.is_connected():
@@ -225,9 +210,6 @@ class Player:
         self.default_lyrics_metadata()
         self.default_queue_metadata()
         self.default_player_metadata()
-
-        if self.player_message:
-            await self.remove_player_reactions()
 
     ########## MusicSource Event Handlers ##########
     def on_finished(self, error):
@@ -308,8 +290,6 @@ class Player:
 
         # TODO Clean up audio sources from queue
 
-        if self.player_message:
-            await self.remove_player_reactions()
 
     # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗ 
     # ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
@@ -376,13 +356,18 @@ class Player:
     
     ########## Player ##########
     @property
-    def player_buttons(self) -> List[Button]:
-        button_format: list = []
-        for reaction in self.player_reactions:
-            if reaction.emoji in self.button_events.coro:
-                button_format.append(Button(emoji=reaction.emoji))
+    def player_buttons(self) -> List[dict]:
+        buttons = [
+            manage_components.create_button(style=ButtonStyle.grey,custom_id='prev_button',emoji='⏮️',),
+            manage_components.create_button(style=ButtonStyle.grey,custom_id='play_pause_button',emoji='⏯️'),
+            manage_components.create_button(style=ButtonStyle.grey,custom_id='next_button',emoji='⏭️'),
+            manage_components.create_button(style=ButtonStyle.grey,custom_id='volume_down_button',emoji='🔉'),
+            manage_components.create_button(style=ButtonStyle.grey,custom_id='volume_up_button',emoji='🔊')
+        ]
+
+        action_row = manage_components.create_actionrow(*buttons)
         
-        return [button_format] if button_format else []
+        return [action_row]
 
     @property
     def player_embed(self) -> PlayerEmbed:
@@ -421,16 +406,6 @@ class Player:
         self.duration: timedelta = None
         self.sponsorblock: bool = None
     
-    ########## Reaction Functions ##########
-    async def register_player_reactions(self, message: Message):
-        for reaction in self.player_reactions:
-            await self.button_events.watch_button_click(emoji=reaction.emoji, action= reaction.action)
-
-    async def remove_player_reactions(self):
-        """Removes all the reactions in this class"""
-        await self.button_events.remove_all()
-        await self.update_player_embed()
-
     async def toggle_display_description(self):
         """Intake function for 💬 emoji reaction on_press event"""
         self.display_description = not self.display_description
@@ -464,7 +439,7 @@ class Player:
         self.reporter_message = await command_channel.send(embed=self.reporter_embed)
         self.lyrics_message   = await command_channel.send(embed=self.lyrics_embed)
         self.queue_message    = await command_channel.send(embed=self.queue_embed)
-        self.player_message   = await command_channel.send(embed=self.player_embed)
+        self.player_message   = await command_channel.send(embed=self.player_embed, components=self.player_buttons)
 
     def metadata_youtube_dl(self, info: dict) -> Dict[str,str]:
         """Parses youtube_dl dictionary to standard mbox naming format.
