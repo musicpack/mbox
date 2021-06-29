@@ -67,7 +67,7 @@ class Player:
 
     async def play(self, audio: MusicSource) -> None:
         """Plays the given MusicSource. Updates embeds if exists. Connect to the voicechannel before running function."""
-        if self.connected_client:
+        if self.connected_client and self.connected_client.is_connected() :
 
             self.paused = False
             self.ms_displayed = -1
@@ -77,7 +77,7 @@ class Player:
             # Apply player volume to the audio source
             audio.volume = self.volume/100
 
-            if self.connected_client.is_connected() and self.connected_client.is_playing():
+            if self.connected_client.is_playing():
                 self.connected_client.source = audio
             else:
                 self.connected_client.play(source = audio, after=self.on_finished)
@@ -123,7 +123,7 @@ class Player:
             self.volume += 10
             await self.update_player_embed()
 
-        if self.connected_client and self.connected_client.is_connected():
+        if self.connected_client and self.connected_client.source and self.connected_client.is_connected():
             self.connected_client.source.volume = self.volume/100
         
 
@@ -133,7 +133,7 @@ class Player:
             self.volume -= 10
             await self.update_player_embed()
 
-        if self.connected_client and self.connected_client.is_connected():
+        if self.connected_client and self.connected_client.source and self.connected_client.is_connected():
             self.connected_client.source.volume = self.volume/100
 
 
@@ -251,7 +251,6 @@ class Player:
             audio = MusicSource(raw_audio_source, info = video_info, volume= self.volume/100)
 
             self.queue.add(audio)
-            await self.update_queue_embed()
 
             # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
             if not self.connected_client.is_playing() and not self.connected_client.is_paused():
@@ -260,6 +259,7 @@ class Player:
                 else:
                     self.next()
             
+            await self.update_queue_embed()
             @audio.event
             def on_read(ms, non_music):
                 self.on_read(ms, non_music)
