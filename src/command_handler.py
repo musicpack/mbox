@@ -119,9 +119,12 @@ async def shuffle_player(context: MusicBoxContext) -> str:
     if context.name == "shuffle":
         p_client = get_player_client(context)
 
-        if p_client: 
-            await context.profile.player.shuffle()
-            return "Shuffled Player"
+        if p_client:
+            try:
+                await context.profile.player.shuffle()
+                return "Shuffled Player"
+            except IndexError:
+                return 'No songs to shuffle.'
         return 'Player is not connected'
     
     logging.error('Context name is not shuffle. Cannot shuffle player')
