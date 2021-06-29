@@ -1,8 +1,3 @@
-## Status
-**READY/IN DEVELOPMENT/HOLD**
- - [ ] Ready
- - [ ] In development
- - [ ] Hold
 
 ## Closes issue(s)
 A list of issues that are closed by this PR
