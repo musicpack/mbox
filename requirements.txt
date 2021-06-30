@@ -1,4 +1,4 @@
-discord-py-slash-command==1.2.2
+discord-py-slash-command==2.0.4
 discord.py>=1.6.0
 requests>=2.25.0
 youtube-search>=1.1.1
@@ -8,4 +8,3 @@ youtube-dl==2021.4.17
 python-dotenv==0.17.1
 autopep8==1.5.7
 rsa==4.7.2
-discord-components==0.5.3

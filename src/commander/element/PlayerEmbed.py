@@ -116,7 +116,7 @@ class PlayerEmbed(Embed):
     
     def get_volume(self) -> str:
         """Gets a string formated volume value. Primarly for footer text."""
-        if self.volume:
+        if self.volume != None:
             emoji = '🔊'
             if self.volume <= 0:
                 emoji = '🔇'
