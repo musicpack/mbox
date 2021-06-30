@@ -135,3 +135,4 @@ config.ini
 
 # VSCode
 .vscode/
+.devcontainer/
