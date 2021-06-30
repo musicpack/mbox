@@ -64,75 +64,13 @@
     "placementConstraints": [],
     "memory": null,
     "taskRoleArn": null,
-    "compatibilities": [
-      "EC2"
-    ],
-    "taskDefinitionArn": "arn:aws:ecs:us-east-2:732417336461:task-definition/run-bot:8",
     "family": "run-bot",
-    "requiresAttributes": [
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "ecs.capability.execution-role-awslogs"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "com.amazonaws.ecs.capability.ecr-auth"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "ecs.capability.docker-plugin.local"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.25"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "ecs.capability.execution-role-ecr-pull"
-      },
-      {
-        "targetId": null,
-        "targetType": null,
-        "value": null,
-        "name": "ecs.capability.secrets.ssm.environment-variables"
-      }
-    ],
     "pidMode": null,
     "requiresCompatibilities": [
       "EC2"
     ],
     "networkMode": null,
     "cpu": null,
-    "revision": 8,
-    "status": "ACTIVE",
     "inferenceAccelerators": null,
     "proxyConfiguration": null,
     "volumes": [
@@ -144,7 +82,7 @@
         "dockerVolumeConfiguration": {
           "autoprovision": true,
           "labels": null,
-          "scope": "shared",
+          "scope": "task",
           "driver": "local",
           "driverOpts": null
         }
