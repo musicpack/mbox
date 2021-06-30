@@ -80,7 +80,6 @@
         "name": "mbox-db",
         "host": null,
         "dockerVolumeConfiguration": {
-          "autoprovision": true,
           "labels": null,
           "scope": "task",
           "driver": "local",
