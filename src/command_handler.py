@@ -44,7 +44,11 @@ async def play_index(context: MusicBoxContext):
 
 
 async def player_prev(context: MusicBoxContext):
-    if context.name == "prev" or context.name == "back":
+    if (
+        context.name == "prev"
+        or context.name == "back"
+        or context.name == "prev_button"
+    ):
         p_client = get_player_client(context)
 
         if p_client:
@@ -58,7 +62,11 @@ async def player_prev(context: MusicBoxContext):
 
 
 async def player_next(context: MusicBoxContext):
-    if context.name == "skip" or context.name == "next":
+    if (
+        context.name == "skip"
+        or context.name == "next"
+        or context.name == "next_button"
+    ):
         p_client = get_player_client(context)
 
         if p_client:
@@ -77,7 +85,7 @@ async def pause_player(context: MusicBoxContext) -> str:
 
         if p_client:
             if not p_client.is_paused():
-                context.profile.player.pause()
+                await context.profile.player.on_play_pause()
                 return "Paused player"
             return "Player is already paused"
         return "Player not connected"
@@ -91,7 +99,7 @@ async def resume_player(context: MusicBoxContext) -> str:
 
         if p_client:
             if p_client.is_paused():
-                context.profile.player.resume()
+                await context.profile.player.on_play_pause()
                 return "Resumed player"
             return "Player is already playing"
         return "Player not connected"
@@ -136,8 +144,35 @@ async def shuffle_player(context: MusicBoxContext) -> str:
         p_client = get_player_client(context)
 
         if p_client:
-            await context.profile.player.shuffle()
-            return "Shuffled Player"
+            try:
+                await context.profile.player.shuffle()
+                return "Shuffled Player"
+            except IndexError:
+                return "No songs to shuffle."
         return "Player is not connected"
 
     logging.error("Context name is not shuffle. Cannot shuffle player")
+
+
+async def lower_volume(context: MusicBoxContext) -> str:
+    if context.name == "volume_down_button":
+        await context.profile.player.lower_volume()
+        return "Volume decreased"
+
+    logging.error("Context name is not lower_volume. Cannot lower_volume")
+
+
+async def raise_volume(context: MusicBoxContext) -> str:
+    if context.name == "volume_up_button":
+        await context.profile.player.raise_volume()
+        return "Volume increased"
+
+    logging.error("Context name is not raise_volume. Cannot raise_volume")
+
+
+async def play_pause(context: MusicBoxContext) -> str:
+    if context.name == "play_pause_button":
+        await context.profile.player.on_play_pause()
+        return "Player toggled"
+
+    logging.error("Context name is not play_pause. Cannot play_pause")

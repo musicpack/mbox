@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord_slash import SlashContext, cog_ext
+from discord_slash import ComponentContext, SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
 import src.command_handler as handle
@@ -115,6 +115,41 @@ class MusicController(commands.Cog):
     )
     async def _shuffle(self, ctx: SlashContext):
         await self.process_slash_command(ctx, handle.shuffle_player)
+
+    async def process_button(self, ctx: ComponentContext, f):
+        for profile in profiles:
+            if profile.guild == ctx.guild:
+                mbox_ctx = MusicBoxContext(
+                    prefix="",
+                    profile=profile,
+                    name=ctx.custom_id,
+                    slash_context=None,
+                    message=None,
+                    args=None,
+                    kwargs=None,
+                )
+                await f(mbox_ctx)
+                await ctx.edit_origin()
+
+    @cog_ext.cog_component()
+    async def prev_button(self, ctx: ComponentContext):
+        await self.process_button(ctx, handle.player_prev)
+
+    @cog_ext.cog_component()
+    async def play_pause_button(self, ctx: ComponentContext):
+        await self.process_button(ctx, handle.play_pause)
+
+    @cog_ext.cog_component()
+    async def next_button(self, ctx: ComponentContext):
+        await self.process_button(ctx, handle.player_next)
+
+    @cog_ext.cog_component()
+    async def volume_down_button(self, ctx: ComponentContext):
+        await self.process_button(ctx, handle.lower_volume)
+
+    @cog_ext.cog_component()
+    async def volume_up_button(self, ctx: ComponentContext):
+        await self.process_button(ctx, handle.raise_volume)
 
 
 def setup(bot):
