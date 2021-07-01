@@ -2,7 +2,7 @@ import logging
 import re
 
 from src.search import youtube, youtube_music
-from src.command_handler import play_ytid
+from src.command_handler import play_ytid, logout, pubkey, genkey
 from src.element.MusicBoxContext import MusicBoxContext
 
 YTRE = '(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\n\\s]+\\/\\S+\\/|(?:v|vi|e(?:mbed)?)\\/|\\S*?[?&]v=|\\S*?[?&]vi=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})'
@@ -43,4 +43,24 @@ async def parse(context: MusicBoxContext) -> str:
                     return f"Could not find a video named: {user_input}"
                 else:
                     return f"Could not find a song named: {user_input}"
+
+    elif context.name == 'admin':
+        if context.args[0] == 'stop':
+            await logout(context=context)
+            return
+        elif context.args[0] == 'genkey':
+            await genkey(context=context)
+            return
+        elif context.args[0] == 'pubkey':
+            await pubkey(context=context)
+            return
+    
+    elif context.name == 'dm':
+        if context.args[0] == 'genkey':
+            await genkey(context=context)
+            return
+        elif context.args[0] == 'pubkey':
+            await pubkey(context=context)
+            return
+
     return "Unknown commmand"

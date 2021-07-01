@@ -1,5 +1,7 @@
 
 import logging
+import discord
+from base64 import b64encode
 from discord.voice_client import VoiceClient
 from src.element.MusicBoxContext import MusicBoxContext
 
@@ -22,33 +24,45 @@ def get_player_client(context: MusicBoxContext) -> VoiceClient:
         if context.profile.player.connected_client.is_connected():
             return context.profile.player.connected_client
 
+async def play_index(context: MusicBoxContext):
+    if context.name == "play":
+        p_client = get_player_client(context)
+        index = context.args[0]
+
+        if p_client:
+            result = context.profile.player.get_by_index(int(index)-1)
+            if result:
+                return "Playing the selected song from the queue."
+            return "Given index doesn't exist"
+        return 'Player not connected.'
+    
+    logging.error('Context name play does not match function.')
+
 async def player_prev(context: MusicBoxContext):
-    if context.name == 'prev' or context.name == 'back':
+    if context.name == 'prev' or context.name == 'back' or context.name == 'prev_button':
         p_client = get_player_client(context)
         
         if p_client:
             result = context.profile.player.last()
             if result:
                 return 'Playing previous song.'
-            else:
-                return 'No more songs to go back.'
+            return 'No more songs to go back.'
         return 'Player not connected.'
-    else:
-        logging.error('Context name prev/back does not match function.')
+    
+    logging.error('Context name prev/back does not match function.')
 
 async def player_next(context: MusicBoxContext):
-    if context.name == 'skip' or context.name == 'next':
+    if context.name == 'skip' or context.name == 'next' or context.name == 'next_button':
         p_client = get_player_client(context)
         
         if p_client:
             result = context.profile.player.next()
             if result:
                 return 'Playing next song.'
-            else:
-                return 'Skipped. No more music to play.'
+            return 'Skipped. No more music to play.'
         return 'Player not connected.'
-    else:
-        logging.error('Context name next/skip does not match function.')
+    
+    logging.error('Context name next/skip does not match function.')
 
 async def pause_player(context: MusicBoxContext) -> str:
     if context.name == 'pause':
@@ -56,13 +70,12 @@ async def pause_player(context: MusicBoxContext) -> str:
         
         if p_client:
             if not p_client.is_paused():
-                await context.profile.player.play_pause()  
+                await context.profile.player.on_play_pause()  
                 return 'Paused player'
-            else:
-                return 'Player is already paused'
+            return 'Player is already paused'
         return 'Player not connected'
-    else:
-        logging.error('Context name is not pause. Cannot pause player')
+    
+    logging.error('Context name is not pause. Cannot pause player')
 
 async def resume_player(context: MusicBoxContext) -> str:
     if context.name == 'play':
@@ -70,10 +83,69 @@ async def resume_player(context: MusicBoxContext) -> str:
         
         if p_client:
             if p_client.is_paused():
-                await context.profile.player.play_pause()  
+                await context.profile.player.on_play_pause()  
                 return 'Resumed player'
-            else:
-                return 'Player is already playing'
+            return 'Player is already playing'
         return 'Player not connected'
     else:
         logging.error('Context name is not play. Cannot resume player')
+
+async def pubkey(context: MusicBoxContext) -> str:
+    logging.info('Received pubkey from {0.name}'.format(context.message.author))
+
+    # save public key in a base 64 encoded string
+    pubkey_64 = b64encode(context.crypto.pubkey.save_pkcs1()).decode("utf-8")
+    with open('mbox_public.key', 'r') as f:
+        await context.message.reply(content= pubkey_64, file=discord.File(f))
+        f.close()
+    return
+
+async def genkey(context: MusicBoxContext) -> None:
+    if len(context.args) > 2:
+        try:
+            b64_encrypted_str = context.crypto.encrypt_token_x(context.args[1], context.args[2])
+            await context.message.reply(content=b64_encrypted_str)
+        except Exception as e:
+            await context.message.reply(content=str(e))
+        return
+
+async def logout(context: MusicBoxContext) -> None:
+    # TODO: add cleanup code and warnings to all profiles playing a song now.
+    await context.bot.logout()
+    
+    logging.error('Context name is not play. Cannot resume player')
+    
+async def shuffle_player(context: MusicBoxContext) -> str:
+    if context.name == "shuffle":
+        p_client = get_player_client(context)
+
+        if p_client:
+            try:
+                await context.profile.player.shuffle()
+                return "Shuffled Player"
+            except IndexError:
+                return 'No songs to shuffle.'
+        return 'Player is not connected'
+    
+    logging.error('Context name is not shuffle. Cannot shuffle player')
+
+async def lower_volume(context: MusicBoxContext) -> str:
+    if context.name == "volume_down_button":
+        await context.profile.player.lower_volume()
+        return 'Volume decreased'
+
+    logging.error('Context name is not lower_volume. Cannot lower_volume')
+
+async def raise_volume(context: MusicBoxContext) -> str:
+    if context.name == "volume_up_button":
+        await context.profile.player.raise_volume()
+        return 'Volume increased'
+        
+    logging.error('Context name is not raise_volume. Cannot raise_volume')
+
+async def play_pause(context: MusicBoxContext) -> str:
+    if context.name == "play_pause_button":
+        await context.profile.player.on_play_pause()
+        return 'Player toggled'
+        
+    logging.error('Context name is not play_pause. Cannot play_pause')

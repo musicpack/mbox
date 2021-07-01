@@ -88,6 +88,7 @@ async def generate_profiles(guilds: List[Guild], client: Client, profiles: List[
             await validated_channel.delete()
             validated_channel = create_command_channel(guild = server)
         finally:
+            await fix_topic(validated_channel)
             profiles.append(Profile(guild = server, command_channel = validated_channel, client = client))
     
     return profiles
