@@ -35,7 +35,10 @@ async def parse(context: MusicBoxContext) -> str:
         or context.name == "play"
         or context.name == "youtube"
     ):
-        user_input = " ".join(context.args)
+        if context.slash_context:
+            user_input = context.slash_context.data['options'][0]['value']
+        else:
+            user_input = " ".join(context.args)
 
         match = YOUTUBE_ID_REGEX.findall(user_input)
         if match:
