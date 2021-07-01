@@ -36,7 +36,7 @@ async def parse(context: MusicBoxContext) -> str:
         or context.name == "youtube"
     ):
         if context.slash_context:
-            user_input = context.slash_context.data['options'][0]['value']
+            user_input = context.slash_context.data["options"][0]["value"]
         else:
             user_input = " ".join(context.args)
 
