@@ -1,0 +1,5 @@
+[flake8]
+exclude = .git,__pycache__,.venv,sample_ytdl_output.py
+ignore= E266,E501,E203,W503
+per-file-ignores =
+    tests/*: E711,E712

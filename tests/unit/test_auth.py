@@ -1,9 +1,11 @@
-import src.auth
+import os
+import time
+
 import pytest
 import rsa
-import os
-import base64
-import time
+
+import src.auth
+
 
 class Test_Crypto:
     def test_init(self):
@@ -49,34 +51,36 @@ class Test_Crypto:
         assert crypto.only_one_exists(pubkey, privkey) == False
 
     def test_load_keys(self):
-        pubkey_path = 'temp_testing_pubkey'
-        privkey_path = 'temp_testing_privkey'
+        pubkey_path = "temp_testing_pubkey"
+        privkey_path = "temp_testing_privkey"
         # generate temporary key files
         pubkey, privkey = rsa.newkeys(1024)
 
         # save to temp
-        f = open(pubkey_path, 'wb')
+        f = open(pubkey_path, "wb")
         f.write(pubkey.save_pkcs1())
         f.close()
 
-        f = open(privkey_path, 'wb')
+        f = open(privkey_path, "wb")
         f.write(privkey.save_pkcs1())
         f.close()
 
         try:
             # load the files to class
             crypto = src.auth.Crypto()
-            crypto.load_keys(pubkey_path=pubkey_path, privkey_path=privkey_path)
+            crypto.load_keys(
+                pubkey_path=pubkey_path, privkey_path=privkey_path
+            )
 
             # verify that keys were loaded
             crypto.pubkey = pubkey
             crypto.privkey = privkey
 
-        finally: # regardless of test results, delete the test files
+        finally:  # regardless of test results, delete the test files
             # delete test files
             os.remove(pubkey_path)
             os.remove(privkey_path)
-    
+
     def test_generate_keys(self):
         pubkey, privkey = rsa.newkeys(1024)
         crypto = src.auth.Crypto(pubkey, privkey)
@@ -103,56 +107,56 @@ class Test_Crypto:
         pubkey, privkey = rsa.newkeys(1024)
         crypto = src.auth.Crypto(pubkey, privkey)
 
-        pubkey_path = 'temp_testing_pubkey'
-        privkey_path = 'temp_testing_privkey'
+        pubkey_path = "temp_testing_pubkey"
+        privkey_path = "temp_testing_privkey"
         crypto.save_keys(pubkey_path, privkey_path)
 
-        try: 
-            with open(pubkey_path, 'r') as f:
+        try:
+            with open(pubkey_path, "r") as f:
                 pubkey_from_file = rsa.PublicKey.load_pkcs1(f.read())
                 f.close()
 
-            with open(privkey_path, 'r') as f:
+            with open(privkey_path, "r") as f:
                 privkey_from_file = rsa.PrivateKey.load_pkcs1(f.read())
                 f.close()
-            
+
             assert pubkey == pubkey_from_file
             assert privkey == privkey_from_file
-        finally: # regardless of test results, delete the test files
+        finally:  # regardless of test results, delete the test files
             os.remove(pubkey_path)
             os.remove(privkey_path)
-        
+
         # generate keys and save them, check for generated key equality with files
         crypto = src.auth.Crypto()
-        pubkey_path = 'temp_testing_pubkey'
-        privkey_path = 'temp_testing_privkey'
-        
+        pubkey_path = "temp_testing_pubkey"
+        privkey_path = "temp_testing_privkey"
+
         pubkey, privkey = crypto.generate_keys()
 
         crypto.save_keys(pubkey_path, privkey_path)
 
-        try: 
-            with open(pubkey_path, 'r') as f:
+        try:
+            with open(pubkey_path, "r") as f:
                 pubkey_from_file = rsa.PublicKey.load_pkcs1(f.read())
                 f.close()
 
-            with open(privkey_path, 'r') as f:
+            with open(privkey_path, "r") as f:
                 privkey_from_file = rsa.PrivateKey.load_pkcs1(f.read())
                 f.close()
-            
+
             assert pubkey == pubkey_from_file
             assert privkey == privkey_from_file
-        finally: # regardless of test results, delete the test files
+        finally:  # regardless of test results, delete the test files
             os.remove(pubkey_path)
             os.remove(privkey_path)
 
     def test_encrypt_decrypt(self):
         # test if function outputs the correct token
-        token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        token = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         pubkey, privkey = rsa.newkeys(1024)
         crypto = src.auth.Crypto(pubkey, privkey)
 
-        encryped_token  = crypto.encrypt_token_time(token)
+        encryped_token = crypto.encrypt_token_time(token)
         approximated_time = int(time.time())
 
         decrypt_token, decrypt_time = crypto.decrypt_token_x(encryped_token)
