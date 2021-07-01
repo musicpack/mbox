@@ -134,5 +134,4 @@ config.ini
 *.key
 
 # VSCode
-.vscode/
 .devcontainer/
