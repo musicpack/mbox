@@ -15,7 +15,7 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: <https
 
 ## Setup/Installation
 
-1. Install required software.  
+1. Install required software.
     - Install Python 3.7 or greater from <https://www.python.org/>
     - If you do not already Git install, install Git from [git-scm.](https://git-scm.com)
 
