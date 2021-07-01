@@ -1,5 +1,7 @@
 from typing import Tuple
+
 from ytmusicapi import YTMusic
+
 
 def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
     """Gets lyrics (if exists) given the youtube id.
@@ -8,9 +10,9 @@ def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
     # TODO: Make more efficent use of watch_playlist
     watch_playlist = ytmusic.get_watch_playlist(videoId=youtube_id)
 
-    browse_id = watch_playlist['lyrics']
+    browse_id = watch_playlist["lyrics"]
     if browse_id:
         result = ytmusic.get_lyrics(browse_id)
-        return result['lyrics'], result['source']
+        return result["lyrics"], result["source"]
 
     return None, None
