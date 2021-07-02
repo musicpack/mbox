@@ -68,4 +68,3 @@ jobs:
         source .venv/bin/activate
         python -m pytest tests/unit
         python -m pytest tests/integration
-        

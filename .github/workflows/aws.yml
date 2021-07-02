@@ -73,7 +73,7 @@ jobs:
         webhook_url: ${{ secrets.webhook_url }}
         pubkey: ${{ secrets.pubkey }}
       run: |
-        python webhook_messenger.py stop 
+        python webhook_messenger.py stop
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
