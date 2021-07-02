@@ -31,7 +31,7 @@ def get_player_client(context: MusicBoxContext) -> VoiceClient:
 async def play_index(context: MusicBoxContext):
     if context.name == "play":
         p_client = get_player_client(context)
-        index = context.args[0]
+        index = int(context.slash_context.data["options"][0]["value"])
 
         if p_client:
             result = context.profile.player.get_by_index(int(index) - 1)
