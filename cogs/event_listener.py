@@ -23,8 +23,6 @@ dynamoDB = dynamodb.Dynamodb()
 class EventListener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild_items = []
-
         # Generate a rsa keychain
         self.crypto = Crypto()
 
@@ -50,12 +48,20 @@ class EventListener(commands.Cog):
         if message.author == bot.user:
             return
 
-        # Retreve guild item from database using guild id
-        if(not self.guild_items):
-            get_response: dict = dynamoDB.retrieve_guild_item(self.bot.id),
-            self.guild_items.append(get_response['application_id'])
-            logging.info(f'printing get response from dynamo: {get_response}')
+        # check if item already exists in memory 
+        requested_item = dynamoDB.guild_item_exists_in_memory(self.bot.user.id)
 
+        # Retreve guild item from database using application id if item does not exists in memory
+        if(not requested_item):
+            get_response: dict = dynamoDB.retrieve_guild_item(self.bot.user.id),
+            logging.info(f'printing get response from dynamo: {get_response}')
+        else:
+            logging.info("getting info from in memory object")
+            logging.info(f'Object in memory: {requested_item}')
+
+
+        #TODO: still using profiles right now (will be removed once MusicBoxContext is refactored)
+        
         # Check which profile the message relates to
         for profile in profiles:
             if profile.guild == message.guild:
@@ -131,7 +137,7 @@ class EventListener(commands.Cog):
     async def on_guild_join(self, guild: discord.Guild):
 
         # Adding guild item to database first time bot joins server
-        put_response: dict = dynamoDB.store_guild_item(self.bot.id , guild.id,)
+        put_response: dict = dynamoDB.store_guild_item(self.bot.user.id , guild.id,)
         logging.info(f'Printing response from Dynamo: {put_response}')
         logging.info(f'Joined Server: {guild.name}')
         await guild.text_channels[0].send('Thanks for adding Music Bot!')
@@ -140,7 +146,7 @@ class EventListener(commands.Cog):
     async def on_guild_remove(self, guild):
 
         #Remove guild item from database
-        delete_response: dict = dynamoDB.delete_guild_item(self.bot.id)
+        delete_response: dict = dynamoDB.delete_guild_item(self.bot.user.id)
         logging.info(f'Printing response from Dynamo: {delete_response}')
         logging.info('Removed from Server: {0.name}'.format(guild))
 

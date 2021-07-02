@@ -8,6 +8,7 @@ class Dynamodb:
         dynamodb = boto3.resource(
             service_name='dynamodb', region_name="us-east-2")
         self.table = dynamodb.Table('music-box-db')
+        self.guild_items = []
 
     def store_guild_item(self, application_id: int, guild_id: int) -> dict:
         """Takes in a application id as the primary key and creates an object for the guild in dynamodb
@@ -19,15 +20,6 @@ class Dynamodb:
         Returns:
             dict: The response object indicating the status of the request
         """
-        # response = self.table.put_item(
-        #     Item={
-        #         'guild_channel+application_id': str(guild_id) + "_" + application_id,
-        #         'command_channel_id': "",
-        #         'admin_channel_id': "",
-        #         'webhook_message_url': ""
-        #     }
-        # )
-
         response = self.table.put_item(
             Item={
                 'application_id': application_id,
@@ -47,6 +39,7 @@ class Dynamodb:
         Returns:
             dict: The record object containing the data associated with a application id
         """
+        logging.info(application_id)
         try:
             response = self.table.get_item(
                 Key={
@@ -58,6 +51,7 @@ class Dynamodb:
         except ClientError as e:
             print(e.response['Error']['Message'])
         else:
+            self.guild_items.append(response['Item'])
             return response['Item']
 
     def delete_guild_item(self, application_id: int) -> dict:
@@ -80,3 +74,18 @@ class Dynamodb:
             raise e
         else:
             return response
+    
+    def guild_item_exists_in_memory(self, application_id: int) -> dict:
+        """If we have already retrieved an item before through a call to the database, this method will return that item
+
+        Args:
+            application_id (int): the application id of the bot
+
+        Returns:
+            dict: returns the object information in memory associated with the application id
+        """
+        for item in self.guild_items:
+            logging.info(item["application_id"])
+            if(item["application_id"] == application_id):
+                return item
+        
