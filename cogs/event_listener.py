@@ -171,7 +171,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await src.preinitialization.generate_music_context(
+        await src.preinitialization.generate_profiles(
             bot.guilds, self.bot, profiles
         )
         for profile in profiles:
