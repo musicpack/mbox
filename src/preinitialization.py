@@ -7,7 +7,7 @@ from discord.client import Client
 from src.element.profile import Profile
 from src.constants import VERSION
 
-
+#remove
 def valid_channels(guild: Guild):
     verified_channels = 0
     hashed_channel = []
@@ -19,9 +19,11 @@ def valid_channels(guild: Guild):
                 hashed_channel.append(channel)
     return hashed_channel
 
+#move
 def get_expected_topic(text_channel: TextChannel) -> str:
     return f'Music Box controlled channel. Chat in this channel will be deleted. Version {VERSION} {str(hash(text_channel))}'
 
+#move
 async def fix_topic(text_channel: TextChannel) -> None:
     """Update topic if out of date or malformed"""
     expected_topic = get_expected_topic(text_channel)
@@ -29,11 +31,13 @@ async def fix_topic(text_channel: TextChannel) -> None:
     if text_channel.topic != expected_topic:
         await text_channel.edit(topic=expected_topic)
 
+#refactor 
 async def create_command_channel(guild: Guild) -> TextChannel:
     music_box = await guild.create_text_channel(name='music-box')
     await music_box.edit(topic=get_expected_topic(music_box))
     return music_box
 
+#remove 
 async def fix_duplicate_command_channels(guild: Guild, channels: List[TextChannel]) -> TextChannel:
     logging.debug(f'Guild [{guild}] has too many valid channels. Sending request to fix.')
     for channel in channels:
@@ -41,6 +45,7 @@ async def fix_duplicate_command_channels(guild: Guild, channels: List[TextChanne
 
     return await create_command_channel(guild)
 
+#refactor
 async def clean_chat(text_channel: TextChannel) -> None:
     """
     Removes all messages in the command channel to prepare for sending a gui.
@@ -68,7 +73,7 @@ async def clean_chat(text_channel: TextChannel) -> None:
     logging.info(f'deleted_messages: {str(len(text_channel_messages))}')
     await text_channel.delete_messages(text_channel_messages)
 
-
+#remove
 async def generate_profiles(guilds: List[Guild], client: Client, profiles: List[Profile]) -> None:
     for server in guilds:
         channel_list = valid_channels(server)
@@ -90,5 +95,4 @@ async def generate_profiles(guilds: List[Guild], client: Client, profiles: List[
         finally:
             await fix_topic(validated_channel)
             profiles.append(Profile(guild = server, command_channel = validated_channel, client = client))
-    
     return profiles

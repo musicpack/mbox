@@ -113,6 +113,7 @@ class MusicBoxContext(Context):
 
         return None
 
+    #refactor
     def get_guild(self) -> discord.Guild:
         if self.profile:
             return self.profile.guild
@@ -128,6 +129,7 @@ class MusicBoxContext(Context):
             raise Exception('slash_context and prefix values do not line up')
         return True
 
+    #refactor
     def determine_voice_channel(self) -> discord.VoiceChannel:
         """Tries to determine the voice channel to connect the player given context.
 

@@ -4,7 +4,6 @@ from discord_slash.utils.manage_commands import create_option
 from requests.models import guess_filename
 from src.parser import parse
 import src.command_handler as handle
-import src.element.profile
 from src.constants import *
 from config import GUILD_ID
 from src.element.MusicBoxContext import MusicBoxContext
