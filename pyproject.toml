@@ -7,7 +7,7 @@ license = "n"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-discord-py-slash-command = "2.0.4"
+discord-py-slash-command = "2.2.0"
 "discord.py" = ">=1.6.0"
 requests = ">=2.25.0"
 youtube-search = ">=1.1.1"
@@ -23,6 +23,7 @@ pytest-xprocess = "^0.17.1"
 flake8 = "^3.9.2"
 black = "^21.6b0"
 isort = "^5.9.1"
+pre-commit = "^2.13.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
