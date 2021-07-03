@@ -9,14 +9,14 @@ from config import TOKEN
 from main import bot, logging
 from src.auth import Auth, Crypto
 from src.command_handler import play_ytid
-from src.element.dynamodb import Dynamodb
+from src.element.database import DynamoDB
 from src.element.MusicBoxContext import MusicBoxContext
 from src.parser import parse
 
 COMMAND_CHANNEL_WARNING = "Accepted command."
 watching_channels = []
 profiles: List[src.element.profile.Profile] = []
-dynamoDB = Dynamodb()
+dynamoDB = DynamoDB()
 
 
 class EventListener(commands.Cog):

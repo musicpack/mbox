@@ -4,7 +4,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 
-class Dynamodb:
+class DynamoDB:
     def __init__(self):
         dynamodb = boto3.resource(
             service_name="dynamodb", region_name="us-east-2"
