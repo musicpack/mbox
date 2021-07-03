@@ -85,6 +85,7 @@ async def clean_chat(text_channel: TextChannel) -> None:
     await text_channel.delete_messages(text_channel_messages)
 
 
+#TODO we dont need this, but need to emulate the functionality of this method 
 async def generate_profiles(
     guilds: List[Guild], client: Client, profiles: List[Profile]
 ) -> None:
