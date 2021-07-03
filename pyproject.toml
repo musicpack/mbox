@@ -7,7 +7,7 @@ license = "n"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-discord-py-slash-command = "2.0.4"
+discord-py-slash-command = "2.2.0"
 "discord.py" = ">=1.6.0"
 requests = ">=2.25.0"
 youtube-search = ">=1.1.1"
