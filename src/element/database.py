@@ -1,88 +1,185 @@
-import logging
+from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass
+from typing import Dict, List
 
 import boto3
-from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 
 
-class DynamoDB:
-    def __init__(self):
+@dataclass
+class Record:
+    """Holds all attributes for one guild in the database.
+
+    Similar to the deprecated profile object.
+    """
+
+    guild_id: int = None
+    command_channel_id: int = None
+    admin_channel_id: int = None
+    volume: int = 50
+    webhook_message_url: str = None
+    webhook_message_id: str = None
+
+
+class Database(ABC):
+    """An Abstract Base Classes (ABCs) that details functions needed in a database implementation"""
+
+    @abstractmethod
+    def is_command_channel(self, channel_id: int) -> bool:
+        """Checks if a command_channel exists in the database.
+
+        If a channel_id record provided exists in the database,
+        it is assumed that a command_channel is registered and functional.
+
+        Args:
+            channel_id (int): discord.TextChannel.id
+
+        Returns:
+            bool: True/False if entry exists/not exist
+        """
+        pass
+
+    @abstractmethod
+    def get_command_channel(self, guild_id: int) -> int:
+        """Gets the command_channel_id based on guild_id.
+
+        Args:
+            guild_id (int): discord.guild.id integer
+
+        Returns:
+            int: command channel id in the database
+        """
+        pass
+
+
+class DynamoDB(Database):
+    def __init__(self, application_id: int):
         dynamodb = boto3.resource(
             service_name="dynamodb", region_name="us-east-2"
         )
         self.table = dynamodb.Table("music-box-db")
+        self.application_id: int = application_id
+        self.record_cache: Dict[int, Record] = {}  # dict{guild_id, record}
         self.guild_items = []
 
-    def store_guild_item(self, application_id: int, guild_id: int) -> dict:
-        """Takes in a application id as the primary key and creates an object for the guild in dynamodb
+    def cache_record(self, record: Record) -> None:
+        """Stores the record in the internal cache.
+
+        Updates Record if different then what is stored.
 
         Args:
-            application_id (int): The id of the bot/application
-            guild_id (int): The id of the guild/server that the bot is in
+            record (Record): Latest, up to date Record object
+        """
+        self.record_cache[record.guild_id] = record
+
+    def parse_record_response(self, guild_id: int, response: dict) -> Record:
+        """Parses a specific responce when called with a composite key (primary + sort)
+
+        Args:
+            guild_id (int): guild_id that was called
+            response (dict): responce from aws
 
         Returns:
-            dict: The response object indicating the status of the request
+            Record: resulting record object
         """
-        response = self.table.put_item(
-            Item={
-                "application_id": application_id,
-                "guild_id": guild_id,
-                "volume_level": 50,
-            }
-        )
-        logging.info("Saved information to dynamo table")
+        kwargs = {key: value for key, value in response["Item"].items()}
+        return Record(guild_id=guild_id, **kwargs)
+
+    def store_record(self, record: Record) -> dict:
+        """Stores the record in the remote database
+
+        Args:
+            record (Record): record to store
+
+        Returns:
+            dict: responce from AWS
+        """
+        self.cache_record(record)
+        response = self.table.put_item(Item=asdict(record))
         return response
 
-    def retrieve_guild_item(self, application_id: int) -> dict:
-        """Returns the DynamoDb record based on the application id provided
+    def get_record(self, guild_id: int) -> Record:
+        """Gets a record in the database by using the sort key.
+
+        If the record does not exist in cache, call the db and save that record to the internal cache.
 
         Args:
-            guild_id (int): The id of the guild/server that the bot is in
+            guild_id (int): sort key
 
         Returns:
-            dict: The record object containing the data associated with a application id
+            Record: Resulting data from database.
         """
-        logging.info(application_id)
-        try:
+        if guild_id in self.record_cache:
+            return self.record_cache[guild_id]
+        else:
             response = self.table.get_item(
-                Key={"application_id": application_id}
+                Key={
+                    "application_id": self.application_id,
+                    "guild_id": guild_id,
+                }
             )
-            logging.info("retrieved information from dynamo table")
+            record = self.parse_record_response(
+                guild_id=guild_id, response=response
+            )
+            self.cache_record(record)
+            return record
 
-        except ClientError as e:
-            print(e.response["Error"]["Message"])
-        else:
-            self.guild_items.append(response["Item"])
-            return response["Item"]
-
-    def delete_guild_item(self, application_id: int) -> dict:
-        """Deletes the DynamoDb record based on the application id provided
-
-        Args:
-            application_id (int): The id of the application/bot
+    def get_all_records(self) -> List[Record]:
+        """Grabs all entries based on primary key.
 
         Returns:
-            dict: The response object indicating the status of the request as well as the info about the item deleted
+            List[Record]: All records in the database based on application_id
         """
-        try:
-            response = self.table.delete_item(
-                Key={"application_id": application_id}
+        record_list = []
+        response = self.table.query(
+            KeyConditionExpression=Key("application_id").eq(
+                self.application_id
+            )
+        )
+        for raw_guild_response in response["Item"]:
+            # TODO change pseudocode query below to functional query
+            record = self.parse_record_response(
+                guild_id=raw_guild_response["guild_id"],
+                response=raw_guild_response["guild_id"].items(),
             )
 
-        except ClientError as e:
-            raise e
-        else:
-            return response
+            self.cache_record(record)
+            record_list.append(record)
 
-    def guild_item_exists_in_memory(self, application_id: int) -> dict:
-        """If we have already retrieved an item before through a call to the database, this method will return that item
+        return record_list
+
+    def is_command_channel(self, channel_id: int) -> bool:
+        """Checks if a command_channel exists in the database.
+
+        If a channel_id record provided exists in the database,
+        it is assumed that a command_channel is registered and functional.
 
         Args:
-            application_id (int): the application id of the bot
+            channel_id (int): discord.TextChannel.id
 
         Returns:
-            dict: returns the object information in memory associated with the application id
+            bool: True/False if entry exists/not exist
         """
-        for item in self.guild_items:
-            logging.info(item["application_id"])
-            if item["application_id"] == application_id:
-                return item
+        # Check the cache before calling dynamodb
+        for record in self.record_cache.values():
+            if record.command_channel_id == channel_id:
+                return True
+
+        # Call the db and find the channel_id from all the records
+        for record in self.get_all_records():
+            if record.command_channel_id == channel_id:
+                return True
+
+        return False
+
+    def get_command_channel(self, guild_id: int) -> int:
+        """Gets the command_channel_id based on guild_id.
+
+        Args:
+            guild_id (int): discord.guild.id integer
+
+        Returns:
+            int: command channel id in the database
+        """
+        record = self.get_record(guild_id=guild_id)
+        return record.command_channel_id
