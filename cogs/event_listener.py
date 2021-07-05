@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import Union
 
 import discord
 from discord.ext import commands
@@ -9,19 +9,19 @@ from config import TOKEN
 from main import bot, logging
 from src.auth import Auth, Crypto
 from src.command_handler import play_ytid
-from src.element.database import DynamoDB
+from src.element.database import DynamoDB, Record
 from src.element.MusicBoxContext import MusicBoxContext
 from src.parser import parse
 
 COMMAND_CHANNEL_WARNING = "Accepted command."
 watching_channels = []
-profiles: List[src.element.profile.Profile] = []
-dynamoDB = DynamoDB()
+profiles = []
 
 
 class EventListener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.dynamoDB = None
         # Generate a rsa keychain
         self.crypto = Crypto()
 
@@ -48,12 +48,14 @@ class EventListener(commands.Cog):
             return
 
         # check if item already exists in memory
-        requested_item = dynamoDB.guild_item_exists_in_memory(self.bot.user.id)
+        requested_item = self.dynamoDB.guild_item_exists_in_memory(
+            self.bot.user.id
+        )
 
         # Retreve guild item from database using application id if item does not exists in memory
         if not requested_item:
             get_response: dict = (
-                dynamoDB.retrieve_guild_item(self.bot.user.id),
+                self.dynamoDB.retrieve_guild_item(self.bot.user.id),
             )
             logging.info(f"printing get response from dynamo: {get_response}")
         else:
@@ -137,10 +139,8 @@ class EventListener(commands.Cog):
     async def on_guild_join(self, guild: discord.Guild):
 
         # Adding guild item to database first time bot joins server
-        put_response: dict = dynamoDB.store_guild_item(
-            self.bot.user.id,
-            guild.id,
-        )
+        record = Record(guild_id=guild.id)
+        put_response: dict = self.dynamoDB.store_record(record)
         logging.info(f"Printing response from Dynamo: {put_response}")
         logging.info(f"Joined Server: {guild.name}")
         await guild.text_channels[0].send("Thanks for adding Music Bot!")
@@ -149,7 +149,9 @@ class EventListener(commands.Cog):
     async def on_guild_remove(self, guild):
 
         # Remove guild item from database
-        delete_response: dict = dynamoDB.delete_guild_item(self.bot.user.id)
+        delete_response: dict = self.dynamoDB.delete_guild_item(
+            self.bot.user.id
+        )
         logging.info(f"Printing response from Dynamo: {delete_response}")
         logging.info("Removed from Server: {0.name}".format(guild))
 
@@ -174,6 +176,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        self.dynamoDB = DynamoDB(self.bot.user.id)
         await src.preinitialization.generate_profiles(
             bot.guilds, self.bot, profiles
         )
