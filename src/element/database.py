@@ -13,6 +13,7 @@ class Record:
     Similar to the deprecated profile object.
     """
 
+    application_id: int = None
     guild_id: int = None
     command_channel_id: int = None
     admin_channel_id: int = None
@@ -82,8 +83,8 @@ class DynamoDB(Database):
         Returns:
             Record: resulting record object
         """
-        kwargs = {key: value for key, value in response["Item"].items()}
-        return Record(guild_id=guild_id, **kwargs)
+        kwargs = {key: value for key, value in response.items()}
+        return Record(**kwargs)
 
     def store_record(self, record: Record) -> dict:
         """Stores the record in the remote database
@@ -95,7 +96,9 @@ class DynamoDB(Database):
             dict: responce from AWS
         """
         self.cache_record(record)
-        response = self.table.put_item(Item=asdict(record))
+        record_dict = asdict(record)
+        record_dict["application_id"] = self.application_id
+        response = self.table.put_item(Item=record_dict)
         return response
 
     def get_record(self, guild_id: int) -> Record:
@@ -119,7 +122,7 @@ class DynamoDB(Database):
                 }
             )
             record = self.parse_record_response(
-                guild_id=guild_id, response=response
+                guild_id=guild_id, response=response["Item"]
             )
             self.cache_record(record)
             return record
@@ -136,11 +139,10 @@ class DynamoDB(Database):
                 self.application_id
             )
         )
-        for raw_guild_response in response["Item"]:
-            # TODO change pseudocode query below to functional query
+        for raw_guild_response in response["Items"]:
             record = self.parse_record_response(
                 guild_id=raw_guild_response["guild_id"],
-                response=raw_guild_response["guild_id"].items(),
+                response=raw_guild_response,
             )
 
             self.cache_record(record)
