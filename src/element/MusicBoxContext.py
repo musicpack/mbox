@@ -1,5 +1,4 @@
 import logging
-from typing import Text
 
 import discord
 from discord.channel import TextChannel, VoiceChannel
@@ -8,8 +7,6 @@ from discord.guild import Guild
 from discord_slash.context import SlashContext
 
 from src.auth import Crypto
-from config import FFMPEG_PATH
-from discord.client import Client
 from src.music.player import Player
 
 
@@ -93,7 +90,7 @@ class MusicBoxContext(Context):
         """
         self.guild: Guild = attrs.pop("guild")
         self.command_channel: TextChannel = attrs.pop("command_channel")
-        self.player: Player = attrs.pop("Player")(ffmpeg_path=FFMPEG_PATH, client= attrs.pop("client"))
+        self.player: Player = attrs.pop("player")
         self.name: str = attrs.pop("name", "")
         self.slash_context: SlashContext = attrs.pop("slash_context", None)
         self.crypto: Crypto = attrs.pop("crypto", None)
@@ -159,20 +156,22 @@ class MusicBoxContext(Context):
         # Check player exists
         if self.player:
             first_voice_channel = self.return_voice_channel_for_player()
-            if(not first_voice_channel):
+            if not first_voice_channel:
                 return None
-        
+
         # Check slash_context exists
         if self.slash_context:
-            voice_channel_slash_context = self.return_voice_channel_for_slash_context()
-            if(voice_channel_slash_context):
+            voice_channel_slash_context = (
+                self.return_voice_channel_for_slash_context()
+            )
+            if voice_channel_slash_context:
                 return voice_channel_slash_context
-        
+
         # Check message exists
         if self.message:
             voice_channel: discord.VoiceChannel
-            voice_channel = self.return_voice_channel_for_message(voice_channel)
-            if(voice_channel):
+            voice_channel = self.return_voice_channel_for_message()
+            if voice_channel:
                 return voice_channel
 
         # CheckStateTrue: join last_connected_channel if exists
@@ -193,7 +192,7 @@ class MusicBoxContext(Context):
         return None
 
     def return_voice_channel_for_player(self) -> VoiceChannel:
-        """Looks at the player object and decides if a voice channel exists 
+        """Looks at the player object and decides if a voice channel exists
 
         Returns:
             VoiceChannel: The voice_channel associated with the player
@@ -206,7 +205,7 @@ class MusicBoxContext(Context):
         # Save for later check, first voice channel
         if self.guild.voice_channels:
             return self.guild.voice_channels[0]
-    
+
     def return_voice_channel_for_slash_context(self) -> VoiceChannel:
         """Looks at the slash_context object and decides if a voice channel exists
 
@@ -222,8 +221,8 @@ class MusicBoxContext(Context):
                         in voice_channel.voice_states.keys()
                     ):  # this will get raw uncached voice states
                         return voice_channel
-    
-    def return_voice_channel_for_message(self, voice_channel: VoiceChannel) -> VoiceChannel:
+
+    def return_voice_channel_for_message(self) -> VoiceChannel:
         """Looks at the message object and decides if a voice channel exists
 
         Args:
@@ -236,4 +235,3 @@ class MusicBoxContext(Context):
         for voice_channel in self.message.guild.voice_channels:
             if self.message.author.id in voice_channel.voice_states.keys():
                 return voice_channel
-

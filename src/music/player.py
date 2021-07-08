@@ -27,7 +27,7 @@ from src.music.lyrics import youtube_lyrics
 
 
 class Player:
-    def __init__(self, ffmpeg_path, client: Client) -> None:
+    def __init__(self, ffmpeg_path, client: Client, volume: int = 50) -> None:
         self.connected_client: VoiceClient = None
         self.client = client
 
@@ -47,7 +47,7 @@ class Player:
         # Player Metadata & Footer Metadata
         self.default_player_metadata()
         # Footer Metadata
-        self.volume: int = 50
+        self.volume: int = volume
 
         # Front End Registration Objects
         self.reporter_message: Message = None
