@@ -21,8 +21,6 @@ class LyricsEmbed(Embed):
         self.song_title: str = kwargs.get('song_title', None)
         self.song_author: str = kwargs.get('song_author', None)
 
-        print(self.musixmatch_lyrics(self.song_title, self.song_author))
-
         if not self.lyrics and not self.lyrics_source and not self.song_title and not self.song_author:
             self.description = USAGE_TEXT
             return
