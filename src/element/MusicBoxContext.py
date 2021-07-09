@@ -89,8 +89,8 @@ class MusicBoxContext(Context):
 
         """
         self.guild: Guild = attrs.pop("guild")
-        self.command_channel: TextChannel = attrs.pop("command_channel")
-        self.player: Player = attrs.pop("player")
+        self.command_channel: TextChannel = attrs.pop("command_channel", None)
+        self.player: Player = attrs.pop("player", None)
         self.name: str = attrs.pop("name", "")
         self.slash_context: SlashContext = attrs.pop("slash_context", None)
         self.crypto: Crypto = attrs.pop("crypto", None)
