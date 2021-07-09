@@ -1,6 +1,9 @@
 from typing import List
 from discord.embeds import Embed, EmptyEmbed
 from src.constants import USAGE_TEXT
+from mechanize import Browser
+from bs4 import BeautifulSoup
+from googlesearch import search
 
 
 class LyricsEmbed(Embed):
@@ -14,10 +17,21 @@ class LyricsEmbed(Embed):
         # Footer Variables
         self.lyrics: str = kwargs.get('lyrics', None)
         self.lyrics_source: str = kwargs.get('lyrics_source', None)
+
+        self.song_title: str = kwargs.get('song_title', None)
+        self.song_author: str = kwargs.get('song_author', None)
         
+        print(self.song_title)
+        print(self.song_author)
+
+        print(musixmatch_lyrics(self.song_title, self.song_author))
+
         if not self.lyrics and not self.lyrics_source:
             self.description = USAGE_TEXT
             return
+
+        
+
 
         if self.lyrics:
             self.max_description = 2048
@@ -151,3 +165,75 @@ class LyricsEmbed(Embed):
     
     def append_verse(self, lyric: str, verse: str) -> str:
         return lyric + '\r\n\r\n' + verse
+
+
+def musixmatch_lyrics(song_name: str, song_artist: str) -> str:
+    
+    if(song_name == None and song_artist == None):
+        return None
+
+    site = None
+    musixmatch_lyric = ''
+
+    browser = Browser()
+    enable_web_scrapper(browser)
+        
+    results = search('Musixmatch.com ' + song_name + ' ' + song_artist)
+
+    for result in results:
+        if(result[:27] == 'https://www.musixmatch.com/' and result[:33] != 'https://www.musixmatch.com/album/'):
+            site = result
+
+    if site != None:
+            
+        browser.open(site)
+
+        inspect_element = str(BeautifulSoup(browser.response().read(), "html.parser"))
+        splitted_inspect_element = inspect_element.split('<span class="lyrics__content__ok">')
+
+        if len(splitted_inspect_element) == 3:
+            first_truncate = splitted_inspect_element[1].split('</span></p><div><div class="inline_video_ad_container_container">')
+            second_truncate = splitted_inspect_element[2].split('</span></p></div></span><div></div><div><div class="lyrics-report" id="" style="position:relative;display:inline-block">')
+            musixmatch_lyric = first_truncate[0] + '\r\n' + second_truncate[0] 
+
+        elif len(splitted_inspect_element) == 2:
+            first_truncate = splitted_inspect_element[1].split('</span>')
+            musixmatch_lyric = first_truncate[0]
+
+        elif len(splitted_inspect_element) == 1:
+            splitted_inspect_element = inspect_element.split('col-xs-6 col-sm-6 col-md-6 col-ml-6 col-lg-6')
+            for line_index in range(3,len(splitted_inspect_element),2):
+                musixmatch_lyric = str(musixmatch_lyric) + "\r\n" + splitted_inspect_element[line_index][16:-24]
+        return musixmatch_lyric
+        
+    return boom4u_lyrics(song_name, song_artist, browser)
+
+
+def boom4u_lyrics(song_name: str, song_artist: str, browser: Browser):
+
+    site = None
+
+    results = search('boom4u ' + song_name + ' ' + song_artist)
+    for result in results:
+        if(result[:22] == 'http://www.boom4u.net/'):
+            site = result
+    if site != None:
+        browser.open(site)
+
+        inspect_element = str(BeautifulSoup(browser.response().read(), "html.parser"))
+        first_truncate = inspect_element.split('<table cellpadding="0" cellspacing="0" class="tabletext"><tr><td>')
+        second_truncate = first_truncate[1].split('-----------------')
+        third_truncate = second_truncate[0].split('<br/><tr><td>')
+
+        del third_truncate[-3:-1]
+
+        boom4u_lyric = '\r\n'.join(third_truncate)
+
+        return boom4u_lyric
+    return None
+
+
+def enable_web_scrapper(b: Browser) -> None:
+    b.set_handle_robots(False)
+    b.addheaders = [('Referer', 'https://www.reddit.com'), ('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
+    

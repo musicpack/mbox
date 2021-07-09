@@ -95,7 +95,7 @@ class Player:
                 self.connected_client.play(source = audio, after=self.on_finished)
 
             # Lyrics metadata
-            self.lyrics, self.lyrics_source = youtube_lyrics(audio.info['id'])
+            self.lyrics, self.lyrics_source, self.song_title, self.song_author = youtube_lyrics(audio.info['id'])
             await self.update_lyrics_embed()
             # Player metadata
             self.playhead = timedelta(seconds=0)
@@ -340,7 +340,9 @@ class Player:
         """
         custom_kwargs = {
             'lyrics': self.lyrics,
-            'lyrics_source': self.lyrics_source
+            'lyrics_source': self.lyrics_source,
+            'song_title': self.song_title,
+            'song_author': self.song_author
         }
         return EmbedFactory.create_embed(embed_type='lyrics', **custom_kwargs)
 
@@ -353,6 +355,8 @@ class Player:
         """Sets the lyrics metadata variables to default values"""
         self.lyrics = None
         self.lyrics_source: str = None
+        self.song_title: str = None
+        self.song_author: str = None
     
     ########## Queue ##########
     @property
