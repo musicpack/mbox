@@ -4,10 +4,12 @@ from discord_slash import ComponentContext, SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
 import src.command_handler as handle
-from cogs.event_listener import profiles
+from cogs.state_manager import StateManager
 from config import GUILD_ID
+from src.element.database import Record
 from src.element.MusicBoxContext import MusicBoxContext
 from src.parser import parse
+from src.preinitialization import create_command_channel, valid_channels
 
 COMMAND_CHANNEL_WARNING = "Accepted command."
 
@@ -15,6 +17,7 @@ COMMAND_CHANNEL_WARNING = "Accepted command."
 class MusicController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.state: StateManager = self.bot.get_cog("StateManager")
 
     @cog_ext.cog_slash(
         name="test",
@@ -24,27 +27,51 @@ class MusicController(commands.Cog):
         embed = discord.Embed(title="embed test")
         await ctx.send(content="test", embeds=[embed])
 
+    @cog_ext.cog_slash(
+        name="register",
+        guild_ids=GUILD_ID,
+        description="Registers and creates a command channel for this server.",
+    )
+    async def _register(self, ctx: SlashContext):
+        await ctx.defer(hidden=True)
+
+        # Check if legacy command channel exists
+        valid_channel = valid_channels(ctx.guild)
+        command_channel = None
+        if valid_channel:
+            command_channel = valid_channel[0]
+        else:
+            command_channel = await create_command_channel(ctx.guild)
+
+        reg_rec = Record(
+            application_id=self.bot.user.id,
+            guild_id=ctx.guild_id,
+            command_channel_id=command_channel.id,
+        )
+        self.state.config_db.store_record(reg_rec)
+
+        status = "Sucessful"
+        await ctx.send(content=f"{status}", hidden=True)
+
     async def process_slash_command(self, ctx: SlashContext, f):
-        for profile in profiles:
-            if profile.guild == ctx.guild:
-                mbox_ctx = MusicBoxContext(
-                    prefix="/",
-                    profile=profile,
-                    name=ctx.name,
-                    slash_context=ctx,
-                    message=ctx.message,
-                    args=ctx.args,
-                    kwargs=ctx.kwargs,
-                )
-                if ctx.channel == profile.command_channel:
-                    await ctx.send(content=COMMAND_CHANNEL_WARNING)
-                    await f(mbox_ctx)
-                    await ctx.message.delete()
-                    return
-                else:
-                    await ctx.defer(hidden=True)
-                    status = await f(mbox_ctx)
-                break
+        mbox_ctx = MusicBoxContext(
+            prefix="/",
+            guild=ctx.guild,
+            player=await self.state.get_player(ctx.guild.id),
+            name=ctx.name,
+            slash_context=ctx,
+            message=ctx.message,
+            args=ctx.args,
+            kwargs=ctx.kwargs,
+        )
+        if self.state.config_db.is_command_channel(ctx.channel.id):
+            await ctx.send(content=COMMAND_CHANNEL_WARNING)
+            await f(mbox_ctx)
+            await ctx.message.delete()
+            return
+        else:
+            await ctx.defer(hidden=True)
+            status = await f(mbox_ctx)
 
         await ctx.send(content=f"{status}", hidden=True)
 
@@ -117,19 +144,18 @@ class MusicController(commands.Cog):
         await self.process_slash_command(ctx, handle.shuffle_player)
 
     async def process_button(self, ctx: ComponentContext, f):
-        for profile in profiles:
-            if profile.guild == ctx.guild:
-                mbox_ctx = MusicBoxContext(
-                    prefix="",
-                    profile=profile,
-                    name=ctx.custom_id,
-                    slash_context=None,
-                    message=None,
-                    args=None,
-                    kwargs=None,
-                )
-                await f(mbox_ctx)
-                await ctx.edit_origin()
+        mbox_ctx = MusicBoxContext(
+            prefix="",
+            guild=ctx.guild,
+            player=await self.state.get_player(ctx.guild.id),
+            name=ctx.custom_id,
+            slash_context=None,
+            message=None,
+            args=None,
+            kwargs=None,
+        )
+        await f(mbox_ctx)
+        await ctx.edit_origin()
 
     @cog_ext.cog_component()
     async def prev_button(self, ctx: ComponentContext):

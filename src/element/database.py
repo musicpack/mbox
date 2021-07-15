@@ -121,6 +121,8 @@ class DynamoDB(Database):
                     "guild_id": guild_id,
                 }
             )
+            if "Item" not in response:
+                return None
             record = self.parse_record_response(
                 guild_id=guild_id, response=response["Item"]
             )
