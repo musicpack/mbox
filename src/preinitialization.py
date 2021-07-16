@@ -84,6 +84,7 @@ async def clean_chat(text_channel: TextChannel) -> None:
     logging.info(f"deleted_messages: {str(len(text_channel_messages))}")
     await text_channel.delete_messages(text_channel_messages)
 
+
 async def generate_profiles(
     guilds: List[Guild], client: Client, profiles: List[Profile]
 ) -> None:
