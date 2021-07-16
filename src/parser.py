@@ -1,7 +1,7 @@
 import logging
 import re
 
-from src.command_handler import logout, play_ytid
+from src.command_handler import play_ytid
 from src.element.MusicBoxContext import MusicBoxContext
 from src.search import youtube, youtube_music
 
