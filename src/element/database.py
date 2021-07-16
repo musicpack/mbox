@@ -96,7 +96,12 @@ class DynamoDB(Database):
             dict: responce from AWS
         """
         self.cache_record(record)
-        record_dict = asdict(record)
+        record_dict = asdict(
+            record,
+            dict_factory=lambda data: dict(
+                x for x in data if x[1] is not None
+            ),
+        )
         record_dict["application_id"] = self.application_id
         response = self.table.put_item(Item=record_dict)
         return response
