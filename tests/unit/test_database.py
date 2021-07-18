@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import boto3
@@ -28,8 +29,17 @@ sample_record_list: List[Record] = [
 ]
 
 
-@pytest.fixture
-def dynamodb_table():
+@pytest.fixture(scope="function")
+def aws_credentials():
+    """Mocked AWS Credentials for moto."""
+    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["AWS_SECURITY_TOKEN"] = "testing"
+    os.environ["AWS_SESSION_TOKEN"] = "testing"
+
+
+@pytest.fixture(scope="function")
+def dynamodb_table(aws_credentials):
     with mock_dynamodb2():
         dynamodb_client = boto3.client("dynamodb", region_name="us-east-2")
         dynamodb_client.create_table(
@@ -58,7 +68,7 @@ def dynamodb_table():
         yield table
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def guild_table():
     guild_table: DynamoDB = DynamoDB(987654321098765432)
     yield guild_table
@@ -87,13 +97,13 @@ def test_store_record(dynamodb_table, guild_table):
     assert response["Item"] == sample_record.__dict__
 
 
-def test_get_record(guild_table: DynamoDB):
+def test_get_record(dynamodb_table, guild_table: DynamoDB):
     record = guild_table.get_record(sample_record_list[0].guild_id)
 
     assert record == sample_record_list[0]
 
 
-def test_get_all_records(guild_table: DynamoDB):
+def test_get_all_records(dynamodb_table, guild_table: DynamoDB):
     records = guild_table.get_all_records()
 
     assert records == sample_record_list
