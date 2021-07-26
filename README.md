@@ -41,22 +41,28 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: <https
     ```bash
     poetry install
     ```
+    
+5. Activate virtual environment.
 
-5. Install pre-commit to identify issues in code before committing changes.
+    ```bash
+    poetry shell
+    ```
+
+6. Install pre-commit to identify issues in code before committing changes.
 
     ```bash
     pre-commit install
     ```
 
-6. Follow [FFmpeg Installation](https://github.com/borisliao/mbox/wiki/FFmpeg-Installation) guide.
+7. Follow [FFmpeg Installation](https://github.com/borisliao/mbox/wiki/FFmpeg-Installation) guide.
 
-7. Install Opus dependency.
+8. Install Opus dependency.
     - For MacOS users, the easiest way is to [setup Homebrew](https://brew.sh/) and then do a `brew install opus`.
     - For Linux/Unix users, use `sudo apt-get install libopus`.
 
-8. Follow [Setting up Bot on Discord Developer Portal](https://github.com/borisliao/mbox/wiki/Setting-up-Bot-on-Discord-Developer-Portal) guide.
+9. Follow [Setting up Bot on Discord Developer Portal](https://github.com/borisliao/mbox/wiki/Setting-up-Bot-on-Discord-Developer-Portal) guide.
 
-9. Invite bot to server.
+10. Invite bot to server.
     - Go to Discord Developer Portal, if not already there.
     - Click on General Information tab
     - Copy the application id
