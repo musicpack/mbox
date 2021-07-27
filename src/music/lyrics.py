@@ -2,6 +2,9 @@ from typing import Tuple
 
 from ytmusicapi import YTMusic
 
+from mechanize import Browser
+from bs4 import BeautifulSoup
+from googlesearch import search
 
 def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
     """Gets lyrics (if exists) given the youtube id.
@@ -15,4 +18,60 @@ def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
         result = ytmusic.get_lyrics(browse_id)
         return result["lyrics"], result["source"]
 
+    song_name = watch_playlist["tracks"][0]["title"]
+    song_artist = watch_playlist["tracks"][0]["artists"][0]["name"]
+
+    print(watch_playlist)
+
+    return musixmatch_lyrics(song_name, song_artist)
+
+
+def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]:
+        
+    if(song_name == None and song_artist == None):
+        return None, None
+
+    site = None
+    musixmatch_lyric = ''
+    musixmatch_source = 'Source: MusixMatch'
+
+    browser = Browser()
+    enable_web_scrapper(browser)
+                
+    results = search('Musixmatch.com ' + song_artist + ' ' + song_name)
+
+    for result in results:
+        if(result[:27] == 'https://www.musixmatch.com/' and result[:33] != 'https://www.musixmatch.com/album/'):
+            site = result
+            break
+
+    if site != None:
+                    
+        browser.open(site)
+
+        inspect_element = str(BeautifulSoup(browser.response().read(), "html.parser"))
+        splitted_inspect_element = inspect_element.split('<span class="lyrics__content__ok">')
+
+        if len(splitted_inspect_element) == 3:
+            first_half_lyric = splitted_inspect_element[1].split('</span></p><div><div class="inline_video_ad_container_container">')
+            second_half_lyric = splitted_inspect_element[2].split('</span></p></div></span><div></div><div><div class="lyrics-report" id="" style="position:relative;display:inline-block">')
+            musixmatch_lyric = first_half_lyric[0] + '\r\n' + second_half_lyric[0]
+            print("three")
+        elif len(splitted_inspect_element) == 2:
+            truncated_lyric = splitted_inspect_element[1].split('</span>')
+            musixmatch_lyric = truncated_lyric[0]
+            print("two")
+        elif len(splitted_inspect_element) == 1:
+            splitted_inspect_element = inspect_element.split('col-xs-6 col-sm-6 col-md-6 col-ml-6 col-lg-6')
+            for line_index in range(3,len(splitted_inspect_element),2):
+                musixmatch_lyric = str(musixmatch_lyric) + "\r\n" + splitted_inspect_element[line_index][16:-24]
+            print("one")
+        return musixmatch_lyric, musixmatch_source
+                
     return None, None
+
+
+def enable_web_scrapper(browser: Browser) -> None:
+    browser.set_handle_robots(False)
+    browser.addheaders = [('Referer', 'https://www.reddit.com'), ('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
+    
