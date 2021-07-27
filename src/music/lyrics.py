@@ -21,15 +21,11 @@ def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
     song_name = watch_playlist["tracks"][0]["title"]
     song_artist = watch_playlist["tracks"][0]["artists"][0]["name"]
 
-    print(song_name + ' ' + song_artist)
-    print(watch_playlist)
-
     return musixmatch_lyrics(song_name, song_artist)
 
 
-def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]:
-        
-    if(song_name == None and song_artist == None):
+def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]: 
+    if(song_name is None and song_artist is None):
         return None, None
 
     site = None
@@ -37,7 +33,6 @@ def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]:
 
     browser = Browser()
     enable_web_scrapper(browser)
-                
     results = search('Musixmatch.com ' + song_artist + ' ' + song_name)
 
     for result in results:
@@ -45,7 +40,7 @@ def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]:
             site = result
             break
 
-    if site != None:
+    if site is not None:
 
         browser.open(site)
 
@@ -57,8 +52,7 @@ def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]:
         elif 'lyrics__content__error' in inspect_element:
             musixmatch_lyric, musixmatch_source = get_web_lyric(inspect_element, 'lyrics__content__error')
 
-        return musixmatch_lyric, musixmatch_source  
-                     
+        return musixmatch_lyric, musixmatch_source
     return None, None
 
 
@@ -80,7 +74,7 @@ def get_web_lyric(inspect_element: str, lyrics_type: str) -> Tuple[str, str]:
 
     elif len(splitted_inspect_element) == 1:
         splitted_inspect_element = inspect_element.split('col-xs-6 col-sm-6 col-md-6 col-ml-6 col-lg-6')
-        for line_index in range(3,len(splitted_inspect_element),2):
+        for line_index in range(3, len(splitted_inspect_element), 2):
             musixmatch_lyric = str(musixmatch_lyric) + "\r\n" + splitted_inspect_element[line_index][16:-24]
 
     if(musixmatch_lyrics == ''):
