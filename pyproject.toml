@@ -26,6 +26,8 @@ flake8 = "^3.9.2"
 black = "^21.6b0"
 isort = "^5.9.1"
 pre-commit = "^2.13.0"
+mechanize = "^0.4.5"
+googlesearch-python = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
