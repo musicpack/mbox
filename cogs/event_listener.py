@@ -1,6 +1,6 @@
 import logging
 from typing import Union
-
+import asyncio
 import discord
 from discord.ext import commands
 
@@ -57,7 +57,13 @@ class EventListener(commands.Cog):
                 await play_ytid("JwmGruvGt_I", bot_ctx)
                 return
 
-            await parse(bot_ctx)
+            result: str = await parse(bot_ctx)
+            if "Could not find a" in result:
+                description = f"{message.content} cannot be found!"
+                error_embed = discord.Embed(title="Error", description=description, colour=discord.Colour.red())
+                error_message = await message.channel.send(embed=error_embed)
+                await asyncio.sleep(8)
+                await error_message.delete()
 
     @commands.Cog.listener()
     async def on_typing(self, channel, user, when):
