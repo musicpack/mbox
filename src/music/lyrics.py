@@ -24,7 +24,7 @@ def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
     return musixmatch_lyrics(song_name, song_artist)
 
 
-def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str, str]: 
+def musixmatch_lyrics(song_name: str, song_artist: str) -> Tuple[str]:
     if(song_name is None and song_artist is None):
         return None, None
 
