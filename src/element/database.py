@@ -19,6 +19,8 @@ class Record:
     admin_channel_id: int = None
     volume: int = 50
     webhook_message_url: str = None
+    button_message_id: int = None
+    webhook_url: str = None
     webhook_message_id: str = None
 
 
