@@ -14,3 +14,10 @@ class ReporterEmbed(Embed):
             + "\n*Early Access, please report any bugs!*"
             + "\n[Help](https://github.com/borisliao/mbox/wiki/Help) | [Changelog](https://github.com/borisliao/mbox/blob/master/CHANGELOG.md) | [About](https://github.com/borisliao/mbox)\n"
         )
+
+    def __eq__(self, o: object) -> bool:
+        def ordered_eval():
+            yield self.description == o.description
+            yield self.title == o.title
+
+        return all(ordered_eval()) if type(o) == ReporterEmbed else False

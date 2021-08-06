@@ -169,3 +169,23 @@ class PlayerEmbed(Embed):
             return "✔️Skipped Non Music"
         else:
             return ""
+
+    def __eq__(self, o: object) -> bool:
+        def ordered_eval():
+            yield self.paused == o.paused
+            yield self.playhead == o.playhead
+            yield self.duration == o.duration
+            yield self.volume == o.volume
+            yield self.resolved == o.resolved
+            yield self.sponsorblock == o.sponsorblock
+            yield self.from_file == o.from_file
+            yield self.video_description == o.video_description
+            yield self.video_title == o.video_title
+            yield self.video_source == o.video_source
+            yield self.video_uploader == o.video_uploader
+            yield self.video_uploader_url == o.video_uploader_url
+            yield self.video_thumbnail == o.video_thumbnail
+            yield self.video_url == o.video_url
+            yield self.icon_url == o.icon_url
+
+        return all(ordered_eval()) if type(o) == PlayerEmbed else False

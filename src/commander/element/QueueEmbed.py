@@ -41,3 +41,10 @@ class QueueEmbed(Embed):
             return description
 
         return ""
+
+    def __eq__(self, o: object) -> bool:
+        def ordered_eval():
+            yield self.description == o.description
+            yield self.title == o.title
+
+        return all(ordered_eval()) if type(o) == QueueEmbed else False
