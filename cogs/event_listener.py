@@ -1,6 +1,7 @@
+import asyncio
 import logging
 from typing import Union
-import asyncio
+
 import discord
 from discord.ext import commands
 
@@ -60,7 +61,11 @@ class EventListener(commands.Cog):
             result: str = await parse(bot_ctx)
             if "Could not find a" in result:
                 description = f"{message.content} cannot be found!"
-                error_embed = discord.Embed(title="Error", description=description, colour=discord.Colour.red())
+                error_embed = discord.Embed(
+                    title="Error",
+                    description=description,
+                    colour=discord.Colour.red(),
+                )
                 error_message = await message.channel.send(embed=error_embed)
                 await asyncio.sleep(8)
                 await error_message.delete()
