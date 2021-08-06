@@ -1,9 +1,9 @@
 from typing import Tuple
-from ytmusicapi import YTMusic
 
-from mechanize import Browser
 from bs4 import BeautifulSoup
 from googlesearch import search
+from mechanize import Browser
+from ytmusicapi import YTMusic
 
 
 def youtube_lyrics(youtube_id: str) -> Tuple[str, str]:
