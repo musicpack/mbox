@@ -3,23 +3,15 @@ import logging
 import random
 import threading
 from datetime import timedelta
-from typing import Dict, List
+from typing import Dict
 
 import youtube_dl
-from discord.channel import TextChannel, VoiceChannel
+from discord.channel import VoiceChannel
 from discord.client import Client
-from discord.message import Message
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
-from discord_slash.model import ButtonStyle
-from discord_slash.utils import manage_components
 
 from config import FFMPEG_PATH, MAX_CACHESIZE
-from src.commander.element.LyricsEmbed import LyricsEmbed
-from src.commander.element.PlayerEmbed import PlayerEmbed
-from src.commander.element.QueueEmbed import QueueEmbed
-from src.commander.element.ReporterEmbed import ReporterEmbed
-from src.commander.EmbedFactory import EmbedFactory
 from src.constants import YOUTUBE_ICON
 from src.music.element.MusicSource import MusicSource
 from src.music.element.Queue import Queue
@@ -48,13 +40,6 @@ class Player:
         self.default_player_metadata()
         # Footer Metadata
         self.volume: int = volume
-
-        # Front End Registration Objects
-        self.reporter_message: Message = None
-        self.lyrics_message: Message = None
-        self.queue_message: Message = None
-        self.player_message: Message = None
-
         self.ms_displayed = 0
 
     #  ██████╗ ██████╗ ██████╗ ███████╗
@@ -86,7 +71,6 @@ class Player:
 
             # Lyrics metadata
             self.lyrics, self.lyrics_source = youtube_lyrics(audio.info["id"])
-            await self.update_lyrics_embed()
             # Player metadata
             self.playhead = timedelta(seconds=0)
             self.display_description = False
@@ -94,7 +78,6 @@ class Player:
             self.from_file = False  # file is from_file but this variable is meant for a file just downloaded to disk
             self.sponsorblock: bool = None
             self.set_metadata(audio.info)
-            await self.update_player_embed()
 
     def stop(self) -> None:
         """Stops song and disconnects from the voicechannel."""
@@ -113,25 +96,15 @@ class Player:
 
             # Lyrics metadata
             self.default_lyrics_metadata()
-            asyncio.run_coroutine_threadsafe(
-                self.update_lyrics_embed(), self.client.loop
-            )
             # Queue metadata
             self.default_queue_metadata()
-            asyncio.run_coroutine_threadsafe(
-                self.update_queue_embed(), self.client.loop
-            )
             # Player metadata
             self.default_player_metadata()
-            asyncio.run_coroutine_threadsafe(
-                self.update_player_embed(), self.client.loop
-            )
 
     async def raise_volume(self):
         """Increases the volume by 10 if the volume is not >=200."""
         if not self.volume >= 200:
             self.volume += 10
-            await self.update_player_embed()
 
         if (
             self.connected_client
@@ -144,7 +117,6 @@ class Player:
         """Decreases the volume by 10 if the volume is not <=0."""
         if not self.volume <= 0:
             self.volume -= 10
-            await self.update_player_embed()
 
         if (
             self.connected_client
@@ -177,9 +149,6 @@ class Player:
             asyncio.run_coroutine_threadsafe(
                 self.play(music_source), self.client.loop
             )
-            asyncio.run_coroutine_threadsafe(
-                self.update_queue_embed(), self.client.loop
-            )
             return music_source
 
     def next(self) -> MusicSource:
@@ -194,9 +163,6 @@ class Player:
             asyncio.run_coroutine_threadsafe(
                 self.play(music_source), self.client.loop
             )
-            asyncio.run_coroutine_threadsafe(
-                self.update_queue_embed(), self.client.loop
-            )
             return music_source
 
     def last(self) -> MusicSource:
@@ -209,9 +175,6 @@ class Player:
         else:
             asyncio.run_coroutine_threadsafe(
                 self.play(music_source), self.client.loop
-            )
-            asyncio.run_coroutine_threadsafe(
-                self.update_queue_embed(), self.client.loop
             )
             return music_source
 
@@ -278,9 +241,6 @@ class Player:
                 self.ms_displayed = (
                     -1
                 )  # make negative to avoid line above assignment multiple times
-            asyncio.run_coroutine_threadsafe(
-                self.update_player_embed(), self.connected_client.loop
-            )
 
     ########## High Level Helper Functions ##########
     async def play_youtube(self, link: str):
@@ -310,8 +270,6 @@ class Player:
                 else:
                     self.next()
 
-            await self.update_queue_embed()
-
             @audio.event
             def on_read(ms, non_music):
                 self.on_read(ms, non_music)
@@ -336,17 +294,12 @@ class Player:
 
                 @audio.event
                 def on_resolve(info, path):
-                    if self.player_message:
-                        if (
-                            self.queue.current()
-                            and self.queue.current().info == info
-                        ):
-                            self.from_file = True
-                            self.resolved = False  # Resolved is false to display the special status 'from_file'
-                            asyncio.run_coroutine_threadsafe(
-                                self.update_player_embed(),
-                                self.connected_client.loop,
-                            )
+                    if (
+                        self.queue.current()
+                        and self.queue.current().info == info
+                    ):
+                        self.from_file = True
+                        self.resolved = False  # Resolved is false to display the special status 'from_file'
 
         else:
             logging.error("Can't play_youtube() without connecting first")
@@ -370,104 +323,18 @@ class Player:
     # ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
     #
 
-    ########## Reporter ##########
-    @property
-    def reporter_embed(self) -> ReporterEmbed:
-        """Getter for reporter_embed from factory.
-        Factory generates a up to date embed based on kwargs passed.
-        """
-        return EmbedFactory.create_embed(embed_type="reporter", **vars(self))
-
-    async def update_reporter_embed(self) -> None:
-        """Edits the reporter message (if registered) with a newly generated embed."""
-        if self.reporter_message:
-            await self.reporter_message.edit(embed=self.reporter_embed)
-
     ########## Lyrics ##########
-    @property
-    def lyrics_embed(self) -> LyricsEmbed:
-        """Getter for lyrics_embed from factory.
-        Factory generates a up to date embed based on kwargs passed.
-        """
-        custom_kwargs = {
-            "lyrics": self.lyrics,
-            "lyrics_source": self.lyrics_source,
-        }
-        return EmbedFactory.create_embed(embed_type="lyrics", **custom_kwargs)
-
-    async def update_lyrics_embed(self) -> None:
-        """Edits the lyrics message (if registered) with a newly generated embed."""
-        if self.lyrics_message:
-            await self.lyrics_message.edit(embed=self.lyrics_embed)
-
     def default_lyrics_metadata(self) -> None:
         """Sets the lyrics metadata variables to default values"""
         self.lyrics = None
         self.lyrics_source: str = None
 
     ########## Queue ##########
-    @property
-    def queue_embed(self) -> QueueEmbed:
-        """Getter for queue_embed from factory.
-        Factory generates a up to date embed based on kwargs passed.
-        """
-        custom_kwargs = {"queue": self.queue}
-        return EmbedFactory.create_embed(embed_type="queue", **custom_kwargs)
-
-    async def update_queue_embed(self) -> None:
-        """Edits the queues message (if registered) with a newly generated embed."""
-        if self.queue_message:
-            await self.queue_message.edit(embed=self.queue_embed)
-
     def default_queue_metadata(self) -> None:
         """Sets the queue metadata variables to default values"""
         self.queue = Queue()
 
     ########## Player ##########
-    @property
-    def player_buttons(self) -> List[dict]:
-        buttons = [
-            manage_components.create_button(
-                style=ButtonStyle.grey,
-                custom_id="prev_button",
-                emoji="⏮️",
-            ),
-            manage_components.create_button(
-                style=ButtonStyle.grey,
-                custom_id="play_pause_button",
-                emoji="⏯️",
-            ),
-            manage_components.create_button(
-                style=ButtonStyle.grey, custom_id="next_button", emoji="⏭️"
-            ),
-            manage_components.create_button(
-                style=ButtonStyle.grey,
-                custom_id="volume_down_button",
-                emoji="🔉",
-            ),
-            manage_components.create_button(
-                style=ButtonStyle.grey, custom_id="volume_up_button", emoji="🔊"
-            ),
-        ]
-
-        action_row = manage_components.create_actionrow(*buttons)
-
-        return [action_row]
-
-    @property
-    def player_embed(self) -> PlayerEmbed:
-        """Getter for player_embed from factory.
-        Factory generates a up to date embed based on kwargs passed.
-        """
-        # NOTE: we send every self variable as kwargs to factory since PlayerEmbed requires most variables in this class
-        return EmbedFactory.create_embed(embed_type="player", **vars(self))
-
-    async def update_player_embed(self) -> None:
-        """Edits the player message (if registered) with a newly generated embed."""
-        if self.player_message:
-            await self.player_message.edit(
-                embed=self.player_embed, components=self.player_buttons
-            )
 
     def default_player_metadata(self) -> None:
         """Sets the player metadata variables to default values.
@@ -496,7 +363,6 @@ class Player:
     async def toggle_display_description(self):
         """Intake function for 💬 emoji reaction on_press event"""
         self.display_description = not self.display_description
-        await self.update_player_embed()
 
     async def on_play_pause(self):
         """Intake function for ⏯ emoji reaction on_press event"""
@@ -505,7 +371,6 @@ class Player:
                 self.pause()
             elif self.connected_client.is_paused():
                 self.resume()
-            await self.update_player_embed()
 
     async def shuffle(self):
         if self.connected_client:
@@ -517,25 +382,10 @@ class Player:
                 self.queue.playlist = (
                     playlist[:pos] + [playlist[pos]] + next_songs
                 )
-                await self.update_queue_embed()
             else:
                 raise IndexError("No more songs in the queue to shuffle")
 
     ########## General Helper Functions ##########
-    async def register_command_channel(self, command_channel: TextChannel):
-        """Sends and registers all embeds that this player implements to the command channel"""
-
-        self.reporter_message = await command_channel.send(
-            embed=self.reporter_embed
-        )
-        self.lyrics_message = await command_channel.send(
-            embed=self.lyrics_embed
-        )
-        self.queue_message = await command_channel.send(embed=self.queue_embed)
-        self.player_message = await command_channel.send(
-            embed=self.player_embed, components=self.player_buttons
-        )
-
     def metadata_youtube_dl(self, info: dict) -> Dict[str, str]:
         """Parses youtube_dl dictionary to standard mbox naming format.
 
