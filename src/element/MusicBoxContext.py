@@ -6,6 +6,7 @@ from discord.ext.commands.context import Context
 from discord.guild import Guild
 from discord_slash.context import SlashContext
 
+from cogs.state_manager import StateManager
 from src.auth import Crypto
 from src.music.player import Player
 
@@ -82,6 +83,8 @@ class MusicBoxContext(Context):
             If context was a slash command, this should be '/'
         message: :class:`.Message`
             The message that triggered the command being executed.
+        state: :class:`.StateManager`
+            The state manager that is handling the current state of the bot.
         args: :class:`list`
             The list of transformed arguments that were passed into the command.
         kwargs: :class:`dict`
@@ -94,6 +97,7 @@ class MusicBoxContext(Context):
         self.name: str = attrs.pop("name", "")
         self.slash_context: SlashContext = attrs.pop("slash_context", None)
         self.crypto: Crypto = attrs.pop("crypto", None)
+        self.state: StateManager = attrs.pop("state", None)
 
         # workaround: make _state object since super() expects one (regardless of message=null)
         class FakeMessage(NotImplementedError):

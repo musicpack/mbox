@@ -24,8 +24,8 @@ class EventListener(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        # Ignore message if it came from a bot that was not from a webhook
-        if message.author.bot and not message.webhook_id:
+        # Ignore message if it came from a bot (includes webhook)
+        if message.author.bot:
             return
 
         # TODO Check if its from a command channel
@@ -47,6 +47,7 @@ class EventListener(commands.Cog):
                 name="",
                 slash_context=None,
                 message=message,
+                state=self.state,
                 args=[message.content],
                 kwargs={"command": message.content},
             )
