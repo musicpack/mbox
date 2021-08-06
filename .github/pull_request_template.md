@@ -1,39 +1,25 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: enhancement
-assignees: ''
+## Description
 
----
+Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.
 
-**Description**
+Fixes # (issue)
 
-> [NOTE]
-> Please provide list of issues that are closed by this PR.
-<https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue>
+## Type of change
 
-A few sentences describing the overall goals of the pull request's commits.
+Please delete options that are not relevant.
 
-**Changes include**
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] This change requires a documentation update
+## Checklist:
 
-- [ ] Bugfix (non-breaking change that solves an issue)
-- [ ] New feature (non-breaking change that adds functionality)
-- [ ] Breaking change (change that is not backwards-compatible and/or changes current functionality)
-- [ ] Refactor (non-breaking/breaking change that refactor the previous code base)
-
-**Impacted Areas in Application**
-
-List general components of the application that this PR will affect:
-
-**Todos**
-
-- [ ] Updated and Passed Tests
-- [ ] Passed Quality Checks
-- [ ] Updated  Documentation
-
-**Screenshots**
-
-Add any screenshots as needed
-
-**Other comments**
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes
+- [ ] Any dependent changes have been merged and published in downstream modules
+- [ ] I have checked my code and corrected any misspellings
