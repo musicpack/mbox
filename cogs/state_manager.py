@@ -3,7 +3,7 @@ from typing import Dict
 from discord.ext import commands
 from discord.ext.commands.bot import Bot
 
-from config import FFMPEG_PATH
+from src.config import FFMPEG_PATH
 from src.element.database import DynamoDB
 from src.music.player import Player
 from src.preinitialization import clean_chat

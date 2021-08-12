@@ -8,7 +8,7 @@ import requests
 import youtube_dl
 from discord import AudioSource, ClientException
 
-from config import DOWNLOAD_PATH, FFMPEG_PATH, TEMP_PATH
+from src.config import DOWNLOAD_PATH, FFMPEG_PATH, TEMP_PATH
 from src.constants import SPONSORBLOCK_MUSIC_API
 
 

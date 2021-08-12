@@ -2,7 +2,7 @@ from discord.channel import TextChannel
 from discord.client import Client
 from discord.guild import Guild
 
-from config import FFMPEG_PATH
+from src.config import FFMPEG_PATH
 from src.music.player import Player
 
 

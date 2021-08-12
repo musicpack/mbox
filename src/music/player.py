@@ -14,12 +14,12 @@ from discord.voice_client import VoiceClient
 from discord_slash.model import ButtonStyle
 from discord_slash.utils import manage_components
 
-from config import FFMPEG_PATH, MAX_CACHESIZE
 from src.commander.element.LyricsEmbed import LyricsEmbed
 from src.commander.element.PlayerEmbed import PlayerEmbed
 from src.commander.element.QueueEmbed import QueueEmbed
 from src.commander.element.ReporterEmbed import ReporterEmbed
 from src.commander.EmbedFactory import EmbedFactory
+from src.config import FFMPEG_PATH, MAX_CACHESIZE
 from src.constants import YOUTUBE_ICON
 from src.music.element.MusicSource import MusicSource
 from src.music.element.Queue import Queue
