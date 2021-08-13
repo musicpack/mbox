@@ -57,14 +57,6 @@ class Player:
 
         self.ms_displayed = 0
 
-    #  ██████╗ ██████╗ ██████╗ ███████╗
-    # ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    # ██║     ██║   ██║██████╔╝█████╗
-    # ██║     ██║   ██║██╔══██╗██╔══╝
-    # ╚██████╗╚██████╔╝██║  ██║███████╗
-    #  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-    #
-
     async def play(self, audio: MusicSource) -> None:
         """Plays the given MusicSource. Updates embeds if exists. Connect to the voicechannel before running function."""
         if self.connected_client and self.connected_client.is_connected():
@@ -375,14 +367,6 @@ class Player:
         await self.disconnect()
 
         # TODO Clean up audio sources from queue
-
-    # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗
-    # ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
-    # ██╔████╔██║█████╗     ██║   ███████║██║  ██║███████║   ██║   ███████║
-    # ██║╚██╔╝██║██╔══╝     ██║   ██╔══██║██║  ██║██╔══██║   ██║   ██╔══██║
-    # ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║██████╔╝██║  ██║   ██║   ██║  ██║
-    # ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
-    #
 
     ########## Reporter ##########
     @property
