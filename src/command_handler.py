@@ -105,13 +105,6 @@ async def resume_player(context: MusicBoxContext) -> str:
         logging.error("Context name is not play. Cannot resume player")
 
 
-async def logout(context: MusicBoxContext) -> None:
-    # TODO: add cleanup code and warnings to all profiles playing a song now.
-    await context.bot.logout()
-
-    logging.error("Context name is not play. Cannot resume player")
-
-
 async def shuffle_player(context: MusicBoxContext) -> str:
     if context.name == "shuffle":
         p_client = get_player_client(context)
