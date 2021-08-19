@@ -24,7 +24,7 @@ def valid_channels(guild: Guild):
 
 
 def get_expected_topic(text_channel: TextChannel) -> str:
-    return f"Music Box controlled channel. Chat in this channel will be deleted. Version {VERSION} {str(hash(text_channel))}"
+    return f"Music Box controlled channel. Chat in this channel will be deleted. Version {VERSION}"
 
 
 async def fix_topic(text_channel: TextChannel) -> None:

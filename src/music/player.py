@@ -14,12 +14,12 @@ from discord.voice_client import VoiceClient
 from discord_slash.model import ButtonStyle
 from discord_slash.utils import manage_components
 
-from config import FFMPEG_PATH, MAX_CACHESIZE
 from src.commander.element.LyricsEmbed import LyricsEmbed
 from src.commander.element.PlayerEmbed import PlayerEmbed
 from src.commander.element.QueueEmbed import QueueEmbed
 from src.commander.element.ReporterEmbed import ReporterEmbed
 from src.commander.EmbedFactory import EmbedFactory
+from src.config import FFMPEG_PATH, MAX_CACHESIZE
 from src.constants import YOUTUBE_ICON
 from src.music.element.MusicSource import MusicSource
 from src.music.element.Queue import Queue
@@ -56,14 +56,6 @@ class Player:
         self.player_message: Message = None
 
         self.ms_displayed = 0
-
-    #  ██████╗ ██████╗ ██████╗ ███████╗
-    # ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    # ██║     ██║   ██║██████╔╝█████╗
-    # ██║     ██║   ██║██╔══██╗██╔══╝
-    # ╚██████╗╚██████╔╝██║  ██║███████╗
-    #  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-    #
 
     async def play(self, audio: MusicSource) -> None:
         """Plays the given MusicSource. Updates embeds if exists. Connect to the voicechannel before running function."""
@@ -215,6 +207,20 @@ class Player:
             )
             return music_source
 
+    async def shuffle(self):
+        if self.connected_client:
+            playlist = self.queue.playlist
+            pos = self.queue.pos
+            next_songs = playlist[(pos + 1) :]
+            if self.queue.pos < len(self.queue.playlist) - 1:
+                random.shuffle(next_songs)
+                self.queue.playlist = (
+                    playlist[:pos] + [playlist[pos]] + next_songs
+                )
+                await self.update_queue_embed()
+            else:
+                raise IndexError("No more songs in the queue to shuffle")
+
     async def connect(self, channel: VoiceChannel):
         """Connects the player to a voicechannel"""
         if self.connected_client and self.connected_client.is_connected():
@@ -362,14 +368,6 @@ class Player:
 
         # TODO Clean up audio sources from queue
 
-    # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗
-    # ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
-    # ██╔████╔██║█████╗     ██║   ███████║██║  ██║███████║   ██║   ███████║
-    # ██║╚██╔╝██║██╔══╝     ██║   ██╔══██║██║  ██║██╔══██║   ██║   ██╔══██║
-    # ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║██████╔╝██║  ██║   ██║   ██║  ██║
-    # ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
-    #
-
     ########## Reporter ##########
     @property
     def reporter_embed(self) -> ReporterEmbed:
@@ -506,20 +504,6 @@ class Player:
             elif self.connected_client.is_paused():
                 self.resume()
             await self.update_player_embed()
-
-    async def shuffle(self):
-        if self.connected_client:
-            playlist = self.queue.playlist
-            pos = self.queue.pos
-            next_songs = playlist[(pos + 1) :]
-            if self.queue.pos < len(self.queue.playlist) - 1:
-                random.shuffle(next_songs)
-                self.queue.playlist = (
-                    playlist[:pos] + [playlist[pos]] + next_songs
-                )
-                await self.update_queue_embed()
-            else:
-                raise IndexError("No more songs in the queue to shuffle")
 
     ########## General Helper Functions ##########
     async def register_command_channel(self, command_channel: TextChannel):
