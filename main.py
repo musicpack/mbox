@@ -32,7 +32,6 @@ initial_extensions = [
     "state_manager",
     "event_listener",
     "music_controller",
-    "messenger",
 ]
 
 for filename in initial_extensions:
