@@ -1,5 +1,5 @@
-from time import time
-from typing import Dict, List
+# from time import time
+from typing import Dict
 
 from discord.channel import TextChannel
 from discord.ext import commands
@@ -18,8 +18,7 @@ class StateManager(commands.Cog):
         self.bot: Bot = bot
         self._config_db: DynamoDB = None
         self.players: Dict[int, Player] = {}
-        self.panels: Dict[str, Panel] = {}
-        self.info_panels: Dict[int, List[Panel]] = {}
+        self.panels: Dict[str, Dict[str, Panel]] = {}
 
     @property
     def config_db(self):
@@ -52,17 +51,32 @@ class StateManager(commands.Cog):
         panel_id: str,
         panel_type: Panel,
     ) -> Panel:
-        key = f"{text_channel.id}_{panel_id}"
-        if key not in self.panels:
-            self.panels[key] = panel_type(
+
+        guild_id = text_channel.guild.id
+        if guild_id in self.panels:
+            if panel_id in self.panels[guild_id]:
+                return self.panels[guild_id][panel_id]
+
+        self.panels[guild_id] = {
+            panel_id: panel_type(
                 text_channel=text_channel,
                 players=self.players,
                 config_db=self._config_db,
             )
+        }
 
-        return self.panels[key]
+        self.panels[guild_id][
+            panel_id
+        ].delete_panel = lambda guild_id, panel_id: self.panels[guild_id].pop(
+            panel_id
+        )
 
-    async def process_command_channel_panel(self, guild_id: int):
+        return self.panels[guild_id][panel_id]
+
+    def delete_panel(self, guild_id: int, panel_id: str):
+        del self.panels[guild_id][panel_id]
+
+    def get_command_channel_panel(self, guild_id: int) -> CCEmbedWebhook:
         record = self.config_db.get_record(guild_id=guild_id)
         if record and record.command_channel_id:
             command_channel = self.bot.get_channel(record.command_channel_id)
@@ -72,21 +86,20 @@ class StateManager(commands.Cog):
                     "command_channel",
                     CCEmbedWebhook,
                 )
-                cc_panel.refresh_time = time()
-
-    async def process_info_panel(self, guild_id: int):
-        if guild_id in self.info_panels:
-            for panel in self.info_panels[guild_id]:
-                panel.refresh_time = time()
+                return cc_panel
 
     async def process_guild_panel(self, guild_id: int):
-        await self.process_command_channel_panel(guild_id)
-        await self.process_info_panel(guild_id)
+        if guild_id in self.panels:
+            for panel in self.panels[guild_id].values():
+                if panel.task.is_running():
+                    await panel.process()
+                    panel.task.restart()
+                else:
+                    panel.task.start()
 
     def add_info_panel(self, text_channel: TextChannel) -> Panel:
-
         # Create a list if doesnt exist
-        if text_channel.guild.id not in self.info_panels:
+        if text_channel.guild.id not in self.panels:
             self.info_panels[text_channel.guild.id] = []
 
         panel_list = self.info_panels[text_channel.guild.id]

@@ -1,13 +1,15 @@
+import logging
 from abc import ABC, abstractmethod
 from time import time
 
 from discord import TextChannel
+from discord.ext import tasks
 
 
 class Panel(ABC):
     expires = time() + 60  # Panel expires 60 seconds after creation
     refresh_rate = 14  # seconds
-    refresh_time = time() + refresh_rate
+    id = None
 
     def __init__(self, text_channel: TextChannel):
         self.text_channel = text_channel
@@ -41,8 +43,24 @@ class Panel(ABC):
         await self.update()
         await self.send()
 
-    def is_expired(self):
-        """Returns true if the panel has expired."""
-        if self.expires:
-            return self.expires < time()
-        return False
+    @tasks.loop(seconds=refresh_rate)
+    async def task(self):
+        if self.expires and self.expires < time():
+            logging.info(f"Panel {self.id} expired.")
+            await self.delete()
+            self.task.cancel()
+            return
+
+        if self.refresh_rate != self.task.seconds:
+            self.task.change_interval(seconds=self.refresh_rate)
+
+        await self.process()
+
+    def cleanup(self):
+        self.task.cancel()
+        self.delete_panel(
+            guild_id=self.text_channel.guild.id, panel_id=self.id
+        )
+
+    def delete_panel(self, guild_id: int, panel_id: str):
+        pass

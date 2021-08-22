@@ -1,5 +1,3 @@
-from time import time
-
 from aiohttp import ClientSession
 from discord.channel import TextChannel
 from discord.embeds import Embed
@@ -41,6 +39,7 @@ class CCEmbedWebhook(Panel):
 
         self.expires = None
         self.refresh_rate = 2
+        self.id = "command_channel"
 
     @property
     def player(self) -> Player:
@@ -246,12 +245,6 @@ class CCEmbedWebhook(Panel):
 
     async def process(self):
         """Custom process function to take advantage of caching."""
-
-        if self.refresh_time > time():
-            return
-        else:
-            self.refresh_time = time() + self.refresh_rate
-
         send = False
         self.reporter_embed = self.get_reporter_embed()
         if self.cached_reporter_embed != self.reporter_embed:

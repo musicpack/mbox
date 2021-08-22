@@ -18,6 +18,7 @@ async def play_ytid(id: str, context: MusicBoxContext):
     if voice_channel:
         await context.player.connect(voice_channel)
     await context.player.play_youtube(normalized_url)
+    context.state.get_command_channel_panel(context.guild.id)
     await context.state.process_guild_panel(context.guild.id)
 
 

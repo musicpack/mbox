@@ -1,4 +1,3 @@
-from time import time
 from typing import Dict
 
 from discord.channel import TextChannel
@@ -22,6 +21,7 @@ class CCEmbedMessages(Panel):
         super().__init__(text_channel)
         self.players: Dict[int, Player] = kwargs["players"]
         self.expires = None
+        self.id = "command_channel"
 
         # Front End Registration Objects
         self.reporter_message: Message = None
@@ -220,12 +220,6 @@ class CCEmbedMessages(Panel):
 
     async def process(self):
         """Custom process function to take advantage of caching."""
-
-        if self.refresh_time > time():
-            return
-        else:
-            self.refresh_time = time() + self.refresh_rate
-
         self.reporter_embed = self.get_reporter_embed()
         if self.cached_reporter_embed != self.reporter_embed:
             await self.send_reporter_message()
