@@ -19,9 +19,12 @@ from src.music.lyrics import youtube_lyrics
 
 
 class Player:
-    def __init__(self, ffmpeg_path, client: Client, volume: int = 50) -> None:
+    def __init__(
+        self, ffmpeg_path, client: Client, guild_id: int, volume: int = 50
+    ) -> None:
         self.connected_client: VoiceClient = None
         self.client = client
+        self.guild_id = guild_id
 
         self.ffmpeg_path = ffmpeg_path
         self.FFMPEG_OPTIONS = {
@@ -89,17 +92,14 @@ class Player:
                     self.disconnect(), self.client.loop
                 )
 
-            # Cleanly shut down ffmpeg instances and delete temporary files from the Queue
-            for audio in self.queue.playlist:
-                audio.cleanup()
-                audio.remove_temp_file()
-
             # Lyrics metadata
             self.default_lyrics_metadata()
             # Queue metadata
             self.default_queue_metadata()
             # Player metadata
             self.default_player_metadata()
+
+            self.cleanup()
 
     async def raise_volume(self):
         """Increases the volume by 10 if the volume is not >=200."""
@@ -213,6 +213,10 @@ class Player:
         self.default_queue_metadata()
         self.default_player_metadata()
 
+    def delete_player(self, guild_id: int):
+        # Placeholder function to be overwritten by superclass
+        pass
+
     ########## MusicSource Event Handlers ##########
     def on_finished(self, error):
         if error:
@@ -244,7 +248,7 @@ class Player:
 
     ########## High Level Helper Functions ##########
     async def play_youtube(self, link: str):
-        if self.connected_client.is_connected():
+        if self.connected_client and self.connected_client.is_connected():
             # if not grab info to add for streaming queue
             ydl = youtube_dl.YoutubeDL(self.ydl_opts)
             video_info: dict = ydl.extract_info(link, download=False)
@@ -304,16 +308,18 @@ class Player:
         else:
             logging.error("Can't play_youtube() without connecting first")
 
-    async def cleanup(self):
+    def cleanup(self):
         """Used when this player instance is about to be deleted.
         Tasks:
-        - Disconnect from voice.
         - Clean up audio sources from queue
-        - Unregister reaction instances
+        - Delete player object instances from superclass
         """
-        await self.disconnect()
+        # Cleanly shut down ffmpeg instances and delete temporary files from the Queue
+        for audio in self.queue.playlist:
+            audio.cleanup()
+            audio.remove_temp_file()
 
-        # TODO Clean up audio sources from queue
+        self.delete_player(guild_id=self.guild_id)
 
     # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗
     # ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗

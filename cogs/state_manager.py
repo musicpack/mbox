@@ -1,4 +1,4 @@
-# from time import time
+from time import time
 from typing import Dict
 
 from discord.channel import TextChannel
@@ -34,16 +34,26 @@ class StateManager(commands.Cog):
 
         return self._config_db
 
-    async def get_player(self, guild_id: int) -> Player:
+    def get_player(self, guild_id: int) -> Player:
         if guild_id not in self.players:
-            self.players[guild_id] = Player(FFMPEG_PATH, self.bot)
+            self.players[guild_id] = Player(FFMPEG_PATH, self.bot, guild_id)
 
             record = self.config_db.get_record(guild_id=guild_id)
             if record:
                 if record.volume:
                     self.players[guild_id].volume = record.volume
 
+            self.players[guild_id].delete_player = self.delete_guild_state
         return self.players[guild_id]
+
+    def delete_guild_state(self, guild_id: int):
+        if guild_id in self.players:
+            del self.players[guild_id]
+        if guild_id in self.panels:
+            for panel in self.panels[guild_id].values():
+                panel.expires = time()  # Force panel to expire now
+                panel.task.restart()
+            del self.panels[guild_id]  # delete the panels parent group
 
     def get_panel(
         self,
@@ -65,16 +75,13 @@ class StateManager(commands.Cog):
             )
         }
 
-        self.panels[guild_id][
-            panel_id
-        ].delete_panel = lambda guild_id, panel_id: self.panels[guild_id].pop(
-            panel_id
-        )
+        self.panels[guild_id][panel_id].delete_panel = self.delete_panel
 
         return self.panels[guild_id][panel_id]
 
     def delete_panel(self, guild_id: int, panel_id: str):
-        del self.panels[guild_id][panel_id]
+        if guild_id in self.panels and panel_id in self.panels[guild_id]:
+            del self.panels[guild_id][panel_id]
 
     def get_command_channel_panel(self, guild_id: int) -> CCEmbedWebhook:
         record = self.config_db.get_record(guild_id=guild_id)

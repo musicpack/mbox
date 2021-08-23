@@ -46,21 +46,18 @@ class Panel(ABC):
     @tasks.loop(seconds=refresh_rate)
     async def task(self):
         if self.expires and self.expires < time():
-            logging.info(f"Panel {self.id} expired.")
-            await self.delete()
-            self.task.cancel()
-            return
+            logging.info(
+                f"Panel {self.text_channel.guild.id}:{self.id} expired."
+            )
+            self.delete_panel(self.text_channel.guild.id, panel_id=self.id)
+            self.task.stop()
 
         if self.refresh_rate != self.task.seconds:
             self.task.change_interval(seconds=self.refresh_rate)
+            self.task.restart()
+            return
 
         await self.process()
-
-    def cleanup(self):
-        self.task.cancel()
-        self.delete_panel(
-            guild_id=self.text_channel.guild.id, panel_id=self.id
-        )
 
     def delete_panel(self, guild_id: int, panel_id: str):
         pass
