@@ -43,7 +43,9 @@ class EventListener(commands.Cog):
                 prefix="",
                 guild=message.guild,
                 command_channel=message.channel.id,
-                player=await self.state.get_player(message.guild.id),
+                player=self.state.players[message.guild.id]
+                if message.guild.id in self.state.players
+                else None,
                 name="",
                 slash_context=None,
                 message=message,
@@ -94,8 +96,8 @@ class EventListener(commands.Cog):
         # Makes sure the player stops playing the song if the bot was disconnected by force
         if member == self.bot.user:
             if before.channel and after.channel is None:
-                player = await self.state.get_player(member.guild.id)
-                player.stop()
+                if member.guild.id in self.state.players:
+                    self.state.players[member.guild.id].stop()
 
     @commands.Cog.listener()
     async def on_ready(self):

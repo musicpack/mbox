@@ -15,17 +15,25 @@ async def play_ytid(id: str, context: MusicBoxContext):
     base_url = "https://www.youtube.com/watch?v="
     normalized_url = base_url + id
     voice_channel = context.determine_voice_channel()
+    if context.player:
+        player = context.player
+    else:
+        player = context.state.get_player(context.guild.id)
+
     if voice_channel:
-        await context.player.connect(voice_channel)
-    await context.player.play_youtube(normalized_url)
+        await player.connect(voice_channel)
+    await player.play_youtube(normalized_url)
     context.state.get_command_channel_panel(context.guild.id)
     await context.state.process_guild_panel(context.guild.id)
 
 
 def get_player_client(context: MusicBoxContext) -> VoiceClient:
-    if context.player.connected_client:
-        if context.player.connected_client.is_connected():
-            return context.player.connected_client
+    if (
+        context.player
+        and context.player.connected_client
+        and context.player.connected_client.is_connected()
+    ):
+        return context.player.connected_client
 
 
 async def play_index(context: MusicBoxContext):
@@ -137,26 +145,38 @@ async def shuffle_player(context: MusicBoxContext) -> str:
 
 async def lower_volume(context: MusicBoxContext) -> str:
     if context.name == "volume_down_button":
-        await context.player.lower_volume()
-        await context.state.process_guild_panel(context.guild.id)
-        return "Volume decreased"
+        p_client = get_player_client(context)
+
+        if p_client:
+            await context.player.lower_volume()
+            await context.state.process_guild_panel(context.guild.id)
+            return "Volume decreased"
+        return "Player is not connected"
 
     logging.error("Context name is not lower_volume. Cannot lower_volume")
 
 
 async def raise_volume(context: MusicBoxContext) -> str:
     if context.name == "volume_up_button":
-        await context.player.raise_volume()
-        await context.state.process_guild_panel(context.guild.id)
-        return "Volume increased"
+        p_client = get_player_client(context)
+
+        if p_client:
+            await context.player.raise_volume()
+            await context.state.process_guild_panel(context.guild.id)
+            return "Volume increased"
+        return "Player is not connected"
 
     logging.error("Context name is not raise_volume. Cannot raise_volume")
 
 
 async def play_pause(context: MusicBoxContext) -> str:
     if context.name == "play_pause_button":
-        await context.player.on_play_pause()
-        await context.state.process_guild_panel(context.guild.id)
-        return "Player toggled"
+        p_client = get_player_client(context)
+
+        if p_client:
+            await context.player.on_play_pause()
+            await context.state.process_guild_panel(context.guild.id)
+            return "Player toggled"
+        return "Player is not connected"
 
     logging.error("Context name is not play_pause. Cannot play_pause")

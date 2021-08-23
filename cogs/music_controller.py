@@ -67,7 +67,9 @@ class MusicController(commands.Cog):
         mbox_ctx = MusicBoxContext(
             prefix="/",
             guild=ctx.guild,
-            player=await self.state.get_player(ctx.guild.id),
+            player=self.state.players[ctx.guild.id]
+            if ctx.guild.id in self.state.players
+            else None,
             name=ctx.name,
             slash_context=ctx,
             message=ctx.message,
@@ -158,7 +160,9 @@ class MusicController(commands.Cog):
         mbox_ctx = MusicBoxContext(
             prefix="",
             guild=ctx.guild,
-            player=await self.state.get_player(ctx.guild.id),
+            player=self.state.players[ctx.guild.id]
+            if ctx.guild.id in self.state.players
+            else None,
             name=ctx.custom_id,
             slash_context=None,
             message=None,
