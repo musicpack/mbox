@@ -170,20 +170,6 @@ class Player:
             )
             return music_source
 
-    async def shuffle(self):
-        if self.connected_client:
-            playlist = self.queue.playlist
-            pos = self.queue.pos
-            next_songs = playlist[(pos + 1) :]
-            if self.queue.pos < len(self.queue.playlist) - 1:
-                random.shuffle(next_songs)
-                self.queue.playlist = (
-                    playlist[:pos] + [playlist[pos]] + next_songs
-                )
-                await self.update_queue_embed()
-            else:
-                raise IndexError("No more songs in the queue to shuffle")
-
     async def connect(self, channel: VoiceChannel):
         """Connects the player to a voicechannel"""
         if self.connected_client and self.connected_client.is_connected():
