@@ -11,7 +11,7 @@ from discord.client import Client
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
 
-from config import FFMPEG_PATH, MAX_CACHESIZE
+from src.config import FFMPEG_PATH, MAX_CACHESIZE
 from src.constants import YOUTUBE_ICON
 from src.music.element.MusicSource import MusicSource
 from src.music.element.Queue import Queue
@@ -44,14 +44,6 @@ class Player:
         # Footer Metadata
         self.volume: int = volume
         self.ms_displayed = 0
-
-    #  ██████╗ ██████╗ ██████╗ ███████╗
-    # ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    # ██║     ██║   ██║██████╔╝█████╗
-    # ██║     ██║   ██║██╔══██╗██╔══╝
-    # ╚██████╗╚██████╔╝██║  ██║███████╗
-    #  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-    #
 
     async def play(self, audio: MusicSource) -> None:
         """Plays the given MusicSource. Updates embeds if exists. Connect to the voicechannel before running function."""
@@ -177,6 +169,20 @@ class Player:
                 self.play(music_source), self.client.loop
             )
             return music_source
+
+    async def shuffle(self):
+        if self.connected_client:
+            playlist = self.queue.playlist
+            pos = self.queue.pos
+            next_songs = playlist[(pos + 1) :]
+            if self.queue.pos < len(self.queue.playlist) - 1:
+                random.shuffle(next_songs)
+                self.queue.playlist = (
+                    playlist[:pos] + [playlist[pos]] + next_songs
+                )
+                await self.update_queue_embed()
+            else:
+                raise IndexError("No more songs in the queue to shuffle")
 
     async def connect(self, channel: VoiceChannel):
         """Connects the player to a voicechannel"""
@@ -322,14 +328,6 @@ class Player:
             audio.remove_temp_file()
 
         self.delete_player(guild_id=self.guild_id)
-
-    # ███╗   ███╗███████╗████████╗ █████╗ ██████╗  █████╗ ████████╗ █████╗
-    # ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
-    # ██╔████╔██║█████╗     ██║   ███████║██║  ██║███████║   ██║   ███████║
-    # ██║╚██╔╝██║██╔══╝     ██║   ██╔══██║██║  ██║██╔══██║   ██║   ██╔══██║
-    # ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║██████╔╝██║  ██║   ██║   ██║  ██║
-    # ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
-    #
 
     ########## Lyrics ##########
     def default_lyrics_metadata(self) -> None:

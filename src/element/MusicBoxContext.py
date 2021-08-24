@@ -7,7 +7,6 @@ from discord.guild import Guild
 from discord_slash.context import SlashContext
 
 from cogs.state_manager import StateManager
-from src.auth import Crypto
 from src.music.player import Player
 
 
@@ -96,7 +95,6 @@ class MusicBoxContext(Context):
         self.player: Player = attrs.pop("player", None)
         self.name: str = attrs.pop("name", "")
         self.slash_context: SlashContext = attrs.pop("slash_context", None)
-        self.crypto: Crypto = attrs.pop("crypto", None)
         self.state: StateManager = attrs.pop("state", None)
 
         # workaround: make _state object since super() expects one (regardless of message=null)

@@ -5,7 +5,7 @@ from discord_slash.utils.manage_commands import create_option
 
 import src.command_handler as handle
 from cogs.state_manager import StateManager
-from config import GUILD_ID
+from src.config import GUILD_ID
 from src.element.database import Record
 from src.element.MusicBoxContext import MusicBoxContext
 from src.parser import parse

@@ -50,14 +50,13 @@ def set_token(config: configparser.ConfigParser):
 
 def set_ffmpeg_path(config: configparser.ConfigParser):
     """sets the ffmpeg_path dynamically"""
-    try:
-        if config["Default"]["FFMPEG_PATH"]:
-            return config["Default"]["FFMPEG_PATH"]
-        elif shutil.which("ffmpeg"):
-            return "ffmpeg"
-        elif glob.glob("ffmpeg*"):
-            return get_ffmpeg_path(glob.glob("ffmpeg*"))
-    except Exception:
+    if config["Default"]["FFMPEG_PATH"]:
+        return config["Default"]["FFMPEG_PATH"]
+    elif shutil.which("ffmpeg"):
+        return "ffmpeg"
+    elif glob.glob("ffmpeg*"):
+        return get_ffmpeg_path(glob.glob("ffmpeg*"))
+    else:
         FFMPEG_ERROR_NOT_FOUND = "ffmpeg was not found on this system. If installed, provide the path in the config."
         raise ProcessLookupError(FFMPEG_ERROR_NOT_FOUND)
 
