@@ -53,7 +53,6 @@ class StateManager(commands.Cog):
             for panel in self.panels[guild_id].values():
                 panel.expires = time()  # Force panel to expire now
                 panel.task.restart()
-            del self.panels[guild_id]  # delete the panels parent group
 
     def get_panel(
         self,
@@ -82,6 +81,8 @@ class StateManager(commands.Cog):
     def delete_panel(self, guild_id: int, panel_id: str):
         if guild_id in self.panels and panel_id in self.panels[guild_id]:
             del self.panels[guild_id][panel_id]
+            if len(self.panels[guild_id]) == 0:
+                del self.panels[guild_id]
 
     def get_command_channel_panel(self, guild_id: int) -> CCEmbedWebhook:
         record = self.config_db.get_record(guild_id=guild_id)

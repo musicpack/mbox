@@ -250,60 +250,62 @@ class Player:
     async def play_youtube(self, link: str):
         if self.connected_client and self.connected_client.is_connected():
             # if not grab info to add for streaming queue
-            ydl = youtube_dl.YoutubeDL(self.ydl_opts)
-            video_info: dict = ydl.extract_info(link, download=False)
-            source: str = video_info["formats"][0][
-                "url"
-            ]  # take the first result given from youtube
-            raw_audio_source = FFmpegPCMAudio(
-                executable=FFMPEG_PATH, source=source, **self.FFMPEG_OPTIONS
-            )
-            audio = MusicSource(
-                raw_audio_source, info=video_info, volume=self.volume / 100
-            )
+            with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+                video_info: dict = ydl.extract_info(link, download=False)
+                source: str = video_info["formats"][0][
+                    "url"
+                ]  # take the first result given from youtube
+                raw_audio_source = FFmpegPCMAudio(
+                    executable=FFMPEG_PATH,
+                    source=source,
+                    **self.FFMPEG_OPTIONS
+                )
+                audio = MusicSource(
+                    raw_audio_source, info=video_info, volume=self.volume / 100
+                )
 
-            self.queue.add(audio)
+                self.queue.add(audio)
 
-            # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
-            if (
-                not self.connected_client.is_playing()
-                and not self.connected_client.is_paused()
-            ):
-                if len(self.queue.playlist) == 1:
-                    await self.play(self.queue.current())
-                else:
-                    self.next()
-
-            @audio.event
-            def on_read(ms, non_music):
-                self.on_read(ms, non_music)
-
-            # Determine if video is cacheable
-            if not video_info[
-                "is_live"
-            ]:  # TODO Player should show that the video is live in the GUI
-                if video_info[
-                    "filesize"
-                ]:  # TODO add handling when video_info['filesize'] is not found/supported by youtube_dl
-                    do_cache = (
-                        True
-                        if video_info["filesize"] <= MAX_CACHESIZE
-                        else False
-                    )
-
-                    # Using threading library in order to prevent youtube_dl from blocking asyncio loops
-                    threading.Thread(
-                        target=lambda: audio.resolve(cache=do_cache)
-                    ).start()
+                # If the player is not playing because it just came in to the channel (not because of being paused), advance the track head to the next (just added) song
+                if (
+                    not self.connected_client.is_playing()
+                    and not self.connected_client.is_paused()
+                ):
+                    if len(self.queue.playlist) == 1:
+                        await self.play(self.queue.current())
+                    else:
+                        self.next()
 
                 @audio.event
-                def on_resolve(info, path):
-                    if (
-                        self.queue.current()
-                        and self.queue.current().info == info
-                    ):
-                        self.from_file = True
-                        self.resolved = False  # Resolved is false to display the special status 'from_file'
+                def on_read(ms, non_music):
+                    self.on_read(ms, non_music)
+
+                # Determine if video is cacheable
+                if not video_info[
+                    "is_live"
+                ]:  # TODO Player should show that the video is live in the GUI
+                    if video_info[
+                        "filesize"
+                    ]:  # TODO add handling when video_info['filesize'] is not found/supported by youtube_dl
+                        do_cache = (
+                            True
+                            if video_info["filesize"] <= MAX_CACHESIZE
+                            else False
+                        )
+
+                        # Using threading library in order to prevent youtube_dl from blocking asyncio loops
+                        threading.Thread(
+                            target=lambda: audio.resolve(cache=do_cache)
+                        ).start()
+
+                    @audio.event
+                    def on_resolve(info, path):
+                        if (
+                            self.queue.current()
+                            and self.queue.current().info == info
+                        ):
+                            self.from_file = True
+                            self.resolved = False  # Resolved is false to display the special status 'from_file'
 
         else:
             logging.error("Can't play_youtube() without connecting first")

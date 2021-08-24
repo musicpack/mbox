@@ -1,7 +1,11 @@
+import logging
+from time import time
+
 from aiohttp import ClientSession
 from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.errors import NotFound
+from discord.ext import tasks
 from discord.message import Message
 from discord.webhook import AsyncWebhookAdapter, Webhook, WebhookMessage
 from discord_slash.model import ButtonStyle
@@ -20,6 +24,8 @@ from src.music.player import Player
 class CCEmbedWebhook(Panel):
     """Webhooks panel."""
 
+    refresh_rate = 2  # seconds
+
     def __init__(self, text_channel: TextChannel, **kwargs):
         super().__init__(text_channel)
         self.players = kwargs.get("players", [])
@@ -29,6 +35,7 @@ class CCEmbedWebhook(Panel):
         self.webhook: Webhook = None
         self.webhook_message_id: int = None
         self._button_message: Message = None
+        self._session = ClientSession()
         self.components = []
 
         self.cached_reporter_embed: ReporterEmbed = None
@@ -38,7 +45,6 @@ class CCEmbedWebhook(Panel):
         self.cached_components: list = []
 
         self.expires = None
-        self.refresh_rate = 2
         self.id = "command_channel"
 
     @property
@@ -52,20 +58,27 @@ class CCEmbedWebhook(Panel):
                 self.text_channel.guild.id
             )
             if record and record.button_message_id:
-                return self.text_channel.get_partial_message(
+                partial_message = self.text_channel.get_partial_message(
                     record.button_message_id
                 )
-            else:
-                sent_button_message = await self.text_channel.send(
-                    embed=Embed(title="Buttons"),
-                    components=self.components,
-                )
-                await sent_button_message.edit(
-                    suppress=True, components=self.components
-                )
-                record.button_message_id = sent_button_message.id
-                self.config_db.store_record(record)
-                return sent_button_message
+                try:
+                    full_message = await partial_message.fetch()
+                    self._button_message = full_message
+                    return full_message
+                except NotFound:
+                    pass
+
+            sent_button_message = await self.text_channel.send(
+                embed=Embed(title="Buttons"),
+                components=self.components,
+            )
+            await sent_button_message.edit(
+                suppress=True, components=self.components
+            )
+            record.button_message_id = sent_button_message.id
+            self.config_db.store_record(record)
+            self._button_message = sent_button_message
+            return sent_button_message
         else:
             return self._button_message
 
@@ -234,7 +247,7 @@ class CCEmbedWebhook(Panel):
         if record and record.webhook_url:
             return Webhook.from_url(
                 record.webhook_url,
-                adapter=AsyncWebhookAdapter(ClientSession()),
+                adapter=AsyncWebhookAdapter(self._session),
             )
         else:
             webhook = await self.text_channel.create_webhook(name="Music Box")
@@ -279,3 +292,22 @@ class CCEmbedWebhook(Panel):
 
     async def delete(self):
         raise NotImplementedError
+
+    @tasks.loop(seconds=refresh_rate)
+    async def task(self):
+        if self.expires and self.expires < time():
+            logging.info(
+                f"Panel {self.text_channel.guild.id}:{self.id} expired."
+            )
+            self.delete_panel(self.text_channel.guild.id, panel_id=self.id)
+            await self.process()
+            await self._session.close()  # Close the active http session for webhook
+            self.task.stop()
+            return  # Exit the task loop
+
+        if self.refresh_rate != self.task.seconds:
+            self.task.change_interval(seconds=self.refresh_rate)
+            self.task.restart()
+            return
+
+        await self.process()
