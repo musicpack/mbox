@@ -28,6 +28,16 @@ class MusicController(commands.Cog):
         await ctx.send(content="test", embeds=[embed])
 
     @cog_ext.cog_slash(
+        name="info",
+        guild_ids=GUILD_ID,
+    )
+    async def _info(self, ctx: SlashContext):
+        self.state.add_info_panel(ctx.channel)
+        await self.state.process_info_panel(ctx.guild.id)
+        status = "Sucessful"
+        await ctx.send(content=f"{status}", hidden=True)
+
+    @cog_ext.cog_slash(
         name="register",
         guild_ids=GUILD_ID,
         description="Registers and creates a command channel for this server.",
@@ -57,10 +67,13 @@ class MusicController(commands.Cog):
         mbox_ctx = MusicBoxContext(
             prefix="/",
             guild=ctx.guild,
-            player=await self.state.get_player(ctx.guild.id),
+            player=self.state.players[ctx.guild.id]
+            if ctx.guild.id in self.state.players
+            else None,
             name=ctx.name,
             slash_context=ctx,
             message=ctx.message,
+            state=self.state,
             args=ctx.args,
             kwargs=ctx.kwargs,
         )
@@ -147,10 +160,13 @@ class MusicController(commands.Cog):
         mbox_ctx = MusicBoxContext(
             prefix="",
             guild=ctx.guild,
-            player=await self.state.get_player(ctx.guild.id),
+            player=self.state.players[ctx.guild.id]
+            if ctx.guild.id in self.state.players
+            else None,
             name=ctx.custom_id,
             slash_context=None,
             message=None,
+            state=self.state,
             args=None,
             kwargs=None,
         )

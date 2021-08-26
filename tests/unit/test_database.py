@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import List
 
 from src.element.database import DynamoDB, Record
@@ -20,7 +21,11 @@ def test_store_record(dynamodb_table, guild_table):
             "guild_id": sample_record.guild_id,
         }
     )
-    assert response["Item"] == sample_record.__dict__
+    record_dict = asdict(
+        sample_record,
+        dict_factory=lambda data: dict(x for x in data if x[1] is not None),
+    )
+    assert response["Item"] == record_dict
 
 
 def test_get_record(

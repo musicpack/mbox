@@ -179,3 +179,11 @@ class LyricsEmbed(Embed):
 
     def append_verse(self, lyric: str, verse: str) -> str:
         return lyric + "\r\n\r\n" + verse
+
+    def __eq__(self, o: object) -> bool:
+        def ordered_eval():
+            yield self.description == o.description
+            yield self.lyrics_source == o.lyrics_source
+            yield self.title == o.title
+
+        return all(ordered_eval()) if type(o) == LyricsEmbed else False

@@ -6,6 +6,7 @@ from discord.ext.commands.context import Context
 from discord.guild import Guild
 from discord_slash.context import SlashContext
 
+from cogs.state_manager import StateManager
 from src.music.player import Player
 
 
@@ -81,6 +82,8 @@ class MusicBoxContext(Context):
             If context was a slash command, this should be '/'
         message: :class:`.Message`
             The message that triggered the command being executed.
+        state: :class:`.StateManager`
+            The state manager that is handling the current state of the bot.
         args: :class:`list`
             The list of transformed arguments that were passed into the command.
         kwargs: :class:`dict`
@@ -92,6 +95,7 @@ class MusicBoxContext(Context):
         self.player: Player = attrs.pop("player", None)
         self.name: str = attrs.pop("name", "")
         self.slash_context: SlashContext = attrs.pop("slash_context", None)
+        self.state: StateManager = attrs.pop("state", None)
 
         # workaround: make _state object since super() expects one (regardless of message=null)
         class FakeMessage(NotImplementedError):
@@ -152,10 +156,13 @@ class MusicBoxContext(Context):
         # Priority is based from the code top to bottom. if state is true (CheckStateTrue sections) then code will end determination
 
         # Check player exists
-        if self.player:
-            first_voice_channel = self.return_voice_channel_for_player()
-            if not first_voice_channel:
-                return None
+        # no voice channel needed if player already connected
+        if (
+            self.player
+            and self.player.connected_client
+            and self.player.connected_client.is_connected()
+        ):
+            return None
 
         # Check slash_context exists
         if self.slash_context:
@@ -179,7 +186,10 @@ class MusicBoxContext(Context):
             )
             return last_connected_channel
 
-        # CheckStateTrue: join first available voice channel if exists
+        if self.guild and self.guild.voice_channels:
+            first_voice_channel = self.guild.voice_channels[0]
+
+        # Join first available voice channel if exists
         if first_voice_channel:
             logging.warn(
                 f"Determined first available voice channel for guild {self.guild.name}"
@@ -188,21 +198,6 @@ class MusicBoxContext(Context):
 
         logging.error("Determined no possible voice channel to join.")
         return None
-
-    def return_voice_channel_for_player(self) -> VoiceChannel:
-        """Looks at the player object and decides if a voice channel exists
-
-        Returns:
-            VoiceChannel: The voice_channel associated with the player
-        """
-        # CheckStateTrue: determine no voice channel if player already connected
-        if self.player.connected_client:
-            if self.player.connected_client.is_connected():
-                return None
-
-        # Save for later check, first voice channel
-        if self.guild.voice_channels:
-            return self.guild.voice_channels[0]
 
     def return_voice_channel_for_slash_context(self) -> VoiceChannel:
         """Looks at the slash_context object and decides if a voice channel exists
