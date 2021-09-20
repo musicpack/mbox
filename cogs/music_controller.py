@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 from discord_slash import ComponentContext, SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
@@ -18,24 +17,6 @@ class MusicController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.state: StateManager = self.bot.get_cog("StateManager")
-
-    @cog_ext.cog_slash(
-        name="test",
-        guild_ids=GUILD_ID,
-    )
-    async def _test(self, ctx: SlashContext):
-        embed = discord.Embed(title="embed test")
-        await ctx.send(content="test", embeds=[embed])
-
-    @cog_ext.cog_slash(
-        name="info",
-        guild_ids=GUILD_ID,
-    )
-    async def _info(self, ctx: SlashContext):
-        self.state.add_info_panel(ctx.channel)
-        await self.state.process_info_panel(ctx.guild.id)
-        status = "Sucessful"
-        await ctx.send(content=f"{status}", hidden=True)
 
     @cog_ext.cog_slash(
         name="register",
