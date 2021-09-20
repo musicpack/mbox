@@ -137,6 +137,14 @@ class MusicController(commands.Cog):
     async def _shuffle(self, ctx: SlashContext):
         await self.process_slash_command(ctx, handle.shuffle_player)
 
+    @cog_ext.cog_slash(
+        name="radio",
+        guild_ids=GUILD_ID,
+        description="Toggles radio mode",
+    )
+    async def _radio(self, ctx: SlashContext):
+        await self.process_slash_command(ctx, handle.toggle_radio)
+
     async def process_button(self, ctx: ComponentContext, f):
         mbox_ctx = MusicBoxContext(
             prefix="",

@@ -173,3 +173,14 @@ async def play_pause(context: MusicBoxContext) -> str:
         return "Player is not connected"
 
     logging.error("Context name is not play_pause. Cannot play_pause")
+
+
+async def toggle_radio(context: MusicBoxContext) -> str:
+    if context.player:
+        if context.player.radio:
+            context.player.radio = False
+            return "Radio Mode Off"
+        else:
+            context.player.radio = True
+            return "Radio Mode On"
+    return "Player is not connected. Please play a song before enabling radio."
