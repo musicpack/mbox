@@ -10,6 +10,7 @@ from discord.channel import VoiceChannel
 from discord.client import Client
 from discord.player import FFmpegPCMAudio
 from discord.voice_client import VoiceClient
+from ytmusicapi.ytmusic import YTMusic
 
 from src.config import FFMPEG_PATH, MAX_CACHESIZE
 from src.constants import YOUTUBE_ICON
@@ -45,6 +46,9 @@ class Player:
         self.volume: int = volume
         self.ms_displayed = 0
 
+        self.radio = False
+        self.watch_playlist = None
+
     async def play(self, audio: MusicSource) -> None:
         """Plays the given MusicSource. Updates embeds if exists. Connect to the voicechannel before running function."""
         if self.connected_client and self.connected_client.is_connected():
@@ -65,7 +69,11 @@ class Player:
                 )
 
             # Lyrics metadata
-            self.lyrics, self.lyrics_source = youtube_lyrics(audio.info["id"])
+            (
+                self.lyrics,
+                self.lyrics_source,
+                self.watch_playlist,
+            ) = youtube_lyrics(audio.info["id"])
             # Player metadata
             self.playhead = timedelta(seconds=0)
             self.display_description = False
@@ -148,6 +156,33 @@ class Player:
         try:
             music_source = self.queue.next()
         except IndexError:
+            if self.radio and self.watch_playlist:
+                if len(self.watch_playlist["tracks"]) < 3:
+                    current_music = self.queue.current()
+                    logging.warning(
+                        f"Regenerating malformed watch_playlist using id {current_music.info['id']}"
+                    )
+                    ytmusic = YTMusic()
+                    self.watch_playlist = ytmusic.get_watch_playlist(
+                        videoId=current_music.info["id"]
+                    )
+
+                if 2 <= len(self.watch_playlist["tracks"]) - 1:
+                    track_no = random.randint(
+                        2, len(self.watch_playlist["tracks"]) - 1
+                    )
+                    track = self.watch_playlist["tracks"][track_no]
+                    base_url = "https://www.youtube.com/watch?v="
+                    normalized_url = base_url + track["videoId"]
+                    asyncio.run_coroutine_threadsafe(
+                        self.play_youtube(normalized_url), self.client.loop
+                    )
+                    return
+                else:
+                    logging.error(
+                        "Watch playlist is empty or malformed after second try, stopping radio mode."
+                    )
+
             logging.info("No more music to play. Stopping...")
             self.stop()
             return None
@@ -250,7 +285,7 @@ class Player:
                 raw_audio_source = FFmpegPCMAudio(
                     executable=FFMPEG_PATH,
                     source=source,
-                    **self.FFMPEG_OPTIONS
+                    **self.FFMPEG_OPTIONS,
                 )
                 audio = MusicSource(
                     raw_audio_source, info=video_info, volume=self.volume / 100
