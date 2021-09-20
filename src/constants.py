@@ -1,4 +1,4 @@
-VERSION = "0.62"
+VERSION = "0.7"
 YOUTUBE_ICON = "https://yt3.ggpht.com/a/AATXAJxHHP_h8bUovc1qC4c07sVXxVbp3gwDEg-iq8gbFQ=s100-c-k-c0xffffffff-no-rj-mo"
 USAGE_TEXT = "Send a search phrase or a link to play a song!"
 CONFIG_PATH = "config.ini"
