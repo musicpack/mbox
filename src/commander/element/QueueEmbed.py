@@ -13,6 +13,7 @@ class QueueEmbed(Embed):
 
         self.title = "Queue"
         self.queue: Queue = kwargs.get("queue", None)
+        self.radio: bool = kwargs.get("radio", False)
 
         if self.queue and len(self.queue.playlist) != 0:
             self.description = self.set_description()
@@ -32,6 +33,11 @@ class QueueEmbed(Embed):
                 description_now_playing += embed
             else:
                 description_next += embed
+
+        if self.radio:
+            self.set_footer(text="📻 Radio Mode")
+            if description_next == "":
+                description_next = "\nPress ⏭️ to generate next radio song. `/radio` to disable."
 
         if description_now_playing:
             description = "**Now Playing**" + description_now_playing
