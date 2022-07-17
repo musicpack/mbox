@@ -10,16 +10,14 @@ ENV DiscordToken_mbox=${DiscordToken_mbox} \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.1.7
 
 # Update apt-get and install ffmpeg
 RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /app
 COPY . .
 
-# Install poetry and dependencies
-RUN pip install "poetry==$POETRY_VERSION"
-RUN poetry install --no-dev
+# Install requirements from requirements.txt
+RUN pip install -r requirements.txt
 
 # Run the application
 CMD . .venv/bin/activate && python3 main.py
