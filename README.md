@@ -26,29 +26,13 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: <https
     cd mbox/
     ```
 
-3. Install Poetry. To learn more on how to install or use Poetry, check out the Poetry documentation [here.](https://python-poetry.org)
-
-    ```bash
-    # For OSX / Linux / Bash on Windows install instructions
-    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-
-    # For Windows PowerShell install instructions
-    (Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python -
-    ```
-
 4. Install project dependencies.
 
     ```bash
-    poetry install
-    ```
-    
-5. Activate virtual environment.
-
-    ```bash
-    poetry shell
+    pip install -r requirements-dev.txt
     ```
 
-6. Install pre-commit to identify issues in code before committing changes.
+6. Configure pre-commit to identify issues in code before committing changes.
 
     ```bash
     pre-commit install
