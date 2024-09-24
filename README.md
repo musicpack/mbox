@@ -1,8 +1,10 @@
 # Music Box
 
-Music Box is a discord streaming bot designed to be easy to use.
+Music Box is a music player widget in a Discord message.
 
 Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: <https://sponsor.ajay.app/>
+
+![image](images/example.png)
 
 **Features:**
 
@@ -10,8 +12,6 @@ Uses SponsorBlock data licensed used under CC BY-NC-SA 4.0. More details: <https
 - Search Youtube & Youtube Music from the bot.
 - Skip non-music sections of the bot based on [crowdsourced data](https://sponsor.ajay.app/).
 - [Discord slash commands](https://blog.discord.com/slash-commands-are-here-8db0a385d9e6)  eg. /play, /pause
-
-![image](images/example.png)
 
 ## Setup/Installation
 
